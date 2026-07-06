@@ -51,9 +51,28 @@ export interface CapabilityContract<TInput = unknown, TOutput = unknown> {
   priority: number;
   featureFlags: string[];
   tags?: string[];
+  // ---- Extended contract fields (Milestone 5.3) ----
+  requiredPolicies?: string[];              // policy rule IDs that must apply
+  requiredTools?: string[];                 // tool IDs from AI Core registry
+  failureModes?: string[];                  // human-readable known failure modes
+  fallbackStrategy?: "none" | "cached" | "degraded" | "alternate-provider" | "fail";
+  retryStrategy?: {
+    maxAttempts: number;
+    backoffMs: number;
+    jitter?: boolean;
+  };
+  sla?: {
+    availability?: number;                  // 0..1 e.g. 0.995
+    p95LatencyMs?: number;
+  };
+  latencyTargetMs?: number;
+  costCategory?: "free" | "low" | "medium" | "high" | "critical";
+  securityClassification?: "public" | "internal" | "confidential" | "restricted";
+  ownerModule?: string;                     // e.g. "tios", "tie", "planner-team"
+  docsUrl?: string;
   deprecation?: {
     replacedBy?: CapabilityId;
-    sunsetAt?: string;               // ISO date
+    sunsetAt?: string;                      // ISO date
     reason?: string;
   };
   handler?: (input: TInput, ctx: DecisionContext) => Promise<TOutput>;
