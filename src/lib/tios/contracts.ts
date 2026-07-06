@@ -127,7 +127,7 @@ export function registerContract<TInput, TOutput>(
   // Mirror into the CapabilityManifest registry so decision-engine
   // & policy engine keep working unchanged.
   registerCapability(toManifest(contract), async (input, ctx) => {
-    return invokeContract(contract.id, input, ctx);
+    return invokeContract(contract.id, input as unknown, ctx);
   });
 
   return record;

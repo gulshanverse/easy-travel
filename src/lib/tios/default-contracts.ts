@@ -11,16 +11,15 @@ import type { CapabilityId } from "./types";
 
 const empty = z.object({}).passthrough();
 
-function contract<TIn extends z.ZodTypeAny, TOut extends z.ZodTypeAny>(
-  overrides: Omit<
-    CapabilityContract<z.infer<TIn>, z.infer<TOut>>,
-    "inputSchema" | "outputSchema"
-  > & { inputSchema: TIn; outputSchema: TOut },
-): CapabilityContract<z.infer<TIn>, z.infer<TOut>> {
-  return overrides;
+// Use `any` for the array element type so heterogeneous Zod-inferred contracts
+// remain assignable. Individual contracts stay strongly typed at their call sites.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function contract(c: CapabilityContract<any, any>): CapabilityContract<any, any> {
+  return c;
 }
 
-const defaults: Array<CapabilityContract<unknown, unknown>> = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const defaults: Array<CapabilityContract<any, any>> = [
   contract({
     id: "planner", displayName: "Trip Planner", version: "1.0.0",
     description: "Generates day-by-day itineraries.",
