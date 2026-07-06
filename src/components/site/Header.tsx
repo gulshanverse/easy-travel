@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Menu, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "./Container";
+import { UserMenu } from "./UserMenu";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -55,12 +56,7 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/auth">Sign in</Link>
-          </Button>
-          <Button asChild size="sm" className="rounded-full">
-            <Link to="/ai-planner">Plan a trip</Link>
-          </Button>
+          <UserMenu />
         </div>
 
         <button
