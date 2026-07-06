@@ -56,7 +56,10 @@ export interface TimelineEvent {
   currency: string;
   placeId: string | null;
   bookingItemId: string | null;
-  metadata: Record<string, unknown>;
+  // Structured metadata (JSON). Typed as `any` so TanStack Start's RPC
+  // serializer accepts it — `unknown` fails the ValidateSerializable check.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: Record<string, any>;
 }
 
 export interface TimelineDay {
