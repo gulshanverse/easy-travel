@@ -223,9 +223,12 @@ export async function streamAI(params: AIInvokeParams) {
   if (!checkRateLimit(params.ctx.userId, AI_CONFIG.rateLimit.perUserPerMinute, AI_CONFIG.rateLimit.perUserPerDay)) {
     throw new AIRateLimitError();
   }
+  const requestId = newRequestId();
   const system = await buildSystemPrompt(params);
   const messages = sanitizeMessages(params.messages);
   const handle = routeModel(modelProfile.id);
+
+  emitAIEvent({ name: "STREAM_STARTED", requestId, agent: params.ctx.agent, feature: params.ctx.feature, data: { model: modelProfile.id } });
 
   const result = streamText({
     model: handle.model as any,
@@ -234,7 +237,8 @@ export async function streamAI(params: AIInvokeParams) {
     temperature: params.temperature ?? AI_CONFIG.temperature,
     maxOutputTokens: params.maxOutputTokens ?? AI_CONFIG.maxOutputTokens,
     tools: buildAiSdkTools(params.tools) as any,
+    onFinish: () => emitAIEvent({ name: "STREAM_COMPLETED", requestId, agent: params.ctx.agent }),
   });
 
-  return { result, handle, model: modelProfile.id };
+  return { result, handle, model: modelProfile.id, requestId };
 }
