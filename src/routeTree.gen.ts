@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DestinationsRouteImport } from './routes/destinations'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AiPlannerRouteImport } from './routes/ai-planner'
 import { Route as IndexRouteImport } from './routes/index'
 
+const DestinationsRoute = DestinationsRouteImport.update({
+  id: '/destinations',
+  path: '/destinations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiPlannerRoute = AiPlannerRouteImport.update({
+  id: '/ai-planner',
+  path: '/ai-planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ai-planner': typeof AiPlannerRoute
+  '/auth': typeof AuthRoute
+  '/destinations': typeof DestinationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ai-planner': typeof AiPlannerRoute
+  '/auth': typeof AuthRoute
+  '/destinations': typeof DestinationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ai-planner': typeof AiPlannerRoute
+  '/auth': typeof AuthRoute
+  '/destinations': typeof DestinationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/ai-planner' | '/auth' | '/destinations'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/ai-planner' | '/auth' | '/destinations'
+  id: '__root__' | '/' | '/ai-planner' | '/auth' | '/destinations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AiPlannerRoute: typeof AiPlannerRoute
+  AuthRoute: typeof AuthRoute
+  DestinationsRoute: typeof DestinationsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/destinations': {
+      id: '/destinations'
+      path: '/destinations'
+      fullPath: '/destinations'
+      preLoaderRoute: typeof DestinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-planner': {
+      id: '/ai-planner'
+      path: '/ai-planner'
+      fullPath: '/ai-planner'
+      preLoaderRoute: typeof AiPlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AiPlannerRoute: AiPlannerRoute,
+  AuthRoute: AuthRoute,
+  DestinationsRoute: DestinationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
