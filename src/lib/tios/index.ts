@@ -35,3 +35,13 @@ export * from "./explainability";
 export * from "./observability";
 export * from "./contracts";
 export * from "./default-contracts";
+// Milestone 5.3 — Platform Hardening / Architecture Freeze
+export * from "./execution-context";
+export * from "./dependency-graph";
+export * from "./provider-matrix";
+export * from "./domain-events";
+export * from "./resilience";
+export * from "./cost-governance";
+export * from "./health";
+export * from "./validation";
+export * from "./plugin";
