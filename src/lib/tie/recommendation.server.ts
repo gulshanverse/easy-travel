@@ -84,7 +84,7 @@ export class RecommendationService {
     const ctx: AIRequestContext = {
       userId: input.userId,
       feature: "tie.recommendation",
-      tripId: input.tripId,
+      metadata: input.tripId ? { tripId: input.tripId } : undefined,
     };
     let output: unknown;
     try {
