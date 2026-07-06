@@ -1,7 +1,6 @@
 /**
  * AI Core — Context Engine.
  * Builds a minimal, relevant context bundle for a request.
- * Never dumps whole tables — each source is bounded by budget.
  */
 import type { AIRequestContext } from "./types";
 
@@ -12,16 +11,20 @@ export interface UserContextBundle {
   currency?: string;
   profile?: {
     displayName: string | null;
-    country: string | null;
-    preferredLanguage: string | null;
+    homeCity: string | null;
+    homeCountry: string | null;
+    locale: string | null;
+    currency: string | null;
+    timezone: string | null;
   };
   activeTrip?: {
     id: string;
     title: string;
-    destination: string | null;
     startDate: string | null;
     endDate: string | null;
-    budget: number | null;
+    currency: string | null;
+    budgetCents: number | null;
+    travelers: number | null;
   } | null;
   preferences?: Record<string, unknown>;
 }
@@ -33,15 +36,13 @@ export async function buildUserContext(ctx: AIRequestContext): Promise<UserConte
     timezone: ctx.timezone,
     currency: ctx.currency,
   };
-
   if (!ctx.userId) return bundle;
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
   const [profileRes, prefsRes, tripRes] = await Promise.all([
     supabaseAdmin
       .from("profiles")
-      .select("display_name, country_code, preferred_language")
+      .select("display_name, home_city, home_country, locale, currency, timezone")
       .eq("id", ctx.userId)
       .maybeSingle(),
     supabaseAdmin
@@ -51,51 +52,58 @@ export async function buildUserContext(ctx: AIRequestContext): Promise<UserConte
       .maybeSingle(),
     supabaseAdmin
       .from("trips")
-      .select("id, title, destination, start_date, end_date, budget")
+      .select("id, title, start_date, end_date, currency, budget_total_cents, traveler_count")
       .eq("user_id", ctx.userId)
-      .in("status", ["planning", "active"])
-      .order("start_date", { ascending: true })
+      .in("status", ["planning", "confirmed", "in_progress"])
+      .order("start_date", { ascending: true, nullsFirst: false })
       .limit(1)
       .maybeSingle(),
   ]);
 
   if (profileRes.data) {
+    const p = profileRes.data;
     bundle.profile = {
-      displayName: (profileRes.data as any).display_name ?? null,
-      country: (profileRes.data as any).country_code ?? null,
-      preferredLanguage: (profileRes.data as any).preferred_language ?? null,
+      displayName: p.display_name ?? null,
+      homeCity: p.home_city ?? null,
+      homeCountry: p.home_country ?? null,
+      locale: p.locale ?? null,
+      currency: p.currency ?? null,
+      timezone: p.timezone ?? null,
     };
   }
-  if (prefsRes.data) bundle.preferences = prefsRes.data as Record<string, unknown>;
+  if (prefsRes.data) bundle.preferences = prefsRes.data as unknown as Record<string, unknown>;
   if (tripRes.data) {
-    const t = tripRes.data as any;
+    const t = tripRes.data;
     bundle.activeTrip = {
       id: t.id,
       title: t.title,
-      destination: t.destination ?? null,
       startDate: t.start_date ?? null,
       endDate: t.end_date ?? null,
-      budget: t.budget ?? null,
+      currency: t.currency ?? null,
+      budgetCents: t.budget_total_cents ?? null,
+      travelers: t.traveler_count ?? null,
     };
   }
   return bundle;
 }
 
-/** Render the context bundle to a compact system-prompt-friendly string. */
 export function renderContext(bundle: UserContextBundle): string {
   const lines: string[] = [`Current time: ${bundle.now}`];
-  if (bundle.locale) lines.push(`Locale: ${bundle.locale}`);
-  if (bundle.timezone) lines.push(`Timezone: ${bundle.timezone}`);
-  if (bundle.currency) lines.push(`Currency: ${bundle.currency}`);
+  const locale = bundle.locale ?? bundle.profile?.locale;
+  const tz = bundle.timezone ?? bundle.profile?.timezone;
+  const cur = bundle.currency ?? bundle.profile?.currency;
+  if (locale) lines.push(`Locale: ${locale}`);
+  if (tz) lines.push(`Timezone: ${tz}`);
+  if (cur) lines.push(`Currency: ${cur}`);
   if (bundle.profile?.displayName) lines.push(`User: ${bundle.profile.displayName}`);
-  if (bundle.profile?.country) lines.push(`Country: ${bundle.profile.country}`);
+  if (bundle.profile?.homeCity || bundle.profile?.homeCountry) {
+    lines.push(`Home: ${[bundle.profile.homeCity, bundle.profile.homeCountry].filter(Boolean).join(", ")}`);
+  }
   if (bundle.activeTrip) {
     const t = bundle.activeTrip;
-    lines.push(
-      `Active trip: "${t.title}"${t.destination ? ` → ${t.destination}` : ""}${
-        t.startDate ? ` (${t.startDate}${t.endDate ? ` to ${t.endDate}` : ""})` : ""
-      }${t.budget ? ` budget ${t.budget}` : ""}`,
-    );
+    const dates = t.startDate ? `${t.startDate}${t.endDate ? ` → ${t.endDate}` : ""}` : "";
+    const budget = t.budgetCents ? ` budget ${(t.budgetCents / 100).toFixed(0)} ${t.currency ?? ""}` : "";
+    lines.push(`Active trip: "${t.title}"${dates ? ` (${dates})` : ""}${budget}`);
   }
   return lines.join("\n");
 }

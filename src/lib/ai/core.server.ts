@@ -102,10 +102,10 @@ export async function invokeAI<T = string>(
   });
 
   try {
-    const common = {
-      model: handle.model as any,
+    const common: Record<string, unknown> = {
+      model: handle.model,
       system,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })) as any,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
       temperature: params.temperature ?? AI_CONFIG.temperature,
       maxOutputTokens: params.maxOutputTokens ?? AI_CONFIG.maxOutputTokens,
       abortSignal: AbortSignal.timeout(AI_CONFIG.timeoutMs),
@@ -115,7 +115,7 @@ export async function invokeAI<T = string>(
     if (params.schema) {
       try {
         const res = await generateText({
-          ...common,
+          ...(common as any),
           output: Output.object({
             schema: z.any().describe(params.schema.name),
           }) as any,

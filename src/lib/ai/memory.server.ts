@@ -1,7 +1,7 @@
 /**
  * AI Core — Memory Engine.
- * Short-term (recent messages), long-term (persisted memories), summaries.
- * Backed by public.conversation_memory + public.ai_messages.
+ * Backed by public.conversation_memory: (scope, key, value jsonb, importance smallint, expires_at).
+ * We treat `scope` as the memory kind and store text under value.text.
  */
 import { AI_CONFIG } from "./config";
 
@@ -12,8 +12,9 @@ export interface MemoryRecord {
   userId: string;
   conversationId: string | null;
   kind: MemoryKind;
+  key: string;
   content: string;
-  importance: number; // 0..1
+  importance: number;
   createdAt: string;
   expiresAt: string | null;
 }
@@ -22,21 +23,25 @@ export interface WriteMemoryInput {
   userId: string;
   conversationId?: string | null;
   kind: MemoryKind;
+  key: string;
   content: string;
+  /** 0..100 in DB; we normalize 0..1 → 0..100. */
   importance?: number;
   expiresAt?: string | null;
 }
 
 export async function writeMemory(input: WriteMemoryInput) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const importance = Math.round(Math.min(1, Math.max(0, input.importance ?? 0.5)) * 100);
   const { data, error } = await supabaseAdmin
     .from("conversation_memory")
     .insert({
       user_id: input.userId,
       conversation_id: input.conversationId ?? null,
-      kind: input.kind,
-      content: input.content,
-      importance: input.importance ?? 0.5,
+      scope: input.kind,
+      key: input.key,
+      value: { text: input.content } as unknown as never,
+      importance,
       expires_at: input.expiresAt ?? null,
     })
     .select()
@@ -45,7 +50,6 @@ export async function writeMemory(input: WriteMemoryInput) {
   return data;
 }
 
-/** Retrieve top-K memories ranked by importance + recency. */
 export async function retrieveMemories(params: {
   userId: string;
   conversationId?: string | null;
@@ -63,24 +67,27 @@ export async function retrieveMemories(params: {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  if (params.kinds?.length) q = q.in("kind", params.kinds);
+  if (params.kinds?.length) q = q.in("scope", params.kinds);
   if (params.conversationId) q = q.eq("conversation_id", params.conversationId);
 
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []).map((r: any) => ({
-    id: r.id,
-    userId: r.user_id,
-    conversationId: r.conversation_id,
-    kind: r.kind,
-    content: r.content,
-    importance: r.importance,
-    createdAt: r.created_at,
-    expiresAt: r.expires_at,
-  }));
+  return (data ?? []).map((r) => {
+    const value = r.value as { text?: string } | null;
+    return {
+      id: r.id,
+      userId: r.user_id,
+      conversationId: r.conversation_id,
+      kind: (r.scope as MemoryKind) ?? "long_term",
+      key: r.key,
+      content: value?.text ?? JSON.stringify(r.value),
+      importance: (r.importance ?? 0) / 100,
+      createdAt: r.created_at,
+      expiresAt: r.expires_at,
+    };
+  });
 }
 
-/** Render memories as compact bullet list for the system prompt. */
 export function renderMemories(records: MemoryRecord[]): string {
   if (!records.length) return "";
   return ["Relevant user memory:", ...records.map((r) => `- (${r.kind}) ${r.content}`)].join("\n");

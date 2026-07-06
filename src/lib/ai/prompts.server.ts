@@ -1,83 +1,85 @@
 /**
  * AI Core — Prompt Manager.
- * Loads versioned prompts from public.prompt_templates, renders variables,
- * validates required inputs, and caches compiled prompts in memory per worker.
+ * Loads versioned prompts from public.prompt_templates (keyed by `slug`),
+ * renders variables, validates required inputs, caches in memory per worker.
  */
 import { AI_CONFIG } from "./config";
 import { AIValidationError } from "./errors";
 
 interface CachedPrompt {
-  key: string;
+  slug: string;
   version: number;
-  template: string;
+  systemPrompt: string;
+  userTemplate: string | null;
   variables: string[];
   cachedAt: number;
 }
 
 const cache = new Map<string, CachedPrompt>();
 
-interface PromptRow {
-  key: string;
-  version: number;
-  template: string;
-  variables: string[] | null;
-}
-
-async function loadPromptFromDb(key: string): Promise<CachedPrompt | null> {
+async function loadPromptFromDb(slug: string): Promise<CachedPrompt | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("prompt_templates")
-    .select("key, version, template, variables")
-    .eq("key", key)
+    .select("slug, version, system_prompt, user_prompt_template, input_schema")
+    .eq("slug", slug)
     .eq("is_active", true)
     .order("version", { ascending: false })
     .limit(1)
-    .maybeSingle<PromptRow>();
+    .maybeSingle();
 
   if (error) throw new AIValidationError(`Prompt load failed: ${error.message}`);
   if (!data) return null;
+
+  const schema = (data.input_schema ?? null) as { required?: unknown } | null;
+  const required = Array.isArray(schema?.required)
+    ? (schema!.required as unknown[]).filter((v): v is string => typeof v === "string")
+    : [];
+
   return {
-    key: data.key,
+    slug: data.slug,
     version: data.version,
-    template: data.template,
-    variables: data.variables ?? [],
+    systemPrompt: data.system_prompt,
+    userTemplate: data.user_prompt_template ?? null,
+    variables: required,
     cachedAt: Date.now(),
   };
 }
 
-/** Get a prompt by key. Returns null if not registered. */
-export async function getPrompt(key: string): Promise<CachedPrompt | null> {
-  const hit = cache.get(key);
+export async function getPrompt(slug: string): Promise<CachedPrompt | null> {
+  const hit = cache.get(slug);
   if (hit && Date.now() - hit.cachedAt < AI_CONFIG.cachePromptsTtlMs) return hit;
-  const row = await loadPromptFromDb(key);
-  if (row) cache.set(key, row);
+  const row = await loadPromptFromDb(slug);
+  if (row) cache.set(slug, row);
   return row;
 }
 
-/** Render `{{var}}` placeholders. Missing required variables throw. */
 export function renderTemplate(template: string, variables: Record<string, unknown> = {}): string {
-  return template.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, name) => {
-    const value = name.split(".").reduce<any>((acc, k) => (acc == null ? acc : acc[k]), variables);
-    if (value == null) return "";
-    return String(value);
+  return template.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, name: string) => {
+    const value = name
+      .split(".")
+      .reduce<unknown>((acc: unknown, key: string) => {
+        if (acc == null || typeof acc !== "object") return undefined;
+        return (acc as Record<string, unknown>)[key];
+      }, variables);
+    return value == null ? "" : String(value);
   });
 }
 
 export async function renderPrompt(
-  key: string,
+  slug: string,
   variables: Record<string, unknown> = {},
 ): Promise<{ text: string; version: number }> {
-  const prompt = await getPrompt(key);
-  if (!prompt) throw new AIValidationError(`Prompt not found: ${key}`);
+  const prompt = await getPrompt(slug);
+  if (!prompt) throw new AIValidationError(`Prompt not found: ${slug}`);
   for (const required of prompt.variables) {
     if (variables[required] === undefined) {
       throw new AIValidationError(`Missing prompt variable: ${required}`);
     }
   }
-  return { text: renderTemplate(prompt.template, variables), version: prompt.version };
+  return { text: renderTemplate(prompt.systemPrompt, variables), version: prompt.version };
 }
 
-/** Test-only cache reset. */
 export function _clearPromptCache() {
   cache.clear();
 }

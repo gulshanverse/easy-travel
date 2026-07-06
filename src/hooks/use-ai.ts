@@ -21,7 +21,9 @@ export function useAI() {
     async (params: { agent: string; prompt: string; conversationId?: string }) => {
       setState({ isLoading: true, error: null, output: null });
       try {
-        const res = await invoke({ data: params });
+        const res = (await invoke({ data: params })) as
+          | { ok: true; output: unknown; model: string; requestId: string }
+          | { ok: false; error: { message: string; code: string } };
         if (!res.ok) {
           setState({ isLoading: false, error: res.error.message, output: null });
           return null;

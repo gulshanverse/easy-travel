@@ -87,14 +87,17 @@ registerTool({
   name: "search_destinations",
   description: "Search Easy Trip's destinations catalog.",
   category: "search",
-  inputSchema: z.object({ query: z.string().min(1), limit: z.number().int().min(1).max(20).default(5) }),
+  inputSchema: z.object({
+    query: z.string().min(1),
+    limit: z.number().int().min(1).max(20).optional(),
+  }),
   execute: async (input) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("destinations")
-      .select("id, name, country, summary")
+      .select("id, name")
       .ilike("name", `%${input.query}%`)
-      .limit(input.limit);
+      .limit(input.limit ?? 5);
     return { results: data ?? [] };
   },
 });
