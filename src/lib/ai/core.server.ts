@@ -90,12 +90,27 @@ export async function invokeAI<T = string>(
   const started = Date.now();
   const modelProfile = resolveModel(params.model);
 
+  emitAIEvent({
+    name: "AI_STARTED",
+    requestId,
+    agent: params.ctx.agent,
+    feature: params.ctx.feature,
+    userId: params.ctx.userId,
+    data: { model: modelProfile.id, hasSchema: Boolean(params.schema), tools: params.tools ?? [] },
+  });
+
   if (!checkRateLimit(params.ctx.userId, AI_CONFIG.rateLimit.perUserPerMinute, AI_CONFIG.rateLimit.perUserPerDay)) {
+    emitAIEvent({ name: "AI_FAILED", requestId, agent: params.ctx.agent, feature: params.ctx.feature, data: { code: "rate_limited" } });
     throw new AIRateLimitError();
   }
 
   const system = await buildSystemPrompt(params);
+  emitAIEvent({ name: "AI_CONTEXT_READY", requestId, agent: params.ctx.agent, data: { systemChars: system.length } });
   const messages: AIMessage[] = sanitizeMessages(params.messages);
+
+  if (params.tools?.length) {
+    emitAIEvent({ name: "TOOLS_SELECTED", requestId, agent: params.ctx.agent, data: { tools: params.tools } });
+  }
 
   const handle = routeModel(modelProfile.id, {
     structuredOutputs: Boolean(params.schema),
