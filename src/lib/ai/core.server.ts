@@ -5,6 +5,7 @@
  */
 import { generateText, streamText, Output, NoObjectGeneratedError, tool as aiTool } from "ai";
 import { z } from "zod";
+import { emitAIEvent } from "./events";
 
 import { AI_CONFIG, resolveModel } from "./config";
 import {
