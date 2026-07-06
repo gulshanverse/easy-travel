@@ -47,7 +47,7 @@ export class VersionService {
         is_active: true,
         created_by: actorId ?? null,
         ai_conversation_id: aiConversationId ?? null,
-        snapshot: body as Database["public"]["Tables"]["itineraries"]["Insert"]["snapshot"],
+        snapshot: body as unknown as Database["public"]["Tables"]["itineraries"]["Insert"]["snapshot"],
       })
       .select("*")
       .single();
