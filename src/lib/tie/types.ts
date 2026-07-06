@@ -115,7 +115,7 @@ export interface BudgetWarning {
   code: "over-budget" | "near-limit" | "no-budget-set" | "daily-limit-exceeded";
   message: string;
   severity: "info" | "warning" | "critical";
-  meta?: Record<string, unknown>;
+  meta?: Record<string, any>;
 }
 
 // ----- Destinations -----
@@ -147,7 +147,7 @@ export type RecommendationSubject =
   | "budget"
   | "packing";
 
-export interface Recommendation<TPayload = Record<string, unknown>> {
+export interface Recommendation<TPayload = Record<string, any>> {
   id: string;
   agent: string;
   subjectKind: RecommendationSubject;
