@@ -45,7 +45,7 @@ export interface AgentManifest {
   permissions: AgentPermissions;
   costLimits: AgentCostLimits;
   providerCompatibility: ProviderId[];
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 export const DEFAULT_PERMISSIONS: AgentPermissions = {
