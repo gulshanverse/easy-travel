@@ -9,14 +9,123 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as TrainsRouteImport } from './routes/trains'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RestaurantsRouteImport } from './routes/restaurants'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PaymentsRouteImport } from './routes/payments'
+import { Route as MyTripsRouteImport } from './routes/my-trips'
+import { Route as HotelsRouteImport } from './routes/hotels'
+import { Route as FlightsRouteImport } from './routes/flights'
+import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as DestinationsRouteImport } from './routes/destinations'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CabsRouteImport } from './routes/cabs'
+import { Route as BusesRouteImport } from './routes/buses'
+import { Route as BookingsRouteImport } from './routes/bookings'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AiPlannerRouteImport } from './routes/ai-planner'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainsRoute = TrainsRouteImport.update({
+  id: '/trains',
+  path: '/trains',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestaurantsRoute = RestaurantsRouteImport.update({
+  id: '/restaurants',
+  path: '/restaurants',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyTripsRoute = MyTripsRouteImport.update({
+  id: '/my-trips',
+  path: '/my-trips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HotelsRoute = HotelsRouteImport.update({
+  id: '/hotels',
+  path: '/hotels',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlightsRoute = FlightsRouteImport.update({
+  id: '/flights',
+  path: '/flights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesRoute = ExperiencesRouteImport.update({
+  id: '/experiences',
+  path: '/experiences',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DestinationsRoute = DestinationsRouteImport.update({
   id: '/destinations',
   path: '/destinations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CabsRoute = CabsRouteImport.update({
+  id: '/cabs',
+  path: '/cabs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusesRoute = BusesRouteImport.update({
+  id: '/buses',
+  path: '/buses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingsRoute = BookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -29,6 +138,11 @@ const AiPlannerRoute = AiPlannerRouteImport.update({
   path: '/ai-planner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,45 +151,317 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/ai-planner': typeof AiPlannerRoute
   '/auth': typeof AuthRoute
+  '/blog': typeof BlogRoute
+  '/bookings': typeof BookingsRoute
+  '/buses': typeof BusesRoute
+  '/cabs': typeof CabsRoute
+  '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
   '/destinations': typeof DestinationsRoute
+  '/experiences': typeof ExperiencesRoute
+  '/flights': typeof FlightsRoute
+  '/hotels': typeof HotelsRoute
+  '/my-trips': typeof MyTripsRoute
+  '/payments': typeof PaymentsRoute
+  '/privacy': typeof PrivacyRoute
+  '/restaurants': typeof RestaurantsRoute
+  '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
+  '/trains': typeof TrainsRoute
+  '/wishlist': typeof WishlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/ai-planner': typeof AiPlannerRoute
   '/auth': typeof AuthRoute
+  '/blog': typeof BlogRoute
+  '/bookings': typeof BookingsRoute
+  '/buses': typeof BusesRoute
+  '/cabs': typeof CabsRoute
+  '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
   '/destinations': typeof DestinationsRoute
+  '/experiences': typeof ExperiencesRoute
+  '/flights': typeof FlightsRoute
+  '/hotels': typeof HotelsRoute
+  '/my-trips': typeof MyTripsRoute
+  '/payments': typeof PaymentsRoute
+  '/privacy': typeof PrivacyRoute
+  '/restaurants': typeof RestaurantsRoute
+  '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
+  '/trains': typeof TrainsRoute
+  '/wishlist': typeof WishlistRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/ai-planner': typeof AiPlannerRoute
   '/auth': typeof AuthRoute
+  '/blog': typeof BlogRoute
+  '/bookings': typeof BookingsRoute
+  '/buses': typeof BusesRoute
+  '/cabs': typeof CabsRoute
+  '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
   '/destinations': typeof DestinationsRoute
+  '/experiences': typeof ExperiencesRoute
+  '/flights': typeof FlightsRoute
+  '/hotels': typeof HotelsRoute
+  '/my-trips': typeof MyTripsRoute
+  '/payments': typeof PaymentsRoute
+  '/privacy': typeof PrivacyRoute
+  '/restaurants': typeof RestaurantsRoute
+  '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
+  '/trains': typeof TrainsRoute
+  '/wishlist': typeof WishlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ai-planner' | '/auth' | '/destinations'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/ai-planner'
+    | '/auth'
+    | '/blog'
+    | '/bookings'
+    | '/buses'
+    | '/cabs'
+    | '/contact'
+    | '/dashboard'
+    | '/destinations'
+    | '/experiences'
+    | '/flights'
+    | '/hotels'
+    | '/my-trips'
+    | '/payments'
+    | '/privacy'
+    | '/restaurants'
+    | '/settings'
+    | '/support'
+    | '/terms'
+    | '/trains'
+    | '/wishlist'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ai-planner' | '/auth' | '/destinations'
-  id: '__root__' | '/' | '/ai-planner' | '/auth' | '/destinations'
+  to:
+    | '/'
+    | '/about'
+    | '/ai-planner'
+    | '/auth'
+    | '/blog'
+    | '/bookings'
+    | '/buses'
+    | '/cabs'
+    | '/contact'
+    | '/dashboard'
+    | '/destinations'
+    | '/experiences'
+    | '/flights'
+    | '/hotels'
+    | '/my-trips'
+    | '/payments'
+    | '/privacy'
+    | '/restaurants'
+    | '/settings'
+    | '/support'
+    | '/terms'
+    | '/trains'
+    | '/wishlist'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/ai-planner'
+    | '/auth'
+    | '/blog'
+    | '/bookings'
+    | '/buses'
+    | '/cabs'
+    | '/contact'
+    | '/dashboard'
+    | '/destinations'
+    | '/experiences'
+    | '/flights'
+    | '/hotels'
+    | '/my-trips'
+    | '/payments'
+    | '/privacy'
+    | '/restaurants'
+    | '/settings'
+    | '/support'
+    | '/terms'
+    | '/trains'
+    | '/wishlist'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AiPlannerRoute: typeof AiPlannerRoute
   AuthRoute: typeof AuthRoute
+  BlogRoute: typeof BlogRoute
+  BookingsRoute: typeof BookingsRoute
+  BusesRoute: typeof BusesRoute
+  CabsRoute: typeof CabsRoute
+  ContactRoute: typeof ContactRoute
+  DashboardRoute: typeof DashboardRoute
   DestinationsRoute: typeof DestinationsRoute
+  ExperiencesRoute: typeof ExperiencesRoute
+  FlightsRoute: typeof FlightsRoute
+  HotelsRoute: typeof HotelsRoute
+  MyTripsRoute: typeof MyTripsRoute
+  PaymentsRoute: typeof PaymentsRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RestaurantsRoute: typeof RestaurantsRoute
+  SettingsRoute: typeof SettingsRoute
+  SupportRoute: typeof SupportRoute
+  TermsRoute: typeof TermsRoute
+  TrainsRoute: typeof TrainsRoute
+  WishlistRoute: typeof WishlistRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trains': {
+      id: '/trains'
+      path: '/trains'
+      fullPath: '/trains'
+      preLoaderRoute: typeof TrainsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restaurants': {
+      id: '/restaurants'
+      path: '/restaurants'
+      fullPath: '/restaurants'
+      preLoaderRoute: typeof RestaurantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-trips': {
+      id: '/my-trips'
+      path: '/my-trips'
+      fullPath: '/my-trips'
+      preLoaderRoute: typeof MyTripsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hotels': {
+      id: '/hotels'
+      path: '/hotels'
+      fullPath: '/hotels'
+      preLoaderRoute: typeof HotelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flights': {
+      id: '/flights'
+      path: '/flights'
+      fullPath: '/flights'
+      preLoaderRoute: typeof FlightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences': {
+      id: '/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof ExperiencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/destinations': {
       id: '/destinations'
       path: '/destinations'
       fullPath: '/destinations'
       preLoaderRoute: typeof DestinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cabs': {
+      id: '/cabs'
+      path: '/cabs'
+      fullPath: '/cabs'
+      preLoaderRoute: typeof CabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buses': {
+      id: '/buses'
+      path: '/buses'
+      fullPath: '/buses'
+      preLoaderRoute: typeof BusesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookings': {
+      id: '/bookings'
+      path: '/bookings'
+      fullPath: '/bookings'
+      preLoaderRoute: typeof BookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -92,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiPlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,9 +497,28 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AiPlannerRoute: AiPlannerRoute,
   AuthRoute: AuthRoute,
+  BlogRoute: BlogRoute,
+  BookingsRoute: BookingsRoute,
+  BusesRoute: BusesRoute,
+  CabsRoute: CabsRoute,
+  ContactRoute: ContactRoute,
+  DashboardRoute: DashboardRoute,
   DestinationsRoute: DestinationsRoute,
+  ExperiencesRoute: ExperiencesRoute,
+  FlightsRoute: FlightsRoute,
+  HotelsRoute: HotelsRoute,
+  MyTripsRoute: MyTripsRoute,
+  PaymentsRoute: PaymentsRoute,
+  PrivacyRoute: PrivacyRoute,
+  RestaurantsRoute: RestaurantsRoute,
+  SettingsRoute: SettingsRoute,
+  SupportRoute: SupportRoute,
+  TermsRoute: TermsRoute,
+  TrainsRoute: TrainsRoute,
+  WishlistRoute: WishlistRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
