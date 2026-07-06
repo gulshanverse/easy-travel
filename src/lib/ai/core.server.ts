@@ -190,6 +190,10 @@ export async function invokeAI<T = string>(
       ctx: params.ctx, model: modelProfile.id, usage: result.usage,
       latencyMs: result.latencyMs, success: true, requestId, runId,
     });
+    emitAIEvent({ name: "USAGE_RECORDED", requestId, agent: params.ctx.agent, data: result.usage });
+    if (result.toolCalls.length) {
+      emitAIEvent({ name: "TOOLS_EXECUTED", requestId, agent: params.ctx.agent, data: { count: result.toolCalls.length } });
+    }
     return result;
   } catch (err) {
     const wrapped = err instanceof AIError ? err : classifyProviderError(err);
@@ -202,6 +206,7 @@ export async function invokeAI<T = string>(
       errorCode: wrapped.code,
       requestId,
     });
+    emitAIEvent({ name: "AI_FAILED", requestId, agent: params.ctx.agent, feature: params.ctx.feature, data: { code: wrapped.code, message: wrapped.message } });
     throw wrapped;
   }
 }
