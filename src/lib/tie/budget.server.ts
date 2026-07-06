@@ -17,7 +17,6 @@ import { emitTIEEvent } from "./events";
 
 type SB = SupabaseClient<Database>;
 
-/** Plug in a real FX provider later; identity converter for now. */
 export interface CurrencyConverter {
   convert(amount: number, from: string, to: string): Promise<number>;
 }
@@ -27,21 +26,29 @@ export const identityConverter: CurrencyConverter = {
   },
 };
 
-/** Rolls up activities and booking items into a budget summary. */
 export class BudgetService {
   constructor(private readonly supabase: SB, private readonly fx: CurrencyConverter = identityConverter) {}
 
   async summarize(tripId: string): Promise<TIEResult<BudgetSummary>> {
-    const [tripRes, actsRes, itemsRes] = await Promise.all([
-      this.supabase.from("trips").select("currency, budget_total_cents, traveler_count, start_date, end_date").eq("id", tripId).maybeSingle(),
-      this.supabase.from("trip_activities").select("activity_type, cost_cents, currency").eq("trip_id", tripId),
+    const [tripRes, actsRes, bookingsRes] = await Promise.all([
       this.supabase
-        .from("booking_items")
-        .select("item_type, price_cents, currency, booking_id, bookings!inner(trip_id, status)")
-        .eq("bookings.trip_id", tripId),
+        .from("trips")
+        .select("currency, budget_total_cents, traveler_count, start_date, end_date")
+        .eq("id", tripId)
+        .maybeSingle(),
+      this.supabase
+        .from("trip_activities")
+        .select("activity_type, cost_cents, currency")
+        .eq("trip_id", tripId),
+      this.supabase
+        .from("bookings")
+        .select("id, currency, booking_type, booking_items(item_type, total_cents)")
+        .eq("trip_id", tripId),
     ]);
-    if (tripRes.error || !tripRes.data) return fail("budget.trip_not_found", tripRes.error?.message ?? "Trip missing");
+    if (tripRes.error || !tripRes.data)
+      return fail("budget.trip_not_found", tripRes.error?.message ?? "Trip missing");
     if (actsRes.error) return fail("budget.activities_failed", actsRes.error.message);
+    if (bookingsRes.error) return fail("budget.bookings_failed", bookingsRes.error.message);
 
     const currency = tripRes.data.currency ?? "USD";
     const budgetCents = tripRes.data.budget_total_cents ?? null;
@@ -56,13 +63,16 @@ export class BudgetService {
       if (a.cost_cents == null) continue;
       const cents = await this.fx.convert(a.cost_cents, a.currency ?? currency, currency);
       estimatedCents += cents;
-      addCat(catMap, categoryFor(a.activity_type), cents, 0);
+      addCat(catMap, categoryForActivity(a.activity_type), cents, 0);
     }
-    for (const bi of itemsRes.data ?? []) {
-      if (bi.price_cents == null) continue;
-      const cents = await this.fx.convert(bi.price_cents, bi.currency ?? currency, currency);
-      actualCents += cents;
-      addCat(catMap, bi.item_type ?? "other", 0, cents);
+    for (const b of bookingsRes.data ?? []) {
+      const items = (b.booking_items ?? []) as Array<{ item_type: string; total_cents: number | null }>;
+      for (const it of items) {
+        if (it.total_cents == null) continue;
+        const cents = await this.fx.convert(it.total_cents, b.currency ?? currency, currency);
+        actualCents += cents;
+        addCat(catMap, categoryForBooking(it.item_type), 0, cents);
+      }
     }
 
     const categories: BudgetCategoryTotal[] = Array.from(catMap.entries())
@@ -79,7 +89,11 @@ export class BudgetService {
     let utilization: number | null = null;
     let remaining: number | null = null;
     if (budgetCents == null) {
-      warnings.push({ code: "no-budget-set", severity: "info", message: "No trip budget set. Set one for warnings and daily limits." });
+      warnings.push({
+        code: "no-budget-set",
+        severity: "info",
+        message: "No trip budget set. Set one for warnings and daily limits.",
+      });
     } else {
       utilization = budgetCents > 0 ? total / budgetCents : null;
       remaining = budgetCents - total;
@@ -122,7 +136,11 @@ export class BudgetService {
     return ok(summary);
   }
 
-  async setBudget(tripId: string, budgetCents: number | null, currency?: string): Promise<TIEResult<{ id: string }>> {
+  async setBudget(
+    tripId: string,
+    budgetCents: number | null,
+    currency?: string,
+  ): Promise<TIEResult<{ id: string }>> {
     const patch: Database["public"]["Tables"]["trips"]["Update"] = { budget_total_cents: budgetCents };
     if (currency) patch.currency = currency;
     const { error } = await this.supabase.from("trips").update(patch).eq("id", tripId);
@@ -132,22 +150,37 @@ export class BudgetService {
   }
 }
 
-function categoryFor(t: ActivityType): string {
+function categoryForActivity(t: ActivityType): string {
   switch (t) {
     case "flight":
-    case "train":
-    case "bus":
-    case "cab":
-    case "transfer":
+    case "transit":
+      return "transport";
+    case "lodging":
+      return "lodging";
+    case "meal":
+      return "food";
+    case "attraction":
+    case "experience":
+      return "activities";
+    case "free_time":
+    case "note":
+    case "other":
+    default:
+      return "other";
+  }
+}
+
+function categoryForBooking(t: string): string {
+  switch (t) {
+    case "flight":
       return "transport";
     case "hotel":
-    case "checkin":
-    case "checkout":
+    case "lodging":
       return "lodging";
     case "restaurant":
       return "food";
     case "experience":
-    case "sightseeing":
+    case "activity":
       return "activities";
     default:
       return "other";

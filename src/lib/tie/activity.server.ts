@@ -1,6 +1,5 @@
 /**
  * ActivityService — CRUD for trip activities across all activity types.
- * Handles flight / hotel / restaurant / experience / transport / custom.
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -50,7 +49,7 @@ export class ActivityService {
       trip_day_id: input.tripDayId ?? null,
       title: input.title.trim(),
       description: input.description ?? null,
-      activity_type: input.activityType ?? "custom",
+      activity_type: input.activityType ?? "other",
       position: input.position ?? (await this.nextPosition(input.tripId, input.tripDayId ?? null)),
       starts_at: input.startsAt ?? null,
       ends_at: input.endsAt ?? null,
@@ -60,7 +59,7 @@ export class ActivityService {
       place_id: input.placeId ?? null,
       booking_item_id: input.bookingItemId ?? null,
       notes: input.notes ?? null,
-      metadata: (input.metadata as Database["public"]["Tables"]["trip_activities"]["Insert"]["metadata"]) ?? {},
+      metadata: (input.metadata ?? {}) as ActivityInsert["metadata"],
     };
     const { data, error } = await this.supabase
       .from("trip_activities")
@@ -119,10 +118,10 @@ export class ActivityService {
   }
 
   private async nextPosition(tripId: string, dayId: string | null): Promise<number> {
-    const q = this.supabase.from("trip_activities").select("position").eq("trip_id", tripId);
+    const base = this.supabase.from("trip_activities").select("position").eq("trip_id", tripId);
     const { data } = dayId
-      ? await q.eq("trip_day_id", dayId).order("position", { ascending: false }).limit(1)
-      : await q.is("trip_day_id", null).order("position", { ascending: false }).limit(1);
+      ? await base.eq("trip_day_id", dayId).order("position", { ascending: false }).limit(1)
+      : await base.is("trip_day_id", null).order("position", { ascending: false }).limit(1);
     return (data?.[0]?.position ?? 0) + 1;
   }
 }

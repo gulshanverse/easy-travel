@@ -1,11 +1,10 @@
 /**
  * Travel Intelligence Engine (TIE) — Shared Types.
- * Isomorphic. Client-safe. Import from server or browser.
+ * Isomorphic. Client-safe.
  */
 
 import type { Database } from "@/integrations/supabase/types";
 
-// ----- DB row aliases (single source of truth) -----
 export type TripRow = Database["public"]["Tables"]["trips"]["Row"];
 export type TripInsert = Database["public"]["Tables"]["trips"]["Insert"];
 export type TripUpdate = Database["public"]["Tables"]["trips"]["Update"];
@@ -14,31 +13,28 @@ export type TripActivityRow = Database["public"]["Tables"]["trip_activities"]["R
 export type ItineraryRow = Database["public"]["Tables"]["itineraries"]["Row"];
 export type AiRecommendationRow = Database["public"]["Tables"]["ai_recommendations"]["Row"];
 
-export type TripStatus = Database["public"]["Enums"]["trip_status"];
+/** Journey states — aligned 1:1 with the `trip_status` DB enum. */
+export type JourneyState = Database["public"]["Enums"]["trip_status"];
 export type TripVisibility = Database["public"]["Enums"]["trip_visibility"];
 export type TripPace = Database["public"]["Enums"]["trip_pace"];
 export type ActivityType = Database["public"]["Enums"]["activity_type"];
 
-// ----- Journey lifecycle -----
-export const JOURNEY_STATES = [
+export const JOURNEY_STATES: readonly JourneyState[] = [
   "draft",
   "planning",
-  "ready",
-  "booked",
-  "traveling",
+  "confirmed",
+  "in_progress",
   "completed",
-  "archived",
   "cancelled",
-] as const;
-export type JourneyState = (typeof JOURNEY_STATES)[number];
+  "archived",
+];
 
 /** Allowed transitions between journey states. */
 export const JOURNEY_TRANSITIONS: Record<JourneyState, JourneyState[]> = {
   draft: ["planning", "archived", "cancelled"],
-  planning: ["ready", "draft", "archived", "cancelled"],
-  ready: ["booked", "planning", "cancelled"],
-  booked: ["traveling", "ready", "cancelled"],
-  traveling: ["completed", "cancelled"],
+  planning: ["confirmed", "draft", "archived", "cancelled"],
+  confirmed: ["in_progress", "planning", "cancelled"],
+  in_progress: ["completed", "cancelled"],
   completed: ["archived"],
   archived: ["draft"],
   cancelled: ["draft", "archived"],
@@ -128,9 +124,10 @@ export interface DestinationInsight {
   timezone: string | null;
   currency: string | null;
   language: string | null;
-  bestSeason: string | null;
-  safetyScore: number | null;
+  bestMonths: number[] | null;
+  avgBudgetUsd: number | null;
   summary: string | null;
+  tagline: string | null;
   tips: string[];
 }
 
@@ -198,19 +195,22 @@ export interface ExportResult {
   format: ExportFormat;
   contentType: string;
   filename: string;
-  body: string; // base64 for binary, raw for text
+  body: string;
   encoding: "utf8" | "base64";
   url?: string;
 }
 
-// ----- Result envelope -----
+// ----- Result envelope (serializable across RPC) -----
 export type TIEResult<T> =
   | { ok: true; data: T }
-  | { ok: false; error: { code: string; message: string; cause?: unknown } };
+  | { ok: false; error: { code: string; message: string; cause?: string } };
 
 export function ok<T>(data: T): TIEResult<T> {
   return { ok: true, data };
 }
 export function fail<T = never>(code: string, message: string, cause?: unknown): TIEResult<T> {
-  return { ok: false, error: { code, message, cause } };
+  return {
+    ok: false,
+    error: { code, message, cause: cause == null ? undefined : String(cause) },
+  };
 }

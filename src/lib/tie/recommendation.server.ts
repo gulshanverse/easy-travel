@@ -1,7 +1,7 @@
 /**
  * RecommendationService — produces & persists recommendations via AI Core.
- * Business logic (WHAT to recommend) belongs to agents inside AI Core.
- * This service owns storage, dedup, visibility and lifecycle only.
+ * The AI agents own the intelligence; this service owns storage, dedup,
+ * visibility, and lifecycle only.
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -9,13 +9,14 @@ import type { Database } from "@/integrations/supabase/types";
 import type { Recommendation, RecommendationSubject, TIEResult } from "./types";
 import { ok, fail } from "./types";
 import { emitTIEEvent } from "./events";
-import { invokeAI } from "@/lib/ai/core.server";
-import type { AgentName } from "@/lib/ai/manifest";
+import { runAgent } from "@/lib/ai/agents.server";
+import type { AIRequestContext } from "@/lib/ai/types";
 
 type SB = SupabaseClient<Database>;
+type AiAgent = Database["public"]["Enums"]["ai_agent"];
 
 export interface GenerateRecsInput {
-  agent: AgentName;
+  agent: AiAgent;
   tripId?: string;
   userId: string;
   subjectKind: RecommendationSubject;
@@ -44,7 +45,7 @@ export class RecommendationService {
   async record(
     userId: string,
     payload: {
-      agent: AgentName;
+      agent: AiAgent;
       subjectKind: RecommendationSubject;
       subjectId?: string | null;
       reason?: string | null;
@@ -80,15 +81,20 @@ export class RecommendationService {
 
   /** Invoke an AI agent and persist each returned suggestion as a recommendation. */
   async generate(input: GenerateRecsInput): Promise<TIEResult<Recommendation[]>> {
-    const invocation = await invokeAI({
-      agent: input.agent,
+    const ctx: AIRequestContext = {
       userId: input.userId,
-      input: input.input,
       feature: "tie.recommendation",
-    });
-    if (!invocation.ok) return fail("recs.ai_failed", invocation.error);
+      tripId: input.tripId,
+    };
+    let output: unknown;
+    try {
+      const result = await runAgent(input.agent, input.input, ctx);
+      output = result.output;
+    } catch (err) {
+      return fail("recs.ai_failed", err instanceof Error ? err.message : String(err), err);
+    }
 
-    const suggestions = normalizeSuggestions(invocation.output);
+    const suggestions = normalizeSuggestions(output);
     const expiresAt = input.expiresInMinutes
       ? new Date(Date.now() + input.expiresInMinutes * 60_000).toISOString()
       : null;
@@ -154,15 +160,16 @@ interface RawSuggestion {
 function normalizeSuggestions(output: unknown): RawSuggestion[] {
   if (!output) return [];
   if (Array.isArray(output)) {
-    return output.map((p) => ({ payload: p as Record<string, unknown> }));
+    return output.map((p) => ({ payload: (p ?? {}) as Record<string, unknown> }));
   }
   if (typeof output === "object") {
     const o = output as { suggestions?: unknown; items?: unknown; recommendations?: unknown };
     const arr = (o.suggestions ?? o.items ?? o.recommendations) as unknown;
     if (Array.isArray(arr)) {
       return arr.map((s) => {
-        if (s && typeof s === "object" && "payload" in s) return s as RawSuggestion;
-        return { payload: s as Record<string, unknown> };
+        if (s && typeof s === "object" && "payload" in (s as object))
+          return s as RawSuggestion;
+        return { payload: (s ?? {}) as Record<string, unknown> };
       });
     }
     return [{ payload: output as Record<string, unknown> }];

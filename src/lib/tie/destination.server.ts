@@ -1,6 +1,5 @@
 /**
  * DestinationIntelligence — insight aggregation for a destination.
- * Reads from the reference tables (destinations/cities/countries).
  * External sources (weather, safety) are behind pluggable providers.
  */
 
@@ -22,7 +21,7 @@ export interface WeatherProvider {
 }
 
 export interface SafetyProvider {
-  score(countryCode: string): Promise<{ score: number; advisory?: string }>;
+  score(countryIso2: string): Promise<{ score: number; advisory?: string }>;
 }
 
 export class DestinationIntelligence {
@@ -35,38 +34,63 @@ export class DestinationIntelligence {
   async getInsight(destinationId: string): Promise<TIEResult<DestinationInsight>> {
     const { data, error } = await this.supabase
       .from("destinations")
-      .select("id, name, summary, best_season, safety_score, city_id, country_code, cities(timezone, country_code), countries!destinations_country_code_fkey(currency_code, language_code, timezone)")
+      .select("id, name, description, tagline, best_months, avg_budget_usd, city_id, country_id")
       .eq("id", destinationId)
       .maybeSingle();
     if (error) return fail("destination.read_failed", error.message, error);
     if (!data) return fail("destination.not_found", "Destination not found");
 
-    const country = Array.isArray(data.countries) ? data.countries[0] : data.countries;
-    const city = Array.isArray(data.cities) ? data.cities[0] : data.cities;
+    let timezone: string | null = null;
+    if (data.city_id) {
+      const { data: city } = await this.supabase
+        .from("cities")
+        .select("timezone")
+        .eq("id", data.city_id)
+        .maybeSingle();
+      timezone = city?.timezone ?? null;
+    }
 
-    const insight: DestinationInsight = {
+    let countryCode: string | null = null;
+    let currency: string | null = null;
+    if (data.country_id) {
+      const { data: country } = await this.supabase
+        .from("countries")
+        .select("iso2, currency")
+        .eq("id", data.country_id)
+        .maybeSingle();
+      countryCode = country?.iso2 ?? null;
+      currency = country?.currency ?? null;
+    }
+
+    return ok({
       id: data.id,
       name: data.name,
-      countryCode: (data.country_code ?? city?.country_code) ?? null,
+      countryCode,
       cityId: data.city_id,
-      timezone: city?.timezone ?? country?.timezone ?? null,
-      currency: country?.currency_code ?? null,
-      language: country?.language_code ?? null,
-      bestSeason: data.best_season,
-      safetyScore: data.safety_score,
-      summary: data.summary,
+      timezone,
+      currency,
+      language: null,
+      bestMonths: data.best_months,
+      avgBudgetUsd: data.avg_budget_usd,
+      summary: data.description,
+      tagline: data.tagline,
       tips: [],
-    };
-    return ok(insight);
+    });
   }
 
   async nearby(destinationId: string, limit = 8): Promise<TIEResult<Array<{ id: string; name: string; kind: string }>>> {
+    const { data: dest } = await this.supabase
+      .from("destinations")
+      .select("city_id")
+      .eq("id", destinationId)
+      .maybeSingle();
+    if (!dest?.city_id) return ok([]);
     const { data, error } = await this.supabase
       .from("places")
       .select("id, name, kind")
-      .eq("destination_id", destinationId)
+      .eq("city_id", dest.city_id)
       .limit(limit);
     if (error) return fail("destination.nearby_failed", error.message);
-    return ok(data ?? []);
+    return ok((data ?? []).map((p) => ({ id: p.id, name: p.name, kind: p.kind as string })));
   }
 }
