@@ -1,28 +1,36 @@
 /**
  * TIE — Server-function surface. Client-safe module.
- * Every function is authenticated via requireSupabaseAuth. Handlers
- * dynamically import server-only modules to keep them out of the client bundle.
+ * Every function is authenticated. Handlers dynamically import server-only
+ * modules so they stay out of the client bundle.
  */
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { CollaboratorRole, ExportFormat, JourneyState, RecommendationSubject } from "./types";
+
+// DB enum literals — match the database exactly.
+const TRIP_STATUS = ["draft", "planning", "confirmed", "in_progress", "completed", "cancelled", "archived"] as const;
+const TRIP_PACE = ["relaxed", "balanced", "packed"] as const;
+const TRIP_VISIBILITY = ["private", "unlisted", "public"] as const;
+const ACTIVITY_TYPE = ["flight", "transit", "lodging", "meal", "attraction", "experience", "free_time", "note", "other"] as const;
+const COLLAB_ROLE = ["owner", "editor", "commenter", "viewer"] as const;
+const REC_SUBJECT = ["trip", "day", "activity", "place", "hotel", "restaurant", "experience", "flight", "budget", "packing"] as const;
+const EXPORT_FORMAT = ["pdf", "ics", "json", "share-link", "offline"] as const;
 
 // ------- Journey -------
 
 const createTripSchema = z.object({
   title: z.string().min(1).max(200),
   summary: z.string().max(2000).optional().nullable(),
-  startDate: z.string().datetime().or(z.string().date()).optional().nullable(),
-  endDate: z.string().datetime().or(z.string().date()).optional().nullable(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
   currency: z.string().length(3).optional(),
   budgetTotalCents: z.number().int().nonnegative().optional().nullable(),
   primaryDestinationId: z.string().uuid().optional().nullable(),
   originCityId: z.string().uuid().optional().nullable(),
   travelerCount: z.number().int().min(1).max(50).optional(),
-  pace: z.enum(["relaxed", "balanced", "intense"]).optional(),
-  visibility: z.enum(["private", "unlisted", "public"]).optional(),
+  pace: z.enum(TRIP_PACE).optional(),
+  visibility: z.enum(TRIP_VISIBILITY).optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -54,7 +62,7 @@ export const getTripFn = createServerFn({ method: "GET" })
 
 const advanceSchema = z.object({
   tripId: z.string().uuid(),
-  next: z.enum(["draft", "planning", "ready", "booked", "traveling", "completed", "archived", "cancelled"] as [JourneyState, ...JourneyState[]]),
+  next: z.enum(TRIP_STATUS),
 });
 
 export const advanceTripFn = createServerFn({ method: "POST" })
@@ -107,24 +115,9 @@ const createActivitySchema = z.object({
   tripDayId: z.string().uuid().nullable().optional(),
   title: z.string().min(1).max(200),
   description: z.string().max(4000).optional().nullable(),
-  activityType: z
-    .enum([
-      "flight",
-      "train",
-      "bus",
-      "cab",
-      "transfer",
-      "hotel",
-      "checkin",
-      "checkout",
-      "restaurant",
-      "experience",
-      "sightseeing",
-      "custom",
-    ])
-    .optional(),
-  startsAt: z.string().datetime().nullable().optional(),
-  endsAt: z.string().datetime().nullable().optional(),
+  activityType: z.enum(ACTIVITY_TYPE).optional(),
+  startsAt: z.string().optional().nullable(),
+  endsAt: z.string().optional().nullable(),
   durationMin: z.number().int().nonnegative().nullable().optional(),
   costCents: z.number().int().nonnegative().nullable().optional(),
   currency: z.string().length(3).optional(),
@@ -137,7 +130,10 @@ export const createActivityFn = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof createActivitySchema>) => createActivitySchema.parse(input))
   .handler(async ({ data, context }) => {
     const { ActivityService } = await import("./activity.server");
-    return new ActivityService(context.supabase).create(data);
+    return new ActivityService(context.supabase).create({
+      ...data,
+      metadata: data.metadata as Record<string, unknown> | undefined,
+    });
   });
 
 const removeActivitySchema = z.object({ activityId: z.string().uuid() });
@@ -177,9 +173,7 @@ export const setBudgetFn = createServerFn({ method: "POST" })
 // ------- Recommendations -------
 
 const listRecsSchema = z.object({
-  subjectKind: z
-    .enum(["trip", "day", "activity", "place", "hotel", "restaurant", "experience", "flight", "budget", "packing"])
-    .optional() as z.ZodOptional<z.ZodType<RecommendationSubject>>,
+  subjectKind: z.enum(REC_SUBJECT).optional(),
 });
 
 export const listRecommendationsFn = createServerFn({ method: "GET" })
@@ -204,7 +198,7 @@ export const dismissRecommendationFn = createServerFn({ method: "POST" })
 const inviteCollabSchema = z.object({
   tripId: z.string().uuid(),
   userId: z.string().uuid(),
-  role: z.enum(["owner", "editor", "commenter", "viewer"] as [CollaboratorRole, ...CollaboratorRole[]]).default("viewer"),
+  role: z.enum(COLLAB_ROLE).default("viewer"),
 });
 
 export const inviteCollaboratorFn = createServerFn({ method: "POST" })
@@ -238,7 +232,7 @@ export const rollbackVersionFn = createServerFn({ method: "POST" })
 
 const exportSchema = z.object({
   tripId: z.string().uuid(),
-  format: z.enum(["pdf", "ics", "json", "share-link", "offline"] as [ExportFormat, ...ExportFormat[]]),
+  format: z.enum(EXPORT_FORMAT),
   baseUrl: z.string().url().optional(),
 });
 
