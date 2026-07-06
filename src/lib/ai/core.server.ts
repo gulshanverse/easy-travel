@@ -5,6 +5,7 @@
  */
 import { generateText, streamText, Output, NoObjectGeneratedError, tool as aiTool } from "ai";
 import { z } from "zod";
+import { emitAIEvent } from "./events";
 
 import { AI_CONFIG, resolveModel } from "./config";
 import {
@@ -90,12 +91,27 @@ export async function invokeAI<T = string>(
   const started = Date.now();
   const modelProfile = resolveModel(params.model);
 
+  emitAIEvent({
+    name: "AI_STARTED",
+    requestId,
+    agent: params.ctx.agent,
+    feature: params.ctx.feature,
+    userId: params.ctx.userId,
+    data: { model: modelProfile.id, hasSchema: Boolean(params.schema), tools: params.tools ?? [] },
+  });
+
   if (!checkRateLimit(params.ctx.userId, AI_CONFIG.rateLimit.perUserPerMinute, AI_CONFIG.rateLimit.perUserPerDay)) {
+    emitAIEvent({ name: "AI_FAILED", requestId, agent: params.ctx.agent, feature: params.ctx.feature, data: { code: "rate_limited" } });
     throw new AIRateLimitError();
   }
 
   const system = await buildSystemPrompt(params);
+  emitAIEvent({ name: "AI_CONTEXT_READY", requestId, agent: params.ctx.agent, data: { systemChars: system.length } });
   const messages: AIMessage[] = sanitizeMessages(params.messages);
+
+  if (params.tools?.length) {
+    emitAIEvent({ name: "TOOLS_SELECTED", requestId, agent: params.ctx.agent, data: { tools: params.tools } });
+  }
 
   const handle = routeModel(modelProfile.id, {
     structuredOutputs: Boolean(params.schema),
@@ -174,6 +190,10 @@ export async function invokeAI<T = string>(
       ctx: params.ctx, model: modelProfile.id, usage: result.usage,
       latencyMs: result.latencyMs, success: true, requestId, runId,
     });
+    emitAIEvent({ name: "USAGE_RECORDED", requestId, agent: params.ctx.agent, data: result.usage });
+    if (result.toolCalls.length) {
+      emitAIEvent({ name: "TOOLS_EXECUTED", requestId, agent: params.ctx.agent, data: { count: result.toolCalls.length } });
+    }
     return result;
   } catch (err) {
     const wrapped = err instanceof AIError ? err : classifyProviderError(err);
@@ -186,6 +206,7 @@ export async function invokeAI<T = string>(
       errorCode: wrapped.code,
       requestId,
     });
+    emitAIEvent({ name: "AI_FAILED", requestId, agent: params.ctx.agent, feature: params.ctx.feature, data: { code: wrapped.code, message: wrapped.message } });
     throw wrapped;
   }
 }
@@ -202,9 +223,12 @@ export async function streamAI(params: AIInvokeParams) {
   if (!checkRateLimit(params.ctx.userId, AI_CONFIG.rateLimit.perUserPerMinute, AI_CONFIG.rateLimit.perUserPerDay)) {
     throw new AIRateLimitError();
   }
+  const requestId = newRequestId();
   const system = await buildSystemPrompt(params);
   const messages = sanitizeMessages(params.messages);
   const handle = routeModel(modelProfile.id);
+
+  emitAIEvent({ name: "STREAM_STARTED", requestId, agent: params.ctx.agent, feature: params.ctx.feature, data: { model: modelProfile.id } });
 
   const result = streamText({
     model: handle.model as any,
@@ -213,7 +237,8 @@ export async function streamAI(params: AIInvokeParams) {
     temperature: params.temperature ?? AI_CONFIG.temperature,
     maxOutputTokens: params.maxOutputTokens ?? AI_CONFIG.maxOutputTokens,
     tools: buildAiSdkTools(params.tools) as any,
+    onFinish: () => emitAIEvent({ name: "STREAM_COMPLETED", requestId, agent: params.ctx.agent }),
   });
 
-  return { result, handle, model: modelProfile.id };
+  return { result, handle, model: modelProfile.id, requestId };
 }

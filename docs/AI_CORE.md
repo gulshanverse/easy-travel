@@ -110,3 +110,102 @@ attaching `parse` + a schema. The public API surface does not change.
 **Milestone 5 — Planner Agent v1**: wire the `planner` agent to a
 structured itinerary schema, persist output to `trips`/`trip_days`/
 `trip_activities`, and connect the `/ai-planner` UI end-to-end.
+
+---
+
+## Milestone 4.1 — Hardening Pass
+
+### AI Event Bus (`src/lib/ai/events.ts`)
+Isomorphic pub/sub. Emitted events:
+`AI_STARTED · AI_CONTEXT_READY · MEMORY_RETRIEVED · PROMPT_RENDERED ·
+ TOOLS_SELECTED · TOOLS_EXECUTED · STREAM_STARTED · STREAM_COMPLETED ·
+ USAGE_RECORDED · AI_COMPLETED · AI_FAILED · WORKFLOW_STEP_STARTED ·
+ WORKFLOW_STEP_COMPLETED · WORKFLOW_STEP_FAILED · WORKFLOW_COMPLETED ·
+ WORKFLOW_FAILED`
+
+```ts
+import { onAIEvent } from "@/lib/ai/events";
+onAIEvent("AI_FAILED", (e) => reportToSentry(e));
+onAIEvent("*", (e) => tracer.log(e));
+```
+
+Listeners run in-process; failures are swallowed so instrumentation cannot
+break an AI call.
+
+### Agent Manifest (`src/lib/ai/manifest.ts`)
+Every registered agent now ships a manifest:
+`name · description · version · category · priority · defaultModel ·
+ fallbackModel · systemPromptKey · allowedTools · memoryScope · temperature ·
+ maxOutputTokens · streaming · timeoutMs · retries · permissions
+ (requiresAuth/role, allowsTools, allowsMemoryWrite) · costLimits
+ (maxTokensPerCall, maxCallsPerHour, maxCreditsPerCall) · providerCompatibility`
+
+`listAgents()` returns the manifest array. `getAgentManifest(name)` returns
+one. The manifest is applied as defaults inside `runAgent`, so a caller who
+overrides `temperature` or `model` still wins.
+
+### Workflow Engine (`src/lib/ai/workflow.server.ts`)
+Groups of steps: **groups run sequentially, steps within a group in parallel**.
+Each step supports: `when` (conditional), `retries`, `timeoutMs`,
+`required` (soft-fail). Cancellation propagates via a single AbortController.
+
+```ts
+import { runWorkflow, agentStep, taskStep } from "@/lib/ai/workflow.server";
+
+const plan = {
+  id: "plan_trip",
+  groups: [
+    [ agentStep("outline", "planner", (s) => ({ prompt: s.outputs.userPrompt })) ],
+    [
+      agentStep("budget",  "budget",  (s) => ({ prompt: JSON.stringify(s.outputs.outline) })),
+      agentStep("weather", "weather", (s) => ({ prompt: `weather for ${s.outputs.userPrompt}` })),
+    ],
+    [ agentStep("safety",  "safety",  (s) => ({ prompt: `risks for ${s.outputs.userPrompt}` }), { required: false }) ],
+  ],
+};
+const result = await runWorkflow(plan, { ctx, input: { userPrompt: "Kyoto 5 days" } });
+```
+
+### Easy Trip AI SDK (`src/lib/ai/sdk.ts`)
+The single client entrypoint. Frontend code no longer touches AI Core internals.
+
+```ts
+import { aiClient } from "@/lib/ai/sdk";
+
+await aiClient.runAgent({ agent: "planner", prompt: "..." });
+const { requestId } = await aiClient.streamAgent({ agent: "chat", prompt, onChunk });
+aiClient.cancelRequest(requestId);
+await aiClient.invokeTool({ name: "search_destinations", input: { query: "kyoto" } });
+await aiClient.searchMemory({ kinds: ["preference"] });
+await aiClient.saveMemory({ kind: "preference", key: "seat", content: "aisle" });
+await aiClient.listAgents();
+aiClient.cancelAll();
+```
+
+`runWorkflow` is intentionally exposed per-feature: each domain (Trip Engine,
+Booking Engine) will register a dedicated workflow server function. The SDK
+throws with guidance if called generically today.
+
+### Backward Compatibility
+- `invokeAgentFn`, `listAgentsFn`, `POST /api/ai/invoke`, `useAI()` — signatures unchanged.
+- `listAgentsFn` now returns richer objects (adds fields, does not remove any).
+- All Milestone 4 imports (`invokeAI`, `streamAI`, `registerAgent`, `runAgent`, memory/tool APIs) unchanged.
+
+### Architecture (updated)
+
+```text
+                             AI Event Bus  ◄──── observers, tracing, sinks
+                                   ▲
+ UI ─► aiClient (SDK) ─► RPC/HTTP  │
+                          │        ▼
+                        AI Core  ─► Safety→Context→Memory→Prompt→
+                          │        Router→Tools→Structured→Usage
+                          │
+                        Workflow Engine (sequential | parallel | conditional)
+                          │
+                     Agent Registry (+ Manifest per agent)
+                          │
+                    Lovable AI Gateway
+                          │
+              Gemini · OpenAI · Anthropic · future
+```
