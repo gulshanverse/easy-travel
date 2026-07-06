@@ -34,6 +34,7 @@ import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedMyTripsRouteImport } from './routes/_authenticated/my-trips'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as ApiAiInvokeRouteImport } from './routes/api/ai/invoke'
 
 const TrainsRoute = TrainsRouteImport.update({
   id: '/trains',
@@ -159,6 +160,11 @@ const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAiInvokeRoute = ApiAiInvokeRouteImport.update({
+  id: '/api/ai/invoke',
+  path: '/api/ai/invoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
+  '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
+  '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
+  '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/settings'
     | '/wishlist'
+    | '/api/ai/invoke'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/settings'
     | '/wishlist'
+    | '/api/ai/invoke'
   id:
     | '__root__'
     | '/'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/settings'
     | '/_authenticated/wishlist'
+    | '/api/ai/invoke'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -342,6 +354,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   TrainsRoute: typeof TrainsRoute
+  ApiAiInvokeRoute: typeof ApiAiInvokeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -521,6 +534,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/ai/invoke': {
+      id: '/api/ai/invoke'
+      path: '/api/ai/invoke'
+      fullPath: '/api/ai/invoke'
+      preLoaderRoute: typeof ApiAiInvokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -565,6 +585,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   TrainsRoute: TrainsRoute,
+  ApiAiInvokeRoute: ApiAiInvokeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
