@@ -9,35 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as TrainsRouteImport } from './routes/trains'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RestaurantsRouteImport } from './routes/restaurants'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PaymentsRouteImport } from './routes/payments'
-import { Route as MyTripsRouteImport } from './routes/my-trips'
 import { Route as HotelsRouteImport } from './routes/hotels'
 import { Route as FlightsRouteImport } from './routes/flights'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as DestinationsRouteImport } from './routes/destinations'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CabsRouteImport } from './routes/cabs'
 import { Route as BusesRouteImport } from './routes/buses'
-import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AiPlannerRouteImport } from './routes/ai-planner'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
+import { Route as AuthenticatedMyTripsRouteImport } from './routes/_authenticated/my-trips'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
 
-const WishlistRoute = WishlistRouteImport.update({
-  id: '/wishlist',
-  path: '/wishlist',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TrainsRoute = TrainsRouteImport.update({
   id: '/trains',
   path: '/trains',
@@ -53,29 +50,19 @@ const SupportRoute = SupportRouteImport.update({
   path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RestaurantsRoute = RestaurantsRouteImport.update({
   id: '/restaurants',
   path: '/restaurants',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PaymentsRoute = PaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MyTripsRoute = MyTripsRouteImport.update({
-  id: '/my-trips',
-  path: '/my-trips',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HotelsRoute = HotelsRouteImport.update({
@@ -98,11 +85,6 @@ const DestinationsRoute = DestinationsRouteImport.update({
   path: '/destinations',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -116,11 +98,6 @@ const CabsRoute = CabsRouteImport.update({
 const BusesRoute = BusesRouteImport.update({
   id: '/buses',
   path: '/buses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BookingsRoute = BookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -143,10 +120,44 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWishlistRoute = AuthenticatedWishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMyTripsRoute = AuthenticatedMyTripsRouteImport.update({
+  id: '/my-trips',
+  path: '/my-trips',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -155,24 +166,25 @@ export interface FileRoutesByFullPath {
   '/ai-planner': typeof AiPlannerRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRoute
-  '/bookings': typeof BookingsRoute
   '/buses': typeof BusesRoute
   '/cabs': typeof CabsRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
   '/destinations': typeof DestinationsRoute
   '/experiences': typeof ExperiencesRoute
   '/flights': typeof FlightsRoute
   '/hotels': typeof HotelsRoute
-  '/my-trips': typeof MyTripsRoute
-  '/payments': typeof PaymentsRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/restaurants': typeof RestaurantsRoute
-  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trains': typeof TrainsRoute
-  '/wishlist': typeof WishlistRoute
+  '/bookings': typeof AuthenticatedBookingsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/my-trips': typeof AuthenticatedMyTripsRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/wishlist': typeof AuthenticatedWishlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -180,50 +192,53 @@ export interface FileRoutesByTo {
   '/ai-planner': typeof AiPlannerRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRoute
-  '/bookings': typeof BookingsRoute
   '/buses': typeof BusesRoute
   '/cabs': typeof CabsRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
   '/destinations': typeof DestinationsRoute
   '/experiences': typeof ExperiencesRoute
   '/flights': typeof FlightsRoute
   '/hotels': typeof HotelsRoute
-  '/my-trips': typeof MyTripsRoute
-  '/payments': typeof PaymentsRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/restaurants': typeof RestaurantsRoute
-  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trains': typeof TrainsRoute
-  '/wishlist': typeof WishlistRoute
+  '/bookings': typeof AuthenticatedBookingsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/my-trips': typeof AuthenticatedMyTripsRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/wishlist': typeof AuthenticatedWishlistRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/ai-planner': typeof AiPlannerRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRoute
-  '/bookings': typeof BookingsRoute
   '/buses': typeof BusesRoute
   '/cabs': typeof CabsRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
   '/destinations': typeof DestinationsRoute
   '/experiences': typeof ExperiencesRoute
   '/flights': typeof FlightsRoute
   '/hotels': typeof HotelsRoute
-  '/my-trips': typeof MyTripsRoute
-  '/payments': typeof PaymentsRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/restaurants': typeof RestaurantsRoute
-  '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trains': typeof TrainsRoute
-  '/wishlist': typeof WishlistRoute
+  '/_authenticated/bookings': typeof AuthenticatedBookingsRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/my-trips': typeof AuthenticatedMyTripsRoute
+  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -233,23 +248,24 @@ export interface FileRouteTypes {
     | '/ai-planner'
     | '/auth'
     | '/blog'
-    | '/bookings'
     | '/buses'
     | '/cabs'
     | '/contact'
-    | '/dashboard'
     | '/destinations'
     | '/experiences'
     | '/flights'
     | '/hotels'
-    | '/my-trips'
-    | '/payments'
     | '/privacy'
+    | '/reset-password'
     | '/restaurants'
-    | '/settings'
     | '/support'
     | '/terms'
     | '/trains'
+    | '/bookings'
+    | '/dashboard'
+    | '/my-trips'
+    | '/payments'
+    | '/settings'
     | '/wishlist'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -258,86 +274,78 @@ export interface FileRouteTypes {
     | '/ai-planner'
     | '/auth'
     | '/blog'
-    | '/bookings'
     | '/buses'
     | '/cabs'
     | '/contact'
-    | '/dashboard'
     | '/destinations'
     | '/experiences'
     | '/flights'
     | '/hotels'
-    | '/my-trips'
-    | '/payments'
     | '/privacy'
+    | '/reset-password'
     | '/restaurants'
-    | '/settings'
     | '/support'
     | '/terms'
     | '/trains'
+    | '/bookings'
+    | '/dashboard'
+    | '/my-trips'
+    | '/payments'
+    | '/settings'
     | '/wishlist'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
     | '/ai-planner'
     | '/auth'
     | '/blog'
-    | '/bookings'
     | '/buses'
     | '/cabs'
     | '/contact'
-    | '/dashboard'
     | '/destinations'
     | '/experiences'
     | '/flights'
     | '/hotels'
-    | '/my-trips'
-    | '/payments'
     | '/privacy'
+    | '/reset-password'
     | '/restaurants'
-    | '/settings'
     | '/support'
     | '/terms'
     | '/trains'
-    | '/wishlist'
+    | '/_authenticated/bookings'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/my-trips'
+    | '/_authenticated/payments'
+    | '/_authenticated/settings'
+    | '/_authenticated/wishlist'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AiPlannerRoute: typeof AiPlannerRoute
   AuthRoute: typeof AuthRoute
   BlogRoute: typeof BlogRoute
-  BookingsRoute: typeof BookingsRoute
   BusesRoute: typeof BusesRoute
   CabsRoute: typeof CabsRoute
   ContactRoute: typeof ContactRoute
-  DashboardRoute: typeof DashboardRoute
   DestinationsRoute: typeof DestinationsRoute
   ExperiencesRoute: typeof ExperiencesRoute
   FlightsRoute: typeof FlightsRoute
   HotelsRoute: typeof HotelsRoute
-  MyTripsRoute: typeof MyTripsRoute
-  PaymentsRoute: typeof PaymentsRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RestaurantsRoute: typeof RestaurantsRoute
-  SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   TrainsRoute: typeof TrainsRoute
-  WishlistRoute: typeof WishlistRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/wishlist': {
-      id: '/wishlist'
-      path: '/wishlist'
-      fullPath: '/wishlist'
-      preLoaderRoute: typeof WishlistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/trains': {
       id: '/trains'
       path: '/trains'
@@ -359,13 +367,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/restaurants': {
       id: '/restaurants'
       path: '/restaurants'
@@ -373,25 +374,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/payments': {
-      id: '/payments'
-      path: '/payments'
-      fullPath: '/payments'
-      preLoaderRoute: typeof PaymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-trips': {
-      id: '/my-trips'
-      path: '/my-trips'
-      fullPath: '/my-trips'
-      preLoaderRoute: typeof MyTripsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hotels': {
@@ -422,13 +416,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DestinationsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -448,13 +435,6 @@ declare module '@tanstack/react-router' {
       path: '/buses'
       fullPath: '/buses'
       preLoaderRoute: typeof BusesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bookings': {
-      id: '/bookings'
-      path: '/bookings'
-      fullPath: '/bookings'
-      preLoaderRoute: typeof BookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -485,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -492,33 +479,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/wishlist': {
+      id: '/_authenticated/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof AuthenticatedWishlistRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments': {
+      id: '/_authenticated/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-trips': {
+      id: '/_authenticated/my-trips'
+      path: '/my-trips'
+      fullPath: '/my-trips'
+      preLoaderRoute: typeof AuthenticatedMyTripsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bookings': {
+      id: '/_authenticated/bookings'
+      path: '/bookings'
+      fullPath: '/bookings'
+      preLoaderRoute: typeof AuthenticatedBookingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBookingsRoute: typeof AuthenticatedBookingsRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMyTripsRoute: typeof AuthenticatedMyTripsRoute
+  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedWishlistRoute: typeof AuthenticatedWishlistRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBookingsRoute: AuthenticatedBookingsRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMyTripsRoute: AuthenticatedMyTripsRoute,
+  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedWishlistRoute: AuthenticatedWishlistRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AiPlannerRoute: AiPlannerRoute,
   AuthRoute: AuthRoute,
   BlogRoute: BlogRoute,
-  BookingsRoute: BookingsRoute,
   BusesRoute: BusesRoute,
   CabsRoute: CabsRoute,
   ContactRoute: ContactRoute,
-  DashboardRoute: DashboardRoute,
   DestinationsRoute: DestinationsRoute,
   ExperiencesRoute: ExperiencesRoute,
   FlightsRoute: FlightsRoute,
   HotelsRoute: HotelsRoute,
-  MyTripsRoute: MyTripsRoute,
-  PaymentsRoute: PaymentsRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RestaurantsRoute: RestaurantsRoute,
-  SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   TrainsRoute: TrainsRoute,
-  WishlistRoute: WishlistRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
