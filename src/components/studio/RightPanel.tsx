@@ -2,7 +2,7 @@ import { useStudio, type RightPanelTab, type StudioActivity } from "./state/Stud
 import {
   BudgetCard, WeatherCard, RiskCard, RecommendationCard, PackingCard,
 } from "./cards";
-import { PanelRightClose, PanelRightOpen, Sparkles, Wallet, CloudSun, ShieldAlert, Backpack, Passport, Compass, ShieldCheck } from "lucide-react";
+import { PanelRightClose, PanelRightOpen, Sparkles, Wallet, CloudSun, ShieldAlert, Backpack, BookMarked, Compass, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
@@ -14,7 +14,7 @@ const tabs: { id: RightPanelTab; label: string; icon: ReactNode }[] = [
   { id: "risks", label: "Risks", icon: <ShieldAlert className="h-3.5 w-3.5" /> },
   { id: "recs", label: "Recs", icon: <Compass className="h-3.5 w-3.5" /> },
   { id: "packing", label: "Packing", icon: <Backpack className="h-3.5 w-3.5" /> },
-  { id: "visa", label: "Visa", icon: <Passport className="h-3.5 w-3.5" /> },
+  { id: "visa", label: "Visa", icon: <BookMarked className="h-3.5 w-3.5" /> },
   { id: "safety", label: "Safety", icon: <ShieldCheck className="h-3.5 w-3.5" /> },
 ];
 
@@ -108,7 +108,7 @@ export function RightPanel() {
           </>
         )}
         {currentTab === "packing" && (
-          <PackingCard items={["Passport", "Adapter", "Light jacket", "Sunscreen", "Walking shoes", "Reusable bottle"]} />
+          <PackingCard items={["BookMarked", "Adapter", "Light jacket", "Sunscreen", "Walking shoes", "Reusable bottle"]} />
         )}
         {currentTab === "visa" && (
           <RiskCard severity="low" title="Visa" message="Set destination and nationality to check requirements." />
