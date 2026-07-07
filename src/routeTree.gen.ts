@@ -29,6 +29,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
+import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedMyTripsRouteImport } from './routes/_authenticated/my-trips'
@@ -135,6 +136,11 @@ const AuthenticatedWishlistRoute = AuthenticatedWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/my-trips': typeof AuthenticatedMyTripsRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/my-trips': typeof AuthenticatedMyTripsRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/_authenticated/my-trips': typeof AuthenticatedMyTripsRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
   '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/my-trips'
     | '/payments'
     | '/settings'
+    | '/studio'
     | '/wishlist'
     | '/api/ai/invoke'
   fileRoutesByTo: FileRoutesByTo
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/my-trips'
     | '/payments'
     | '/settings'
+    | '/studio'
     | '/wishlist'
     | '/api/ai/invoke'
   id:
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-trips'
     | '/_authenticated/payments'
     | '/_authenticated/settings'
+    | '/_authenticated/studio'
     | '/_authenticated/wishlist'
     | '/api/ai/invoke'
   fileRoutesById: FileRoutesById
@@ -499,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWishlistRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/studio': {
+      id: '/_authenticated/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof AuthenticatedStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -550,6 +569,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyTripsRoute: typeof AuthenticatedMyTripsRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedWishlistRoute: typeof AuthenticatedWishlistRoute
 }
 
@@ -559,6 +579,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyTripsRoute: AuthenticatedMyTripsRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedWishlistRoute: AuthenticatedWishlistRoute,
 }
 
