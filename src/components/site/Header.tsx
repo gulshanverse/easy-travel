@@ -35,14 +35,8 @@ export function Header() {
       )}
     >
       <Container className="flex h-16 items-center justify-between gap-6">
-        <Link to="/" className="group flex items-center gap-2.5">
-          <span className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-ink via-brand-navy to-brand-teal shadow-lg ring-1 ring-white/15">
-            <svg viewBox="0 0 20 20" className="h-4 w-4 text-brand-sunrise" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M3 14c3-8 11-8 14 0" />
-              <circle cx="10" cy="7" r="1.5" fill="currentColor" />
-            </svg>
-          </span>
-          <span className="font-display text-2xl leading-none tracking-[-0.02em]">Easy Trip</span>
+        <Link to="/" aria-label="Easy Trip — home" className="group inline-flex items-center">
+          <Logo className="transition-transform duration-500 group-hover:-translate-y-0.5" />
         </Link>
 
         <nav aria-label="Primary" className="hidden lg:flex items-center gap-1">
