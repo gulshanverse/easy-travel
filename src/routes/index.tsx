@@ -8,6 +8,7 @@ import {
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Container } from "@/components/site/Container";
+import { cn } from "@/lib/utils";
 
 import heroImg from "@/assets/hero-ocean.jpg";
 import destTokyo from "@/assets/dest-tokyo.jpg";
