@@ -37,7 +37,7 @@ function EmptyCanvas() {
     <div className="mx-auto max-w-6xl px-6 pb-40 pt-10 sm:px-10 sm:pt-14">
       {/* Hero — full-width cinematic photograph */}
       <section className="relative overflow-hidden rounded-[2rem] shadow-[var(--shadow-3)] ring-1 ring-black/5">
-        <div className="relative aspect-[16/9] sm:aspect-[21/8]">
+        <div className="relative min-h-[520px] sm:min-h-[580px]">
           <img src={heroOcean} alt="" className="absolute inset-0 h-full w-full object-cover ken-burns" />
           <div className="absolute inset-0 bg-gradient-to-tr from-brand-ink/85 via-brand-ink/50 to-brand-ink/10" />
           <div className="absolute inset-0 grain" aria-hidden />
