@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Sparkles, ArrowUpRight, ArrowRight, Compass, Wand2, ShieldCheck,
   Globe2, MapPin, PlayCircle, Command, CloudSun, Clock, Wallet, Thermometer,
-  Sunrise, Mountain, Waves, Camera, Utensils, Snowflake,
+  Sunrise, Mountain, Waves, Camera, Utensils, Snowflake, Wind, Mic, Paperclip,
 } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
