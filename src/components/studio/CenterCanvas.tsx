@@ -428,7 +428,6 @@ export function CenterCanvas() {
                     <CloudSun className="h-3 w-3 text-brand-sunrise" /> Weather-aware
                   </span>
                 </div>
-              </div>
             </div>
           </div>
         </section>
