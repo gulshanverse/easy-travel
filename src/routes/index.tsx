@@ -128,11 +128,32 @@ function LandingPage() {
             <img
               src={heroImg}
               alt=""
-              className="h-full w-full object-cover ken-burns"
+              className="h-full w-full object-cover ken-burns will-change-transform"
               fetchPriority="high"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/85 via-brand-navy/60 to-background" />
+          {/* Atmospheric depth: ink from the top, warmth at the horizon, canvas beneath */}
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/90 via-brand-navy/55 to-background" />
+          {/* Sunrise light-beam sweeping across the scene */}
+          <div
+            aria-hidden
+            className="absolute -top-24 -left-24 h-[80%] w-[70%] blur-3xl light-beam"
+            style={{
+              background:
+                "radial-gradient(60% 40% at 30% 30%, color-mix(in oklab, var(--brand-sunrise) 55%, transparent), transparent 70%)",
+            }}
+          />
+          {/* Aurora bloom bottom-right */}
+          <div
+            aria-hidden
+            className="absolute -bottom-32 -right-24 h-[70%] w-[60%] blur-3xl aurora-drift"
+            style={{
+              background:
+                "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--brand-teal) 50%, transparent), transparent 70%)",
+            }}
+          />
+          {/* Vignette + film grain for a photographed feel */}
+          <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_20%,transparent_40%,oklch(0.09_0.03_245/0.55)_100%)]" />
           <div className="absolute inset-0 grain" aria-hidden />
         </div>
 
