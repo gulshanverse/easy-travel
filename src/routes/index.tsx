@@ -416,31 +416,33 @@ function LandingPage() {
                     <button
                       type="submit"
                       aria-label="Begin journey"
-                      className="press mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:h-12 md:px-5"
+                      className="press focus-ring-hero mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:h-12 md:px-5"
                     >
                       Begin <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
 
-                  {/* Toolbelt — voice, attach, autocomplete, shortcut */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 px-4 py-2.5 text-[11px] text-white/60">
-                    <div className="flex items-center gap-1">
-                      <button type="button" aria-label="Voice input" className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                  {/* Toolbelt — voice, attach, autocomplete, shortcut.
+                      Uses grid on <380 so nothing wraps awkwardly, promotes to flex at sm. */}
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-white/10 px-3 py-2.5 text-[11px] text-white/60 sm:flex sm:flex-wrap sm:justify-between sm:px-4">
+                    <div className="flex min-w-0 items-center gap-1">
+                      <button type="button" aria-label="Voice input" className="press focus-ring-hero inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
                         <Mic className="h-3.5 w-3.5" />
                       </button>
-                      <button type="button" aria-label="Attach itinerary or photo" className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                      <button type="button" aria-label="Attach itinerary or photo" className="press focus-ring-hero inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
                         <Paperclip className="h-3.5 w-3.5" />
                       </button>
                       <span className="mx-1 hidden h-4 w-px bg-white/15 sm:inline-block" />
-                      <span className="hidden items-center gap-1.5 font-mono uppercase tracking-[0.18em] sm:inline-flex">
-                        <span className="h-1 w-1 rounded-full bg-brand-mint" />
+                      <span className="hidden items-center gap-1.5 truncate font-mono uppercase tracking-[0.18em] sm:inline-flex">
+                        <span className="h-1 w-1 shrink-0 rounded-full bg-brand-mint" />
                         Grounded · Weather-aware · Visa-aware
                       </span>
                     </div>
-                    <span className="inline-flex items-center gap-1 font-mono">
+                    <span className="hidden items-center gap-1 whitespace-nowrap font-mono min-[380px]:inline-flex">
                       <Command className="h-3 w-3" />⏎ to begin
                     </span>
                   </div>
+
                 </div>
               </div>
 
