@@ -335,8 +335,37 @@ function LandingPage() {
         </Container>
       </section>
 
+      {/* ── MOMENTS: EDITORIAL MARQUEE ───────────────────────── */}
+      <section aria-label="Moments of travel" className="relative overflow-hidden border-y border-border/50 bg-brand-ink py-14 text-white">
+        <div className="absolute inset-0 opacity-30" aria-hidden>
+          <div className="absolute -top-24 left-1/3 h-72 w-72 rounded-full bg-brand-coral/40 blur-3xl aurora-drift" />
+          <div className="absolute -bottom-24 right-1/4 h-72 w-72 rounded-full bg-brand-teal/40 blur-3xl aurora-drift" style={{ animationDelay: "-6s" }} />
+        </div>
+        <div className="absolute inset-0 grain" aria-hidden />
+        <div className="relative">
+          <p className="mb-6 text-center font-mono text-[10px] uppercase tracking-[0.32em] text-white/55">
+            ✦ Moments worth chasing ✦
+          </p>
+          <div className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+            <div className="marquee flex shrink-0 items-center gap-10 whitespace-nowrap pr-10">
+              {[...moments, ...moments].map((m, i) => (
+                <span key={`${m.label}-${i}`} className="inline-flex items-baseline gap-3">
+                  <span className="font-display text-3xl leading-none tracking-[-0.02em] text-white sm:text-4xl md:text-5xl">
+                    {m.label}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-brand-sunrise/80">
+                    {m.sub}
+                  </span>
+                  <span aria-hidden className="text-brand-coral/70">·</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CHAPTERS: EDITORIAL DESTINATION GRID ─────────────── */}
-      <section className="relative border-y border-border/60 bg-brand-linen py-24 md:py-32">
+      <section className="relative border-b border-border/60 bg-brand-linen py-24 md:py-32">
         <Container>
           <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
             <div>
@@ -352,7 +381,7 @@ function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-12 gap-4 md:gap-5">
+          <div className="grid grid-cols-12 gap-4 md:gap-6">
             {chapters.map((c, i) => {
               const span =
                 c.kind === "wide"
@@ -362,32 +391,69 @@ function LandingPage() {
                 <button
                   key={c.name}
                   onClick={() => submit(c.prompt)}
-                  className={`group relative overflow-hidden rounded-[1.75rem] bg-muted text-left ring-1 ring-border/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-3)] hover:ring-brand-coral/30 ${span}`}
+                  className={`group relative overflow-hidden rounded-[1.75rem] bg-muted text-left ring-1 ring-border/50 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:aurora-ring hover:ring-brand-coral/40 ${span}`}
                 >
                   <img
                     src={c.img}
                     alt={`${c.name}, ${c.country}`}
                     loading={i < 2 ? "eager" : "lazy"}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.075]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-ink via-brand-ink/20 to-transparent" />
-                  <div className="absolute inset-x-0 top-0 p-6">
+                  {/* Cinematic dual-gradient — bottom ink, top mood tint */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-ink via-brand-ink/25 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/40 via-transparent to-transparent" />
+                  {/* Animated coral wash on hover */}
+                  <div aria-hidden className="absolute inset-0 bg-gradient-to-tr from-transparent via-brand-coral/0 to-brand-sunrise/0 opacity-0 transition-opacity duration-700 group-hover:opacity-30" />
+
+                  {/* Top row — chapter + coordinates */}
+                  <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-5 sm:p-6">
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.22em] text-white/85 backdrop-blur">
                       {c.tag}
                     </span>
+                    <span className="hidden rounded-full bg-black/25 px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] text-white/70 backdrop-blur sm:inline-flex">
+                      {c.coord}
+                    </span>
                   </div>
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                    <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-brand-sunrise">
-                      {c.country}
-                    </p>
-                    <h3 className="mt-1 font-display text-4xl leading-[0.95] tracking-[-0.02em] sm:text-5xl">
+
+                  {/* Bottom editorial block */}
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8">
+                    <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brand-sunrise">
+                      <span>{c.country}</span>
+                      <span className="h-px flex-1 bg-gradient-to-r from-brand-sunrise/50 to-transparent" />
+                      <span className="text-white/60">{c.mood}</span>
+                    </div>
+                    <h3 className="mt-1.5 font-display text-4xl leading-[0.95] tracking-[-0.02em] sm:text-5xl md:text-6xl">
                       {c.name}
                     </h3>
                     <p className="mt-3 max-w-md font-editorial text-lg leading-snug text-white/90">
                       {c.line}
                     </p>
-                    <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-white/90 opacity-70 transition group-hover:opacity-100">
-                      Draft this journey <ArrowUpRight className="h-3.5 w-3.5" />
+
+                    {/* Metadata rail — season, temp, duration */}
+                    <div className="mt-5 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.14em] text-white/85 backdrop-blur">
+                        <CloudSun className="h-3 w-3 text-brand-sunrise" /> {c.season}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.14em] text-white/85 backdrop-blur">
+                        <Thermometer className="h-3 w-3 text-brand-coral" /> {c.temp}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.14em] text-white/85 backdrop-blur">
+                        <Clock className="h-3 w-3 text-brand-mint" /> {c.duration}
+                      </span>
+                    </div>
+
+                    {/* Draft CTA row */}
+                    <div className="mt-5 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5">
+                        {c.experiences.map((Icon, k) => (
+                          <span key={k} className="grid h-7 w-7 place-items-center rounded-full border border-white/20 bg-white/10 text-white/80 backdrop-blur transition group-hover:border-brand-coral/60 group-hover:text-white">
+                            <Icon className="h-3.5 w-3.5" />
+                          </span>
+                        ))}
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-medium text-brand-ink opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0 translate-x-1">
+                        Draft this journey <ArrowUpRight className="h-3.5 w-3.5" />
+                      </span>
                     </div>
                   </div>
                 </button>
