@@ -1,24 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import {
-  Sparkles,
-  Plane,
-  Hotel,
-  MapPin,
-  Compass,
-  Search,
-  Wand2,
-  ShieldCheck,
-  Zap,
-  Globe2,
-  ArrowRight,
-  Star,
+  Sparkles, ArrowUpRight, ArrowRight, Compass, Wand2, ShieldCheck,
+  Globe2, MapPin, PlayCircle, Command,
 } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Container } from "@/components/site/Container";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 import heroImg from "@/assets/hero-ocean.jpg";
 import destTokyo from "@/assets/dest-tokyo.jpg";
@@ -31,12 +19,15 @@ import destLisbon from "@/assets/dest-lisbon.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Easy Trip — Travel Smarter with AI" },
+      { title: "Easy Trip — The AI Travel Operating System" },
       {
         name: "description",
         content:
-          "AI-first travel platform to discover destinations, compare flights and stays, and generate itineraries in seconds.",
+          "Describe a trip. Watch it become a journey. Easy Trip is the AI-native travel workspace for planning, comparing and living every trip in one place.",
       },
+      { property: "og:title", content: "Easy Trip — The AI Travel Operating System" },
+      { property: "og:description", content: "Describe a trip. Watch it become a journey." },
+      { property: "og:type", content: "website" },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
@@ -44,244 +35,383 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
-const destinations = [
-  { slug: "tokyo", name: "Tokyo", country: "Japan", img: destTokyo, tag: "Neon nights" },
-  { slug: "bali", name: "Bali", country: "Indonesia", img: destBali, tag: "Island calm" },
-  { slug: "iceland", name: "Reykjavik", country: "Iceland", img: destIceland, tag: "Aurora season" },
-  { slug: "marrakech", name: "Marrakech", country: "Morocco", img: destMarrakech, tag: "Ancient medinas" },
-  { slug: "dolomites", name: "Dolomites", country: "Italy", img: destDolomites, tag: "Alpine escapes" },
-  { slug: "lisbon", name: "Lisbon", country: "Portugal", img: destLisbon, tag: "Golden hour city" },
+const prompts = [
+  "Five slow days in Lisbon in October — food, design, sunsets.",
+  "Weekend under ₹20,000 from Mumbai, somewhere I've never been.",
+  "Honeymoon: two weeks, Japan, boutique ryokans only.",
+  "Family of four, spring break, warm, under 6h flight from NYC.",
+  "A month across the Balkans, slow trains, minimal flights.",
+  "Find me snow next month — I'm flexible on where.",
 ];
 
-const features = [
+const chapters = [
   {
-    icon: Wand2,
-    title: "AI Itineraries in seconds",
-    text: "Describe the trip you want — our planner assembles flights, stays, and experiences that actually fit together.",
+    kind: "wide",
+    img: destIceland,
+    tag: "Chapter 01 · Wonder",
+    name: "Reykjavik",
+    country: "Iceland",
+    line: "Where aurora rewrites the night in green ink.",
+    prompt: "A week in Iceland chasing the northern lights — geothermal spas, black-sand coasts.",
   },
   {
-    icon: Zap,
-    title: "One booking flow",
-    text: "Flights, hotels, trains, buses, cabs, and restaurants — compared and booked from a single interface.",
+    kind: "tall",
+    img: destTokyo,
+    tag: "Chapter 02 · Rhythm",
+    name: "Tokyo",
+    country: "Japan",
+    line: "Twelve million people, one perfect bowl of soba.",
+    prompt: "Five days in Tokyo, food-first, with one day in Kamakura.",
   },
   {
-    icon: ShieldCheck,
-    title: "Grounded in real data",
-    text: "Live prices, verified reviews, and clear cancellation terms. No hallucinated hotels, ever.",
+    kind: "tall",
+    img: destMarrakech,
+    tag: "Chapter 03 · Colour",
+    name: "Marrakech",
+    country: "Morocco",
+    line: "A city that measures time in mint tea and shadow.",
+    prompt: "Four days in Marrakech, riads, souks, one desert night.",
   },
   {
-    icon: Globe2,
-    title: "Built for real travelers",
-    text: "Save trips, share with your crew, and pick up planning from any device — anywhere in the world.",
+    kind: "wide",
+    img: destDolomites,
+    tag: "Chapter 04 · Height",
+    name: "Dolomites",
+    country: "Italy",
+    line: "Cathedral peaks, refuge cheese, silence loud enough to hear.",
+    prompt: "Six-day hut-to-hut hike across the Dolomites, moderate difficulty.",
   },
+  {
+    kind: "tall",
+    img: destBali,
+    tag: "Chapter 05 · Slow",
+    name: "Bali",
+    country: "Indonesia",
+    line: "The island that turned rest into an art form.",
+    prompt: "Ten days in Bali: yoga, surfing, one temple pilgrimage.",
+  },
+  {
+    kind: "tall",
+    img: destLisbon,
+    tag: "Chapter 06 · Light",
+    name: "Lisbon",
+    country: "Portugal",
+    line: "Yellow trams, blue tiles, the Atlantic just around the corner.",
+    prompt: "Long weekend in Lisbon: pastel de nata, viewpoints, day trip to Sintra.",
+  },
+];
+
+const capabilities = [
+  { icon: Wand2, title: "AI Planner", line: "Describe intent. Get a real itinerary — flights, stays, days, budget — grounded in live data." },
+  { icon: Compass, title: "Journey Studio", line: "A cinematic workspace to shape, edit and live every trip. Not a form. A canvas." },
+  { icon: Globe2, title: "Travel Intelligence", line: "Weather, visas, safety, recs — a running briefing that quietly updates itself." },
+  { icon: ShieldCheck, title: "Never hallucinated", line: "Every hotel, price and route ties back to a real provider. No made-up places." },
 ];
 
 function LandingPage() {
+  const [prompt, setPrompt] = useState("");
+  const navigate = useNavigate();
+
+  const submit = (text?: string) => {
+    const q = (text ?? prompt).trim();
+    if (!q) { navigate({ to: "/studio" }); return; }
+    // Handoff to Studio via URL; StudioContext will pick it up if wired later.
+    navigate({ to: "/studio", search: { prompt: q } as never });
+  };
+
   return (
     <SiteLayout>
-      {/* HERO */}
+      {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <img
-            src={heroImg}
-            alt=""
-            width={1920}
-            height={1280}
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-navy/70 via-brand-navy/50 to-background" />
+          <div className="absolute inset-0 overflow-hidden">
+            <img
+              src={heroImg}
+              alt=""
+              className="h-full w-full object-cover ken-burns"
+              fetchPriority="high"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/85 via-brand-navy/60 to-background" />
+          <div className="absolute inset-0 grain" aria-hidden />
         </div>
 
-        <Container className="pt-24 pb-32 md:pt-36 md:pb-44 relative">
-          <Badge
-            variant="secondary"
-            className="rounded-full bg-white/10 text-white border-white/20 backdrop-blur-md"
-          >
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" /> New — AI Planner v2
-          </Badge>
-          <h1 className="mt-6 font-display text-white text-6xl md:text-7xl lg:text-8xl leading-[0.98] max-w-4xl">
-            Travel smarter, <em className="text-brand-mint not-italic italic">not harder.</em>
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-white/85">
-            Easy Trip is your AI travel companion — discover, plan, compare,
-            organize, and book your next adventure through one intelligent
-            interface.
-          </p>
+        <Container className="relative pt-24 pb-28 md:pt-40 md:pb-40">
+          <div className="max-w-4xl">
+            <div className="flex items-center gap-3 text-white/85">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.22em] backdrop-blur">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-coral animate-pulse" />
+                The AI Travel OS · v2
+              </span>
+              <span className="hidden text-[11px] font-mono uppercase tracking-[0.22em] text-white/55 sm:inline">
+                Est. 2026 · Made for humans who love to move
+              </span>
+            </div>
 
-          {/* Search widget */}
-          <div className="mt-10 max-w-3xl rounded-2xl glass border border-white/15 p-2 shadow-2xl shadow-brand-navy/30">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2">
-              <div className="flex items-center gap-3 px-4 py-3">
-                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-                <Input
-                  className="border-0 shadow-none focus-visible:ring-0 h-auto px-0 text-base bg-transparent"
-                  placeholder="Where do you dream of going? Try 'a week in Kyoto in April'…"
-                  aria-label="Search destinations or describe your trip"
-                />
+            <h1 className="mt-8 font-display text-white text-5xl leading-[0.94] tracking-[-0.03em] sm:text-6xl md:text-[5.5rem] lg:text-[6.5rem]">
+              Describe a trip.
+              <span className="block font-editorial text-brand-sunrise">
+                Watch it become a journey.
+              </span>
+            </h1>
+
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/80">
+              Easy Trip is your AI travel companion — a single, calm workspace
+              where planning, comparing and living a trip finally happen in the
+              same place.
+            </p>
+
+            {/* AI-first prompt — the product IS the search bar */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); submit(); }}
+              className="mt-10 max-w-2xl"
+            >
+              <div className="rounded-3xl bg-white/[0.06] p-[1.5px] shadow-[0_30px_80px_-30px_oklch(0_0_0/0.5)] ring-1 ring-white/15 backdrop-blur-xl transition focus-within:ring-brand-coral/70 focus-within:shadow-[var(--shadow-coral)]">
+                <div className="rounded-[calc(1.5rem-1.5px)] bg-brand-ink/50 backdrop-blur-xl">
+                  <div className="flex items-start gap-3 p-4">
+                    <span className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-coral to-brand-sunrise text-white shadow-lg">
+                      <Sparkles className="h-4 w-4" />
+                    </span>
+                    <label className="sr-only" htmlFor="landing-prompt">Describe your trip</label>
+                    <textarea
+                      id="landing-prompt"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
+                      rows={2}
+                      placeholder="Where would you like to wander next?"
+                      className="min-h-[3.5rem] flex-1 resize-none bg-transparent py-2 text-[17px] leading-snug text-white outline-none placeholder:text-white/45"
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Begin journey"
+                      className="press mt-1 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+                    >
+                      Begin <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 border-t border-white/10 px-4 py-2 text-[11px] text-white/60">
+                    <span className="inline-flex items-center gap-1.5 font-mono uppercase tracking-[0.18em]">
+                      <span className="h-1 w-1 rounded-full bg-brand-mint" />
+                      Grounded in real data
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-mono">
+                      <Command className="h-3 w-3" />⏎ to begin · Shift⏎ new line
+                    </span>
+                  </div>
+                </div>
               </div>
-              <Button asChild size="lg" className="rounded-xl h-12 px-6">
-                <Link to="/ai-planner">
-                  Plan with AI <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-1.5 px-3 pb-2 pt-1">
-              {["Northern lights", "Bali honeymoon", "Solo Kyoto", "Family Rome"].map((s) => (
-                <button
-                  key={s}
-                  className="text-xs rounded-full px-2.5 py-1 text-white/85 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Quick nav */}
-          <div className="mt-8 flex flex-wrap gap-2">
-            {[
-              { to: "/flights", icon: Plane, label: "Flights" },
-              { to: "/hotels", icon: Hotel, label: "Hotels" },
-              { to: "/experiences", icon: Compass, label: "Experiences" },
-              { to: "/destinations", icon: MapPin, label: "Destinations" },
-            ].map(({ to, icon: Icon, label }) => (
-              <Button
-                key={to}
-                asChild
-                variant="ghost"
-                className="rounded-full text-white hover:bg-white/10 hover:text-white"
-              >
-                <Link to={to}>
-                  <Icon className="h-4 w-4" /> {label}
-                </Link>
-              </Button>
-            ))}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {prompts.slice(0, 4).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => submit(p)}
+                    className="rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs text-white/80 backdrop-blur transition hover:-translate-y-0.5 hover:border-brand-coral/50 hover:bg-white/10 hover:text-white"
+                  >
+                    "{p.length > 62 ? p.slice(0, 60) + "…" : p}"
+                  </button>
+                ))}
+              </div>
+            </form>
+
+            <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] font-mono uppercase tracking-[0.22em] text-white/50">
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Live prices</span>
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Real hotels</span>
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Weather-aware</span>
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Visa-aware</span>
+            </div>
           </div>
         </Container>
+
+        {/* Scroll indicator */}
+        <div className="absolute inset-x-0 bottom-6 flex justify-center">
+          <span className="inline-flex flex-col items-center gap-1 text-[10px] font-mono uppercase tracking-[0.3em] text-white/45">
+            Scroll to explore
+            <span className="mt-1 h-8 w-px bg-gradient-to-b from-white/40 to-transparent" />
+          </span>
+        </div>
       </section>
 
-      {/* DESTINATIONS GRID */}
-      <section className="py-20 md:py-28">
+      {/* ── EDITORIAL: THE STORY ─────────────────────────────── */}
+      <section className="relative py-24 md:py-32">
         <Container>
-          <div className="flex items-end justify-between gap-6 mb-10">
+          <div className="grid gap-12 md:grid-cols-[1fr_1.4fr] md:gap-20">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-accent font-medium mb-3">
-                Where to next
-              </p>
-              <h2 className="font-display text-4xl md:text-5xl max-w-2xl">
-                Curated destinations, chosen by travelers like you.
+              <p className="eyebrow">§ 01 · Why we built it</p>
+              <h2 className="mt-4 font-display text-4xl leading-[1.05] tracking-[-0.025em] sm:text-5xl md:text-6xl">
+                Travel is emotional.
+                <span className="block font-editorial text-brand-coral">Software rarely is.</span>
               </h2>
             </div>
-            <Button asChild variant="ghost" className="hidden md:inline-flex">
-              <Link to="/destinations">
-                View all <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {destinations.map((d, i) => (
-              <Link
-                key={d.slug}
-                to="/destinations"
-                className="group relative overflow-hidden rounded-2xl bg-muted aspect-[4/5] block"
-              >
-                <img
-                  src={d.img}
-                  alt={`${d.name}, ${d.country}`}
-                  width={1200}
-                  height={1500}
-                  loading={i < 3 ? "eager" : "lazy"}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/10 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <span className="text-xs uppercase tracking-widest text-brand-mint">
-                    {d.tag}
-                  </span>
-                  <h3 className="mt-1 font-display text-3xl leading-none">
-                    {d.name}
-                  </h3>
-                  <p className="text-sm text-white/75">{d.country}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* FEATURES */}
-      <section className="py-20 md:py-24 bg-muted/40 border-y border-border/60">
-        <Container>
-          <p className="text-xs uppercase tracking-[0.2em] text-accent font-medium mb-3">
-            Why Easy Trip
-          </p>
-          <h2 className="font-display text-4xl md:text-5xl max-w-3xl">
-            Everything you need to plan a trip — nothing you don't.
-          </h2>
-
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4"
-              >
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <f.icon className="h-5 w-5" />
-                </span>
-                <h3 className="font-display text-2xl leading-tight">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {f.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* TESTIMONIAL */}
-      <section className="py-24">
-        <Container>
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="flex justify-center gap-1 text-accent mb-6">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-current" />
-              ))}
+            <div className="space-y-5 pt-2 text-lg leading-relaxed text-foreground/80">
+              <p>
+                Twenty tabs, three booking sites, a spreadsheet nobody opens.
+                The tools we use to plan the best moments of our lives feel like
+                the tools we use to file taxes.
+              </p>
+              <p>
+                Easy Trip is our answer: <span className="font-editorial text-foreground">a single, calm workspace</span> where
+                you describe a trip in your own words, watch it take shape day
+                by day, and live it from the same place you dreamt it up.
+              </p>
+              <p className="text-sm font-mono uppercase tracking-[0.22em] text-brand-coral">
+                — The Easy Trip studio
+              </p>
             </div>
-            <blockquote className="font-display text-3xl md:text-4xl leading-snug text-foreground">
-              "I described a two-week trip through Japan and Easy Trip handed
-              me a full itinerary — with real flights, real ryokans, and
-              restaurants I'd actually want to book."
+          </div>
+        </Container>
+      </section>
+
+      {/* ── CHAPTERS: EDITORIAL DESTINATION GRID ─────────────── */}
+      <section className="relative border-y border-border/60 bg-brand-linen py-24 md:py-32">
+        <Container>
+          <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="eyebrow">§ 02 · Six chapters</p>
+              <h2 className="mt-4 font-display text-4xl leading-[1.05] tracking-[-0.025em] sm:text-5xl md:text-6xl max-w-xl">
+                The world, told as
+                <span className="font-editorial text-brand-coral"> stories</span>.
+              </h2>
+            </div>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Every card is a prompt. Tap one and the Studio drafts it — day by
+              day, with real activities, budget, and travel-day flow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-12 gap-4 md:gap-5">
+            {chapters.map((c, i) => {
+              const span =
+                c.kind === "wide"
+                  ? "col-span-12 md:col-span-8 aspect-[16/10]"
+                  : "col-span-12 sm:col-span-6 md:col-span-4 aspect-[3/4]";
+              return (
+                <button
+                  key={c.name}
+                  onClick={() => submit(c.prompt)}
+                  className={`group relative overflow-hidden rounded-[1.75rem] bg-muted text-left ring-1 ring-border/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-3)] hover:ring-brand-coral/30 ${span}`}
+                >
+                  <img
+                    src={c.img}
+                    alt={`${c.name}, ${c.country}`}
+                    loading={i < 2 ? "eager" : "lazy"}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-ink via-brand-ink/20 to-transparent" />
+                  <div className="absolute inset-x-0 top-0 p-6">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.22em] text-white/85 backdrop-blur">
+                      {c.tag}
+                    </span>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-brand-sunrise">
+                      {c.country}
+                    </p>
+                    <h3 className="mt-1 font-display text-4xl leading-[0.95] tracking-[-0.02em] sm:text-5xl">
+                      {c.name}
+                    </h3>
+                    <p className="mt-3 max-w-md font-editorial text-lg leading-snug text-white/90">
+                      {c.line}
+                    </p>
+                    <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-white/90 opacity-70 transition group-hover:opacity-100">
+                      Draft this journey <ArrowUpRight className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Container>
+      </section>
+
+      {/* ── CAPABILITIES ─────────────────────────────────────── */}
+      <section className="py-24 md:py-32">
+        <Container>
+          <div className="grid gap-14 md:grid-cols-[1fr_2fr] md:gap-24">
+            <div className="md:sticky md:top-28 md:self-start">
+              <p className="eyebrow">§ 03 · Under the hood</p>
+              <h2 className="mt-4 font-display text-4xl leading-[1.05] tracking-[-0.025em] sm:text-5xl">
+                One platform.
+                <span className="block font-editorial text-brand-coral">Every part of the trip.</span>
+              </h2>
+              <p className="mt-6 max-w-sm text-base leading-relaxed text-muted-foreground">
+                An AI-native travel operating system. Everything that used to
+                live in a dozen apps now lives in one calm workspace.
+              </p>
+            </div>
+
+            <ul className="divide-y divide-border/70 border-y border-border/70">
+              {capabilities.map((c) => (
+                <li key={c.title} className="group grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8">
+                  <span className="grid h-14 w-14 place-items-center rounded-2xl border border-border/60 bg-card text-brand-coral transition-all duration-500 group-hover:-translate-y-0.5 group-hover:border-brand-coral/40 group-hover:shadow-[var(--shadow-2)]">
+                    <c.icon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-2xl leading-tight tracking-[-0.02em] sm:text-3xl">
+                      {c.title}
+                    </h3>
+                    <p className="mt-2 max-w-xl text-base leading-relaxed text-muted-foreground">
+                      {c.line}
+                    </p>
+                  </div>
+                  <ArrowUpRight className="mt-2 hidden h-5 w-5 text-muted-foreground transition-all group-hover:text-brand-coral md:block" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Container>
+      </section>
+
+      {/* ── THE VOICE ────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-brand-ink py-32 text-white">
+        <div className="absolute inset-0 opacity-40">
+          <img src={destLisbon} alt="" className="h-full w-full object-cover" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/60 via-brand-ink/85 to-brand-ink" />
+        <div className="absolute inset-0 grain" aria-hidden />
+        <Container className="relative">
+          <div className="mx-auto max-w-4xl text-center">
+            <MapPin className="mx-auto h-6 w-6 text-brand-coral" />
+            <blockquote className="mt-8 font-display text-3xl leading-[1.15] tracking-[-0.02em] text-white sm:text-5xl md:text-6xl">
+              "I described a two-week trip through Japan
+              <span className="block font-editorial text-brand-sunrise">and it handed me a life.</span>
+              Real flights. Real ryokans. Restaurants I'd actually book."
             </blockquote>
-            <p className="mt-6 text-sm text-muted-foreground">
-              Amelia R. — planned her honeymoon in 12 minutes
+            <p className="mt-10 font-mono text-[11px] uppercase tracking-[0.28em] text-white/60">
+              Amelia R. · Planned her honeymoon in 12 minutes
             </p>
           </div>
         </Container>
       </section>
 
-      {/* CTA */}
-      <section className="pb-24">
+      {/* ── FINAL INVITATION ─────────────────────────────────── */}
+      <section className="relative py-28 md:py-36">
         <Container>
-          <div className="relative overflow-hidden rounded-3xl bg-brand-navy text-white p-10 md:p-16">
-            <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-teal/40 blur-3xl" />
-            <div className="absolute -left-16 -bottom-16 h-72 w-72 rounded-full bg-brand-mint/30 blur-3xl" />
-            <div className="relative max-w-2xl">
-              <h2 className="font-display text-4xl md:text-5xl leading-tight">
-                Your next trip is one prompt away.
-              </h2>
-              <p className="mt-4 text-white/80">
-                Sign up free — save trips, sync across devices, and get AI
-                recommendations tailored to how you travel.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="rounded-full bg-white text-brand-navy hover:bg-white/90">
-                  <Link to="/auth">Create free account</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="rounded-full border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white">
-                  <Link to="/ai-planner">Try AI Planner</Link>
-                </Button>
-              </div>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="eyebrow">§ 04 · Your move</p>
+            <h2 className="mt-6 font-display text-5xl leading-[1] tracking-[-0.03em] sm:text-6xl md:text-7xl">
+              Your next trip is
+              <span className="block font-editorial text-brand-coral">one sentence away.</span>
+            </h2>
+            <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground">
+              Sign up free. Save trips. Sync across devices. The Studio remembers
+              how you travel — and gets sharper every journey.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/auth"
+                className="press inline-flex h-12 items-center gap-2 rounded-full bg-brand-ink px-6 text-sm font-medium text-white shadow-[var(--shadow-2)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-3)]"
+              >
+                Create free account <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/studio"
+                className="press inline-flex h-12 items-center gap-2 rounded-full border border-border bg-transparent px-6 text-sm font-medium text-foreground transition hover:-translate-y-0.5 hover:border-brand-coral/50 hover:text-brand-coral"
+              >
+                <PlayCircle className="h-4 w-4" /> Open the Studio
+              </Link>
             </div>
           </div>
         </Container>
