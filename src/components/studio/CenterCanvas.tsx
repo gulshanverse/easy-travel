@@ -36,26 +36,28 @@ function EmptyCanvas() {
   return (
     <div className="mx-auto max-w-6xl px-6 pb-40 pt-10 sm:px-10 sm:pt-14">
       {/* Hero — full-width cinematic photograph */}
-      <section className="relative overflow-hidden rounded-[2rem] shadow-[var(--shadow-3)] ring-1 ring-black/5">
-        <div className="relative min-h-[520px] sm:min-h-[580px]">
-          <img src={heroOcean} alt="" className="absolute inset-0 h-full w-full object-cover ken-burns" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-brand-ink/85 via-brand-ink/50 to-brand-ink/10" />
-          <div className="absolute inset-0 grain" aria-hidden />
+      <section className="relative isolate overflow-hidden rounded-[2rem] shadow-[var(--shadow-3)] ring-1 ring-black/5">
+        <img
+          src={heroOcean}
+          alt=""
+          className="absolute inset-0 -z-10 h-full w-full object-cover ken-burns"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-brand-ink/85 via-brand-ink/50 to-brand-ink/10" />
+        <div className="absolute inset-0 -z-10 grain" aria-hidden />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-14 text-white">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.22em] text-white/85 backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-coral animate-pulse" />
-              Studio · A blank canvas
-            </span>
-            <h1 className="mt-6 max-w-3xl font-display text-5xl leading-[0.95] tracking-[-0.03em] sm:text-6xl md:text-7xl">
-              Where would you like
-              <span className="block font-editorial text-brand-sunrise">to wander next?</span>
-            </h1>
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-white/80">
-              Describe the trip you're dreaming of in the composer below.
-              I'll draft it day by day, with real activities, budgets and weather.
-            </p>
-          </div>
+        <div className="flex min-h-[520px] flex-col justify-end p-8 text-white sm:min-h-[600px] sm:p-14">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.22em] text-white/85 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-coral animate-pulse" />
+            Studio · A blank canvas
+          </span>
+          <h1 className="mt-6 max-w-3xl font-display text-5xl leading-[0.95] tracking-[-0.03em] sm:text-6xl md:text-7xl">
+            Where would you like
+            <span className="block font-editorial text-brand-sunrise">to wander next?</span>
+          </h1>
+          <p className="mt-5 max-w-lg text-base leading-relaxed text-white/80">
+            Describe the trip you're dreaming of in the composer below.
+            I'll draft it day by day, with real activities, budgets and weather.
+          </p>
         </div>
       </section>
 
