@@ -1,13 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Sparkles, ArrowUpRight, ArrowRight, Compass, Wand2, ShieldCheck,
   Globe2, MapPin, PlayCircle, Command, CloudSun, Clock, Wallet, Thermometer,
-  Sunrise, Mountain, Waves, Camera, Utensils, Snowflake,
+  Sunrise, Mountain, Waves, Camera, Utensils, Snowflake, Wind, Mic, Paperclip,
 } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Container } from "@/components/site/Container";
+import { cn } from "@/lib/utils";
 
 import heroImg from "@/assets/hero-ocean.jpg";
 import destTokyo from "@/assets/dest-tokyo.jpg";
@@ -158,21 +159,82 @@ const capabilities = [
   { icon: ShieldCheck, title: "Never hallucinated", line: "Every hotel, price and route ties back to a real provider. No made-up places." },
 ];
 
+/** Ghost prompts the hero "types" for the visitor when idle.
+ *  Creates the sensation the product is already thinking. */
+const ambientPrompts = [
+  "Five slow days in Lisbon in October — food, design, sunsets.",
+  "A weekend of onsen and soba an hour outside Tokyo.",
+  "Chasing aurora across Iceland — geothermal spas, black-sand coasts.",
+  "Two weeks across Patagonia in shoulder season, mostly by bus.",
+  "Ten days in Bali: yoga, surfing, one temple pilgrimage.",
+];
+
 function LandingPage() {
   const [prompt, setPrompt] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [ghostIdx, setGhostIdx] = useState(0);
+  const [ghostText, setGhostText] = useState("");
+  const [nowLisbon, setNowLisbon] = useState<string>("");
+  const taRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
 
   const submit = (text?: string) => {
     const q = (text ?? prompt).trim();
     if (!q) { navigate({ to: "/studio" }); return; }
-    // Handoff to Studio via URL; StudioContext will pick it up if wired later.
     navigate({ to: "/studio", search: { prompt: q } as never });
   };
+
+  // Ghost typing — only when the visitor hasn't started
+  useEffect(() => {
+    if (prompt || focused) { setGhostText(""); return; }
+    const full = ambientPrompts[ghostIdx];
+    let i = 0;
+    let holdTimer: number | undefined;
+    const typer = window.setInterval(() => {
+      i += 1;
+      setGhostText(full.slice(0, i));
+      if (i >= full.length) {
+        window.clearInterval(typer);
+        holdTimer = window.setTimeout(() => {
+          setGhostIdx((n) => (n + 1) % ambientPrompts.length);
+          setGhostText("");
+        }, 2600);
+      }
+    }, 38);
+    return () => { window.clearInterval(typer); if (holdTimer) window.clearTimeout(holdTimer); };
+  }, [ghostIdx, prompt, focused]);
+
+  // Ambient local time — a tiny piece of live intelligence in the corner
+  useEffect(() => {
+    const fmt = () => {
+      try {
+        const s = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Europe/Lisbon", hour: "2-digit", minute: "2-digit", hour12: false,
+        }).format(new Date());
+        setNowLisbon(s);
+      } catch { setNowLisbon(""); }
+    };
+    fmt();
+    const id = window.setInterval(fmt, 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Auto-size the composer as the traveller types
+  useEffect(() => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 240) + "px";
+  }, [prompt]);
 
   return (
     <SiteLayout>
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden">
+      <section
+        aria-label="Easy Trip — the AI travel operating system"
+        className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden"
+      >
+        {/* Cinematic layered background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 overflow-hidden">
             <img
@@ -180,130 +242,193 @@ function LandingPage() {
               alt=""
               className="h-full w-full object-cover ken-burns will-change-transform"
               fetchPriority="high"
+              decoding="async"
             />
           </div>
-          {/* Atmospheric depth: ink from the top, warmth at the horizon, canvas beneath */}
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/90 via-brand-navy/55 to-background" />
-          {/* Sunrise light-beam sweeping across the scene */}
+
+          {/* Ink from the top, warmth at the horizon */}
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-ink/85 via-brand-navy/40 to-brand-ink/70" />
+
+          {/* Slow sunrise beam sweeping across the scene */}
           <div
             aria-hidden
-            className="absolute -top-24 -left-24 h-[80%] w-[70%] blur-3xl light-beam"
+            className="absolute -top-24 -left-24 h-[85%] w-[75%] blur-3xl light-beam"
             style={{
               background:
-                "radial-gradient(60% 40% at 30% 30%, color-mix(in oklab, var(--brand-sunrise) 55%, transparent), transparent 70%)",
+                "radial-gradient(60% 40% at 30% 30%, color-mix(in oklab, var(--brand-sunrise) 60%, transparent), transparent 70%)",
             }}
           />
-          {/* Aurora bloom bottom-right */}
+
+          {/* Aurora bloom drifting from the horizon */}
           <div
             aria-hidden
-            className="absolute -bottom-32 -right-24 h-[70%] w-[60%] blur-3xl aurora-drift"
+            className="absolute -bottom-40 -right-32 h-[75%] w-[65%] blur-3xl aurora-drift"
             style={{
               background:
-                "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--brand-teal) 50%, transparent), transparent 70%)",
+                "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--brand-teal) 55%, transparent), transparent 70%)",
             }}
           />
+
           {/* Vignette + film grain for a photographed feel */}
-          <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_20%,transparent_40%,oklch(0.09_0.03_245/0.55)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_25%,transparent_38%,oklch(0.09_0.03_245/0.65)_100%)]" />
           <div className="absolute inset-0 grain" aria-hidden />
         </div>
 
-        <Container className="relative pt-24 pb-28 md:pt-40 md:pb-40">
-          <div className="max-w-4xl">
-            <div className="flex items-center gap-3 text-white/85">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.22em] backdrop-blur">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-coral animate-pulse" />
-                The AI Travel OS · v2
-              </span>
-              <span className="hidden text-[11px] font-mono uppercase tracking-[0.22em] text-white/55 sm:inline">
-                Est. 2026 · Made for humans who love to move
+        {/* ── Corner marks — luxury cartographer details ─────── */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden md:block">
+          <div className="mx-auto flex max-w-[82rem] items-start justify-between px-6 pt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-white/45">
+            <div className="flex items-center gap-6">
+              <span className="inline-flex items-center gap-2"><Compass className="h-3 w-3" /> N · 38.72°</span>
+              <span className="hidden lg:inline">W · 9.14°</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <span className="hidden lg:inline">Golden hour · 19:04</span>
+              <span className="inline-flex items-center gap-2"><Wind className="h-3 w-3" /> NW · 12 kt</span>
+              <span className="inline-flex items-center gap-2"><Thermometer className="h-3 w-3" /> 22° · Clear</span>
+              <span className="inline-flex items-center gap-2 tabular-nums">
+                <Clock className="h-3 w-3" /> {nowLisbon || "—"} LIS
               </span>
             </div>
+          </div>
+        </div>
 
-            <h1 className="mt-8 font-display text-white text-5xl leading-[0.94] tracking-[-0.03em] sm:text-6xl md:text-[5.5rem] lg:text-[6.5rem]">
+        {/* ── Hero content ───────────────────────────────────── */}
+        <Container className="relative z-10 flex flex-1 flex-col justify-center pt-24 pb-28 md:pt-32 md:pb-24">
+          <div className="max-w-5xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-[10px] font-mono uppercase tracking-[0.28em] text-white/80 backdrop-blur">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-coral/70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-coral" />
+              </span>
+              The AI Travel Operating System
+            </div>
+
+            <h1 className="mt-8 font-display text-white text-[2.75rem] leading-[0.95] tracking-[-0.03em] sm:text-6xl md:text-[5.75rem] lg:text-[7rem]">
               Describe a trip.
-              <span className="block font-editorial text-brand-sunrise">
+              <span className="mt-1 block font-editorial italic text-brand-sunrise">
                 Watch it become a journey.
               </span>
             </h1>
 
-            <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/80">
-              Easy Trip is your AI travel companion — a single, calm workspace
-              where planning, comparing and living a trip finally happen in the
-              same place.
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/75 md:text-xl">
+              One sentence begins an unforgettable adventure. Easy Trip listens,
+              understands, and quietly assembles every detail — grounded in real
+              flights, real hotels, real weather.
             </p>
 
-            {/* AI-first prompt — the product IS the search bar */}
+            {/* ── Floating command center ─────────────────────── */}
             <form
               onSubmit={(e) => { e.preventDefault(); submit(); }}
               className="mt-10 max-w-2xl"
             >
-              <div className="rounded-3xl bg-white/[0.06] p-[1.5px] shadow-[0_30px_80px_-30px_oklch(0_0_0/0.5)] ring-1 ring-white/15 backdrop-blur-xl transition focus-within:ring-brand-coral/70 focus-within:shadow-[var(--shadow-coral)]">
-                <div className="rounded-[calc(1.5rem-1.5px)] bg-brand-ink/50 backdrop-blur-xl">
-                  <div className="flex items-start gap-3 p-4">
-                    <span className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-coral to-brand-sunrise text-white shadow-lg">
+              <div
+                className={cnHero(
+                  "group relative rounded-[28px] p-[1.5px] transition-all duration-500",
+                  focused || prompt
+                    ? "bg-[conic-gradient(from_180deg,var(--brand-coral),var(--brand-sunrise),var(--brand-teal),var(--brand-coral))] shadow-[0_40px_120px_-30px_oklch(0_0_0/0.65)]"
+                    : "bg-gradient-to-br from-white/25 via-white/10 to-white/5 shadow-[0_30px_90px_-30px_oklch(0_0_0/0.6)]",
+                )}
+              >
+                <div className="rounded-[calc(28px-1.5px)] bg-brand-ink/60 backdrop-blur-2xl">
+                  {/* Composer body */}
+                  <div className="flex items-start gap-3 p-4 md:p-5">
+                    <span className="mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-coral to-brand-sunrise text-white shadow-[var(--shadow-coral)]">
                       <Sparkles className="h-4 w-4" />
                     </span>
+
                     <label className="sr-only" htmlFor="landing-prompt">Describe your trip</label>
-                    <textarea
-                      id="landing-prompt"
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
-                      rows={2}
-                      placeholder="Where would you like to wander next?"
-                      className="min-h-[3.5rem] flex-1 resize-none bg-transparent py-2 text-[17px] leading-snug text-white outline-none placeholder:text-white/45"
-                    />
+                    <div className="relative flex-1">
+                      <textarea
+                        id="landing-prompt"
+                        ref={taRef}
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        onFocus={() => setFocused(true)}
+                        onBlur={() => setFocused(false)}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
+                        rows={1}
+                        aria-label="Describe your trip"
+                        placeholder=" "
+                        className="min-h-[2.75rem] w-full resize-none bg-transparent py-1.5 text-[17px] leading-snug text-white outline-none md:text-[19px]"
+                      />
+                      {/* Ghost prompt — the AI already thinking */}
+                      {!prompt && !focused && (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute inset-0 py-1.5 text-[17px] leading-snug text-white/45 md:text-[19px]"
+                        >
+                          {ghostText}
+                          <span className="ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[3px] rounded-full bg-brand-sunrise caret-blink align-middle" />
+                        </span>
+                      )}
+                    </div>
+
                     <button
                       type="submit"
                       aria-label="Begin journey"
-                      className="press mt-1 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+                      className="press mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:h-12 md:px-5"
                     >
                       Begin <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
-                  <div className="flex items-center justify-between gap-2 border-t border-white/10 px-4 py-2 text-[11px] text-white/60">
-                    <span className="inline-flex items-center gap-1.5 font-mono uppercase tracking-[0.18em]">
-                      <span className="h-1 w-1 rounded-full bg-brand-mint" />
-                      Grounded in real data
-                    </span>
+
+                  {/* Toolbelt — voice, attach, autocomplete, shortcut */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 px-4 py-2.5 text-[11px] text-white/60">
+                    <div className="flex items-center gap-1">
+                      <button type="button" aria-label="Voice input" className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                        <Mic className="h-3.5 w-3.5" />
+                      </button>
+                      <button type="button" aria-label="Attach itinerary or photo" className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                        <Paperclip className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="mx-1 hidden h-4 w-px bg-white/15 sm:inline-block" />
+                      <span className="hidden items-center gap-1.5 font-mono uppercase tracking-[0.18em] sm:inline-flex">
+                        <span className="h-1 w-1 rounded-full bg-brand-mint" />
+                        Grounded · Weather-aware · Visa-aware
+                      </span>
+                    </div>
                     <span className="inline-flex items-center gap-1 font-mono">
-                      <Command className="h-3 w-3" />⏎ to begin · Shift⏎ new line
+                      <Command className="h-3 w-3" />⏎ to begin
                     </span>
                   </div>
                 </div>
               </div>
 
+              {/* Prompt suggestions — the companion offering starting points */}
               <div className="mt-4 flex flex-wrap gap-2">
-                {prompts.slice(0, 4).map((p) => (
+                {prompts.slice(0, 4).map((p, i) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => submit(p)}
-                    className="rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs text-white/80 backdrop-blur transition hover:-translate-y-0.5 hover:border-brand-coral/50 hover:bg-white/10 hover:text-white"
+                    style={{ animationDelay: `${400 + i * 120}ms` }}
+                    className="rise-in rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs text-white/80 backdrop-blur transition hover:-translate-y-0.5 hover:border-brand-coral/50 hover:bg-white/10 hover:text-white"
                   >
                     "{p.length > 62 ? p.slice(0, 60) + "…" : p}"
                   </button>
                 ))}
               </div>
             </form>
-
-            <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] font-mono uppercase tracking-[0.22em] text-white/50">
-              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Live prices</span>
-              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Real hotels</span>
-              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Weather-aware</span>
-              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Visa-aware</span>
-            </div>
           </div>
         </Container>
 
-        {/* Scroll indicator */}
-        <div className="absolute inset-x-0 bottom-6 flex justify-center">
-          <span className="inline-flex flex-col items-center gap-1 text-[10px] font-mono uppercase tracking-[0.3em] text-white/45">
-            Scroll to explore
-            <span className="mt-1 h-8 w-px bg-gradient-to-b from-white/40 to-transparent" />
-          </span>
+        {/* ── Ambient hero footer — trust + scroll cue ────────── */}
+        <div className="relative z-10 border-t border-white/10 bg-gradient-to-t from-brand-ink/70 to-transparent">
+          <Container className="flex flex-wrap items-center justify-between gap-4 py-4 text-[10px] font-mono uppercase tracking-[0.28em] text-white/55">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Real-time weather</span>
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Millions of routes</span>
+              <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Updated continuously</span>
+              <span className="hidden lg:inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-brand-mint" /> Never a hallucinated hotel</span>
+            </div>
+            <span className="inline-flex items-center gap-2 text-white/45">
+              Scroll to explore
+              <span aria-hidden className="inline-block h-3 w-px bg-gradient-to-b from-white/60 to-transparent" />
+            </span>
+          </Container>
         </div>
       </section>
+
 
       {/* ── EDITORIAL: THE STORY ─────────────────────────────── */}
       <section className="relative py-24 md:py-32">
