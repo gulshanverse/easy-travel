@@ -72,28 +72,28 @@ export function Header() {
           aria-label="Toggle menu"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-white/10"
+          className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </Container>
 
       {open && (
-        <div className="lg:hidden border-t border-white/10 bg-brand-ink/95 backdrop-blur">
+        <div className="lg:hidden border-t border-border/60 glass">
           <Container className="py-3 flex flex-col">
             {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 onClick={() => setOpen(false)}
-                className="px-2 py-3 text-base text-white/80 hover:text-white"
+                className="px-2 py-3 text-base text-foreground/80 hover:text-foreground"
               >
                 {item.label}
               </Link>
             ))}
             <div className="mt-2 flex gap-2">
-              <Link to="/auth" onClick={() => setOpen(false)} className="flex-1 rounded-full border border-white/20 px-4 py-2 text-center text-sm text-white">Sign in</Link>
-              <Link to="/studio" onClick={() => setOpen(false)} className="flex-1 rounded-full bg-white px-4 py-2 text-center text-sm text-brand-ink">Open Studio</Link>
+              <Link to="/auth" onClick={() => setOpen(false)} className="flex-1 rounded-full border border-border px-4 py-2 text-center text-sm text-foreground">Sign in</Link>
+              <Link to="/studio" onClick={() => setOpen(false)} className="flex-1 rounded-full bg-brand-ink px-4 py-2 text-center text-sm text-white">Open Studio</Link>
             </div>
           </Container>
         </div>
