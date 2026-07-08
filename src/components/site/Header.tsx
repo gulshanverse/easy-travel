@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Container } from "./Container";
 import { UserMenu } from "./UserMenu";
+import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 
 const nav = [
