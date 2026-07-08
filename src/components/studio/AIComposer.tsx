@@ -105,6 +105,16 @@ export function AIComposer({ className }: { className?: string }) {
 
   const active = focused || busy || prompt.length > 0;
 
+  // Live intelligence — cheap, local, updates as you type
+  const intel = useMemo(() => {
+    if (!prompt.trim()) return null;
+    const place = knownPlaces.find((p) => p.match.test(prompt));
+    const duration = detectDuration(prompt);
+    const budget = detectBudget(prompt);
+    if (!place && !duration && !budget) return null;
+    return { place, duration, budget };
+  }, [prompt]);
+
   return (
     <div
       className={cn(
