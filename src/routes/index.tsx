@@ -35,7 +35,18 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: "/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [
+      { rel: "canonical", href: "/" },
+      // Preload the LCP hero — AVIF srcset first, JPEG fallback for legacy UAs.
+      {
+        rel: "preload",
+        as: "image",
+        href: heroPicture.img.src,
+        imagesrcset: heroPicture.sources.avif,
+        imagesizes: "100vw",
+        fetchpriority: "high",
+      } as unknown as { rel: string; href: string },
+    ],
   }),
   component: LandingPage,
 });
