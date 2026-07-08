@@ -246,18 +246,26 @@ function LandingPage() {
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section
         aria-label="Easy Trip — the AI travel operating system"
-        className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden"
+        className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden [@media(max-height:640px)]:min-h-[36rem]"
       >
         {/* Cinematic layered background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 overflow-hidden">
-            <img
-              src={heroImg}
-              alt=""
-              className="h-full w-full object-cover ken-burns will-change-transform"
-              fetchPriority="high"
-              decoding="async"
-            />
+            <picture>
+              <source type="image/avif" srcSet={heroPicture.sources.avif} sizes="100vw" />
+              <source type="image/webp" srcSet={heroPicture.sources.webp} sizes="100vw" />
+              <img
+                src={heroPicture.img.src}
+                srcSet={heroPicture.sources.jpg ?? heroImg}
+                sizes="100vw"
+                alt=""
+                width={heroPicture.img.w}
+                height={heroPicture.img.h}
+                className="h-full w-full object-cover ken-burns will-change-transform"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
           </div>
 
           {/* Ink from the top, warmth at the horizon */}
@@ -282,6 +290,34 @@ function LandingPage() {
                 "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--brand-teal) 55%, transparent), transparent 70%)",
             }}
           />
+
+          {/* Ultra-wide balance — a faint far-shore horizon on the right, only visible >1600px */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-[38%] 2xl:block"
+            style={{
+              background:
+                "radial-gradient(60% 55% at 70% 55%, color-mix(in oklab, var(--brand-navy) 45%, transparent), transparent 72%)",
+            }}
+          />
+          {/* Ultra-wide — a whisper of a route line, drawn as a compass arc */}
+          <svg
+            aria-hidden
+            viewBox="0 0 800 800"
+            className="pointer-events-none absolute -right-24 top-1/2 hidden h-[42rem] w-[42rem] -translate-y-1/2 opacity-[0.09] 2xl:block"
+            fill="none"
+          >
+            <circle cx="400" cy="400" r="360" stroke="white" strokeWidth="0.6" strokeDasharray="2 6" />
+            <circle cx="400" cy="400" r="240" stroke="white" strokeWidth="0.6" />
+            <path d="M60,540 C220,300 480,220 740,320" stroke="var(--brand-sunrise)" strokeWidth="1" strokeDasharray="4 8" />
+            <circle cx="740" cy="320" r="3" fill="var(--brand-sunrise)" />
+            <circle cx="60" cy="540" r="3" fill="white" />
+          </svg>
+
+          {/* Atmospheric depth — invisible-luxury mist. Extremely low opacity by design. */}
+          <div aria-hidden className="absolute inset-0 mist-a" />
+          <div aria-hidden className="absolute inset-0 mist-b" />
+          <div aria-hidden className="absolute inset-0 dust-motes" />
 
           {/* Vignette + film grain for a photographed feel */}
           <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_25%,transparent_38%,oklch(0.09_0.03_245/0.65)_100%)]" />
