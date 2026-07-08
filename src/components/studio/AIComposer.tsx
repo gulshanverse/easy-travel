@@ -199,6 +199,39 @@ export function AIComposer({ className }: { className?: string }) {
           </p>
         )}
 
+        {/* Live intel — companion previews what it's understanding as you type */}
+        {intel && (
+          <div className="flex flex-wrap items-center gap-1.5 border-t border-border/40 bg-brand-coral/[0.04] px-3 pt-2 pb-1.5 rise-in">
+            <span className="mr-1 font-mono text-[10px] uppercase tracking-[0.22em] text-brand-coral/80">
+              Reading
+            </span>
+            {intel.place && (
+              <>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-coral/30 bg-background px-2.5 py-1 text-[11px] text-foreground/85">
+                  <MapPin className="h-3 w-3 text-brand-coral" /> {intel.place.name}
+                  <span className="text-muted-foreground">· {intel.place.region}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                  <CloudSun className="h-3 w-3 text-brand-sunrise" /> Best: {intel.place.season}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                  <Thermometer className="h-3 w-3 text-brand-teal" /> {intel.place.temp}
+                </span>
+              </>
+            )}
+            {intel.duration && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                <Clock className="h-3 w-3 text-brand-mint" /> {intel.duration}
+              </span>
+            )}
+            {intel.budget && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                <Wallet className="h-3 w-3 text-brand-coral" /> {intel.budget}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Context chips — the companion's default assumptions, editable feel */}
         <div className="flex flex-wrap items-center gap-1.5 border-t border-border/40 px-3 pt-2 pb-1.5">
           {contextChips.map(({ icon: Icon, label }) => (
