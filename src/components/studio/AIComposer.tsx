@@ -171,6 +171,7 @@ export function AIComposer({ className }: { className?: string }) {
             onClick={submit}
             disabled={busy || !prompt.trim()}
             aria-label="Send to companion"
+            
             className={cn(
               "press mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl px-3.5 text-sm font-medium text-white transition-all duration-300",
               "bg-brand-ink shadow-[var(--shadow-2)]",
