@@ -11,6 +11,9 @@ import { Container } from "@/components/site/Container";
 import { cn } from "@/lib/utils";
 
 import heroImg from "@/assets/hero-ocean.jpg";
+// Responsive hero — AVIF/WebP/JPEG at multiple widths for premium LCP.
+// vite-imagetools generates the variants at build; JPEG stays as fallback.
+import heroPicture from "@/assets/hero-ocean.jpg?w=800;1200;1600;2000&format=avif;webp;jpg&as=picture";
 import destTokyo from "@/assets/dest-tokyo.jpg";
 import destBali from "@/assets/dest-bali.jpg";
 import destIceland from "@/assets/dest-iceland.jpg";
@@ -32,7 +35,18 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: "/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [
+      { rel: "canonical", href: "/" },
+      // Preload the LCP hero — AVIF srcset first, JPEG fallback for legacy UAs.
+      {
+        rel: "preload",
+        as: "image",
+        href: heroPicture.img.src,
+        imagesrcset: heroPicture.sources.avif,
+        imagesizes: "100vw",
+        fetchpriority: "high",
+      } as unknown as { rel: string; href: string },
+    ],
   }),
   component: LandingPage,
 });
@@ -232,18 +246,26 @@ function LandingPage() {
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section
         aria-label="Easy Trip — the AI travel operating system"
-        className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden"
+        className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden [@media(max-height:640px)]:min-h-[36rem]"
       >
         {/* Cinematic layered background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 overflow-hidden">
-            <img
-              src={heroImg}
-              alt=""
-              className="h-full w-full object-cover ken-burns will-change-transform"
-              fetchPriority="high"
-              decoding="async"
-            />
+            <picture>
+              <source type="image/avif" srcSet={heroPicture.sources.avif} sizes="100vw" />
+              <source type="image/webp" srcSet={heroPicture.sources.webp} sizes="100vw" />
+              <img
+                src={heroPicture.img.src}
+                srcSet={heroPicture.sources.jpg ?? heroImg}
+                sizes="100vw"
+                alt=""
+                width={heroPicture.img.w}
+                height={heroPicture.img.h}
+                className="h-full w-full object-cover ken-burns will-change-transform"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
           </div>
 
           {/* Ink from the top, warmth at the horizon */}
@@ -269,6 +291,34 @@ function LandingPage() {
             }}
           />
 
+          {/* Ultra-wide balance — a faint far-shore horizon on the right, only visible >1600px */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-[38%] 2xl:block"
+            style={{
+              background:
+                "radial-gradient(60% 55% at 70% 55%, color-mix(in oklab, var(--brand-navy) 45%, transparent), transparent 72%)",
+            }}
+          />
+          {/* Ultra-wide — a whisper of a route line, drawn as a compass arc */}
+          <svg
+            aria-hidden
+            viewBox="0 0 800 800"
+            className="pointer-events-none absolute -right-24 top-1/2 hidden h-[42rem] w-[42rem] -translate-y-1/2 opacity-[0.09] 2xl:block"
+            fill="none"
+          >
+            <circle cx="400" cy="400" r="360" stroke="white" strokeWidth="0.6" strokeDasharray="2 6" />
+            <circle cx="400" cy="400" r="240" stroke="white" strokeWidth="0.6" />
+            <path d="M60,540 C220,300 480,220 740,320" stroke="var(--brand-sunrise)" strokeWidth="1" strokeDasharray="4 8" />
+            <circle cx="740" cy="320" r="3" fill="var(--brand-sunrise)" />
+            <circle cx="60" cy="540" r="3" fill="white" />
+          </svg>
+
+          {/* Atmospheric depth — invisible-luxury mist. Extremely low opacity by design. */}
+          <div aria-hidden className="absolute inset-0 mist-a" />
+          <div aria-hidden className="absolute inset-0 mist-b" />
+          <div aria-hidden className="absolute inset-0 dust-motes" />
+
           {/* Vignette + film grain for a photographed feel */}
           <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_25%,transparent_38%,oklch(0.09_0.03_245/0.65)_100%)]" />
           <div className="absolute inset-0 grain" aria-hidden />
@@ -293,7 +343,7 @@ function LandingPage() {
         </div>
 
         {/* ── Hero content ───────────────────────────────────── */}
-        <Container className="relative z-10 flex flex-1 flex-col justify-center pt-24 pb-28 md:pt-32 md:pb-24">
+        <Container className="relative z-10 flex flex-1 flex-col justify-center pt-20 pb-20 sm:pt-24 sm:pb-28 md:pt-32 md:pb-24 [@media(max-height:640px)]:pt-16 [@media(max-height:640px)]:pb-14">
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-[10px] font-mono uppercase tracking-[0.28em] text-white/80 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
@@ -366,31 +416,33 @@ function LandingPage() {
                     <button
                       type="submit"
                       aria-label="Begin journey"
-                      className="press mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:h-12 md:px-5"
+                      className="press focus-ring-hero mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-medium text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:h-12 md:px-5"
                     >
                       Begin <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
 
-                  {/* Toolbelt — voice, attach, autocomplete, shortcut */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 px-4 py-2.5 text-[11px] text-white/60">
-                    <div className="flex items-center gap-1">
-                      <button type="button" aria-label="Voice input" className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                  {/* Toolbelt — voice, attach, autocomplete, shortcut.
+                      Uses grid on <380 so nothing wraps awkwardly, promotes to flex at sm. */}
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-white/10 px-3 py-2.5 text-[11px] text-white/60 sm:flex sm:flex-wrap sm:justify-between sm:px-4">
+                    <div className="flex min-w-0 items-center gap-1">
+                      <button type="button" aria-label="Voice input" className="press focus-ring-hero inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
                         <Mic className="h-3.5 w-3.5" />
                       </button>
-                      <button type="button" aria-label="Attach itinerary or photo" className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                      <button type="button" aria-label="Attach itinerary or photo" className="press focus-ring-hero inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
                         <Paperclip className="h-3.5 w-3.5" />
                       </button>
                       <span className="mx-1 hidden h-4 w-px bg-white/15 sm:inline-block" />
-                      <span className="hidden items-center gap-1.5 font-mono uppercase tracking-[0.18em] sm:inline-flex">
-                        <span className="h-1 w-1 rounded-full bg-brand-mint" />
+                      <span className="hidden items-center gap-1.5 truncate font-mono uppercase tracking-[0.18em] sm:inline-flex">
+                        <span className="h-1 w-1 shrink-0 rounded-full bg-brand-mint" />
                         Grounded · Weather-aware · Visa-aware
                       </span>
                     </div>
-                    <span className="inline-flex items-center gap-1 font-mono">
+                    <span className="hidden items-center gap-1 whitespace-nowrap font-mono min-[380px]:inline-flex">
                       <Command className="h-3 w-3" />⏎ to begin
                     </span>
                   </div>
+
                 </div>
               </div>
 
