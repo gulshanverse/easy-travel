@@ -375,13 +375,12 @@ export function CenterCanvas() {
       <div className="mx-auto max-w-6xl px-6 pb-40 pt-8 sm:px-10 sm:pt-10">
         {/* Journey header — editorial magazine masthead */}
         <section className="mb-10">
-          <div className="relative overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-2)] ring-1 ring-black/5">
-            <div className="relative min-h-[360px] sm:min-h-[420px]">
-              <img src={heroOcean} alt="" className="absolute inset-0 h-full w-full object-cover ken-burns" />
-              <div className="absolute inset-0 bg-gradient-to-tr from-brand-ink/85 via-brand-ink/45 to-brand-ink/10" />
-              <div className="absolute inset-0 grain" aria-hidden />
+          <div className="relative isolate overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-2)] ring-1 ring-black/5">
+            <img src={heroOcean} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover ken-burns" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-brand-ink/85 via-brand-ink/45 to-brand-ink/10" />
+            <div className="absolute inset-0 -z-10 grain" aria-hidden />
 
-              <div className="absolute inset-0 flex flex-col justify-end p-6 text-white sm:p-10">
+            <div className="flex min-h-[380px] flex-col justify-end p-6 text-white sm:min-h-[440px] sm:p-10">
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-brand-sunrise">
                   Journey · Draft
                 </p>
