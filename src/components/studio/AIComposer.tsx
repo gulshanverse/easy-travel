@@ -1,14 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { Send, Sparkles, Loader2, Command, MapPin, CalendarDays, Wallet, Users } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Send, Sparkles, Loader2, Command, MapPin, CalendarDays, Wallet, Users, CloudSun, Thermometer, Clock } from "lucide-react";
 import { plannerClient } from "@/lib/capabilities/sdk";
 import { plannerOutputToJourney, useStudio } from "./state/StudioContext";
 import { cn } from "@/lib/utils";
 
-/**
- * The AI Composer is the heart of Easy Trip.
- * It should not read as a search bar — it reads as an invitation to
- * a conversation with a well-travelled companion.
- */
 const rotatingPlaceholders = [
   "Design your next journey — 'Five slow days in Lisbon in October.'",
   "Try 'A weekend of onsen and soba near Tokyo.'",
@@ -22,6 +17,46 @@ const contextChips = [
   { icon: Users, label: "Just me" },
   { icon: Wallet, label: "Comfortable" },
 ];
+
+/** Tiny inline "world model" — surfaces live suggestions as the user types.
+ *  Purely presentational; grounded planning still happens on submit. */
+const knownPlaces: Array<{ match: RegExp; name: string; region: string; season: string; temp: string }> = [
+  { match: /\b(lisbon|portugal|porto|sintra)\b/i, name: "Lisbon", region: "Portugal", season: "Apr–Oct", temp: "18–26°C" },
+  { match: /\b(tokyo|japan|kyoto|osaka|kamakura|ryokan)\b/i, name: "Japan", region: "Honshū", season: "Mar–May · Oct–Nov", temp: "14–22°C" },
+  { match: /\b(bali|indonesia|ubud|canggu)\b/i, name: "Bali", region: "Indonesia", season: "Apr–Oct", temp: "26–30°C" },
+  { match: /\b(iceland|reykjavik|aurora|northern lights)\b/i, name: "Iceland", region: "Nordic", season: "Sep–Mar", temp: "−2–4°C" },
+  { match: /\b(marrakech|morocco|sahara|fez)\b/i, name: "Marrakech", region: "Morocco", season: "Oct–Apr", temp: "18–24°C" },
+  { match: /\b(dolomites|alps|hut-to-hut)\b/i, name: "Dolomites", region: "Italy", season: "Jun–Sep", temp: "10–20°C" },
+  { match: /\b(patagonia|argentina|chile|torres del paine)\b/i, name: "Patagonia", region: "South America", season: "Nov–Mar", temp: "6–18°C" },
+  { match: /\b(crete|greece|santorini|athens|kefalonia)\b/i, name: "Greece", region: "Mediterranean", season: "May–Oct", temp: "20–30°C" },
+  { match: /\b(norway|tromsø|fjord|lofoten)\b/i, name: "Norway", region: "Nordic", season: "Feb–Sep", temp: "0–15°C" },
+];
+
+function detectDuration(text: string): string | null {
+  const m = text.match(/(\d+)\s*(day|days|night|nights|week|weeks|month|months)/i);
+  if (!m) {
+    if (/weekend/i.test(text)) return "2–3 nights";
+    if (/honeymoon/i.test(text)) return "10–14 nights";
+    return null;
+  }
+  const n = parseInt(m[1], 10);
+  const u = m[2].toLowerCase();
+  if (u.startsWith("week")) return `${n * 7} nights`;
+  if (u.startsWith("month")) return `~${n * 30} nights`;
+  return `${n} ${n === 1 ? "night" : "nights"}`;
+}
+
+function detectBudget(text: string): string | null {
+  const m = text.match(/([₹$€£¥])\s?([\d,]+)\s*(k)?/i);
+  if (m) {
+    const raw = parseInt(m[2].replace(/,/g, ""), 10);
+    const val = m[3] ? raw * 1000 : raw;
+    return `${m[1]}${val.toLocaleString()} budget`;
+  }
+  if (/\b(luxury|boutique|ryokan|aman|five[- ]star)\b/i.test(text)) return "Luxury tier";
+  if (/\b(budget|cheap|backpack|hostel)\b/i.test(text)) return "Budget tier";
+  return null;
+}
 
 export function AIComposer({ className }: { className?: string }) {
   const { actions } = useStudio();
@@ -69,6 +104,16 @@ export function AIComposer({ className }: { className?: string }) {
   };
 
   const active = focused || busy || prompt.length > 0;
+
+  // Live intelligence — cheap, local, updates as you type
+  const intel = useMemo(() => {
+    if (!prompt.trim()) return null;
+    const place = knownPlaces.find((p) => p.match.test(prompt));
+    const duration = detectDuration(prompt);
+    const budget = detectBudget(prompt);
+    if (!place && !duration && !budget) return null;
+    return { place, duration, budget };
+  }, [prompt]);
 
   return (
     <div
@@ -152,6 +197,39 @@ export function AIComposer({ className }: { className?: string }) {
           <p role="alert" className="px-4 pb-2 text-xs text-destructive">
             {error}
           </p>
+        )}
+
+        {/* Live intel — companion previews what it's understanding as you type */}
+        {intel && (
+          <div className="flex flex-wrap items-center gap-1.5 border-t border-border/40 bg-brand-coral/[0.04] px-3 pt-2 pb-1.5 rise-in">
+            <span className="mr-1 font-mono text-[10px] uppercase tracking-[0.22em] text-brand-coral/80">
+              Reading
+            </span>
+            {intel.place && (
+              <>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-coral/30 bg-background px-2.5 py-1 text-[11px] text-foreground/85">
+                  <MapPin className="h-3 w-3 text-brand-coral" /> {intel.place.name}
+                  <span className="text-muted-foreground">· {intel.place.region}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                  <CloudSun className="h-3 w-3 text-brand-sunrise" /> Best: {intel.place.season}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                  <Thermometer className="h-3 w-3 text-brand-teal" /> {intel.place.temp}
+                </span>
+              </>
+            )}
+            {intel.duration && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                <Clock className="h-3 w-3 text-brand-mint" /> {intel.duration}
+              </span>
+            )}
+            {intel.budget && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] text-foreground/75">
+                <Wallet className="h-3 w-3 text-brand-coral" /> {intel.budget}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Context chips — the companion's default assumptions, editable feel */}
