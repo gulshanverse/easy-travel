@@ -1,14 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { Send, Sparkles, Loader2, Command, MapPin, CalendarDays, Wallet, Users } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Send, Sparkles, Loader2, Command, MapPin, CalendarDays, Wallet, Users, CloudSun, Thermometer, Clock } from "lucide-react";
 import { plannerClient } from "@/lib/capabilities/sdk";
 import { plannerOutputToJourney, useStudio } from "./state/StudioContext";
 import { cn } from "@/lib/utils";
 
-/**
- * The AI Composer is the heart of Easy Trip.
- * It should not read as a search bar — it reads as an invitation to
- * a conversation with a well-travelled companion.
- */
 const rotatingPlaceholders = [
   "Design your next journey — 'Five slow days in Lisbon in October.'",
   "Try 'A weekend of onsen and soba near Tokyo.'",
@@ -22,6 +17,46 @@ const contextChips = [
   { icon: Users, label: "Just me" },
   { icon: Wallet, label: "Comfortable" },
 ];
+
+/** Tiny inline "world model" — surfaces live suggestions as the user types.
+ *  Purely presentational; grounded planning still happens on submit. */
+const knownPlaces: Array<{ match: RegExp; name: string; region: string; season: string; temp: string }> = [
+  { match: /\b(lisbon|portugal|porto|sintra)\b/i, name: "Lisbon", region: "Portugal", season: "Apr–Oct", temp: "18–26°C" },
+  { match: /\b(tokyo|japan|kyoto|osaka|kamakura|ryokan)\b/i, name: "Japan", region: "Honshū", season: "Mar–May · Oct–Nov", temp: "14–22°C" },
+  { match: /\b(bali|indonesia|ubud|canggu)\b/i, name: "Bali", region: "Indonesia", season: "Apr–Oct", temp: "26–30°C" },
+  { match: /\b(iceland|reykjavik|aurora|northern lights)\b/i, name: "Iceland", region: "Nordic", season: "Sep–Mar", temp: "−2–4°C" },
+  { match: /\b(marrakech|morocco|sahara|fez)\b/i, name: "Marrakech", region: "Morocco", season: "Oct–Apr", temp: "18–24°C" },
+  { match: /\b(dolomites|alps|hut-to-hut)\b/i, name: "Dolomites", region: "Italy", season: "Jun–Sep", temp: "10–20°C" },
+  { match: /\b(patagonia|argentina|chile|torres del paine)\b/i, name: "Patagonia", region: "South America", season: "Nov–Mar", temp: "6–18°C" },
+  { match: /\b(crete|greece|santorini|athens|kefalonia)\b/i, name: "Greece", region: "Mediterranean", season: "May–Oct", temp: "20–30°C" },
+  { match: /\b(norway|tromsø|fjord|lofoten)\b/i, name: "Norway", region: "Nordic", season: "Feb–Sep", temp: "0–15°C" },
+];
+
+function detectDuration(text: string): string | null {
+  const m = text.match(/(\d+)\s*(day|days|night|nights|week|weeks|month|months)/i);
+  if (!m) {
+    if (/weekend/i.test(text)) return "2–3 nights";
+    if (/honeymoon/i.test(text)) return "10–14 nights";
+    return null;
+  }
+  const n = parseInt(m[1], 10);
+  const u = m[2].toLowerCase();
+  if (u.startsWith("week")) return `${n * 7} nights`;
+  if (u.startsWith("month")) return `~${n * 30} nights`;
+  return `${n} ${n === 1 ? "night" : "nights"}`;
+}
+
+function detectBudget(text: string): string | null {
+  const m = text.match(/([₹$€£¥])\s?([\d,]+)\s*(k)?/i);
+  if (m) {
+    const raw = parseInt(m[2].replace(/,/g, ""), 10);
+    const val = m[3] ? raw * 1000 : raw;
+    return `${m[1]}${val.toLocaleString()} budget`;
+  }
+  if (/\b(luxury|boutique|ryokan|aman|five[- ]star)\b/i.test(text)) return "Luxury tier";
+  if (/\b(budget|cheap|backpack|hostel)\b/i.test(text)) return "Budget tier";
+  return null;
+}
 
 export function AIComposer({ className }: { className?: string }) {
   const { actions } = useStudio();
