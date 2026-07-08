@@ -32,16 +32,16 @@ export function AIComposer({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative rounded-[28px] p-[1.5px] transition-all duration-500",
+        "relative rounded-[26px] p-[1.5px] transition-all duration-500",
         focused || busy
-          ? "bg-[conic-gradient(from_180deg,var(--brand-teal),var(--brand-mint),var(--brand-teal))] shadow-[var(--shadow-glow)]"
+          ? "bg-[conic-gradient(from_180deg,var(--brand-coral),var(--brand-sunrise),var(--brand-coral))] shadow-[var(--shadow-coral)]"
           : "bg-gradient-to-br from-border via-border/60 to-border/40 shadow-[var(--shadow-2)]",
         className,
       )}
     >
-      <div className="rounded-[26px] glass border border-border/40">
+      <div className="rounded-[calc(26px-1.5px)] glass border border-border/40">
         <div className="flex items-start gap-2 p-2.5">
-          <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-navy to-brand-teal text-white shadow-[var(--shadow-1)]">
+          <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-coral to-brand-sunrise text-white shadow-[var(--shadow-1)]">
             <Sparkles className="h-4 w-4" />
           </span>
           <label className="sr-only" htmlFor="studio-composer">Ask the travel companion</label>
@@ -51,7 +51,7 @@ export function AIComposer({ className }: { className?: string }) {
             onChange={(e) => setPrompt(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void submit(); } }}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void submit(); } }}
             rows={1}
             placeholder="Design your next journey — 'Five slow days in Lisbon in October, food and design.'"
             className="min-h-10 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-snug outline-none placeholder:text-muted-foreground"
@@ -62,9 +62,9 @@ export function AIComposer({ className }: { className?: string }) {
             disabled={busy || !prompt.trim()}
             aria-label="Send to companion"
             className={cn(
-              "mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-primary-foreground transition-all duration-300",
-              "bg-gradient-to-br from-brand-navy to-brand-teal shadow-[var(--shadow-2)]",
-              "hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]",
+              "press mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white transition-all duration-300",
+              "bg-brand-ink shadow-[var(--shadow-2)]",
+              "hover:-translate-y-0.5 hover:shadow-[var(--shadow-coral)]",
               "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0",
             )}
           >
@@ -72,9 +72,12 @@ export function AIComposer({ className }: { className?: string }) {
           </button>
         </div>
         {error && <p role="alert" className="px-4 pb-2 text-xs text-destructive">{error}</p>}
-        <div className="flex items-center justify-between gap-2 border-t border-border/40 px-4 py-1.5 text-[10px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1"><Sparkles className="h-3 w-3 text-brand-teal" /> Grounded in real data · never a hallucinated hotel.</span>
-          <span className="inline-flex items-center gap-1"><Command className="h-3 w-3" />⏎ to send</span>
+        <div className="flex items-center justify-between gap-2 border-t border-border/40 px-4 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1 w-1 rounded-full bg-brand-mint" />
+            Grounded in real data — never a hallucinated hotel.
+          </span>
+          <span className="inline-flex items-center gap-1"><Command className="h-3 w-3" />⏎</span>
         </div>
       </div>
     </div>
