@@ -374,7 +374,7 @@ export function CenterCanvas() {
         {/* Journey header — editorial magazine masthead */}
         <section className="mb-10">
           <div className="relative overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-2)] ring-1 ring-black/5">
-            <div className="relative aspect-[21/7] sm:aspect-[21/6]">
+            <div className="relative min-h-[360px] sm:min-h-[420px]">
               <img src={heroOcean} alt="" className="absolute inset-0 h-full w-full object-cover ken-burns" />
               <div className="absolute inset-0 bg-gradient-to-tr from-brand-ink/85 via-brand-ink/45 to-brand-ink/10" />
               <div className="absolute inset-0 grain" aria-hidden />
