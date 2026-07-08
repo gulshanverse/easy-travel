@@ -11,6 +11,9 @@ import { Container } from "@/components/site/Container";
 import { cn } from "@/lib/utils";
 
 import heroImg from "@/assets/hero-ocean.jpg";
+// Responsive hero — AVIF/WebP/JPEG at multiple widths for premium LCP.
+// vite-imagetools generates the variants at build; JPEG stays as fallback.
+import heroPicture from "@/assets/hero-ocean.jpg?w=800;1200;1600;2000&format=avif;webp;jpg&as=picture";
 import destTokyo from "@/assets/dest-tokyo.jpg";
 import destBali from "@/assets/dest-bali.jpg";
 import destIceland from "@/assets/dest-iceland.jpg";
