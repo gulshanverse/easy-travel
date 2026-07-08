@@ -485,6 +485,251 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SPRINT 2 — The Living Homepage
+   Every layer is decorative, GPU-only (transform/opacity/filter),
+   pointer-events: none, aria-hidden by convention at the call site.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Chapter tick — punctuation between chapters */
+@keyframes chapter-tick-in {
+  0%   { transform: rotate(-8deg); opacity: 0; }
+  100% { transform: rotate(0deg);  opacity: 1; }
+}
+@utility chapter-tick { animation: chapter-tick-in 500ms var(--ease-cinema) both; }
+
+/* Cursor bloom — pointer trace in the hero */
+@utility cursor-bloom {
+  pointer-events: none;
+  position: absolute;
+  width: 360px; height: 360px; border-radius: 9999px;
+  transform: translate3d(-50%, -50%, 0);
+  background: radial-gradient(circle, color-mix(in oklab, var(--brand-sunrise) 24%, transparent) 0%, transparent 62%);
+  mix-blend-mode: screen;
+  filter: blur(24px);
+  will-change: transform, opacity;
+  transition: opacity 400ms var(--ease-cinema);
+}
+
+/* Bird glide */
+@keyframes bird-glide {
+  0%   { transform: translate3d(-8vw, 0, 0) rotate(-2deg); opacity: 0; }
+  10%  { opacity: 0.55; }
+  85%  { opacity: 0.55; }
+  100% { transform: translate3d(108vw, -4vh, 0) rotate(2deg); opacity: 0; }
+}
+@utility bird-glide { animation: bird-glide 14s ease-in-out both; }
+
+/* Hero water shimmer */
+@keyframes water-shimmer-hero {
+  0%   { transform: translate3d(-30%, 0, 0) skewX(-14deg); opacity: 0; }
+  25%  { opacity: 0.35; }
+  75%  { opacity: 0.35; }
+  100% { transform: translate3d(130%, 0, 0) skewX(-14deg); opacity: 0; }
+}
+@utility water-shimmer-hero {
+  position: absolute; inset: auto 0 6% 0; height: 40%;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, white 18%, transparent), transparent);
+  mix-blend-mode: overlay;
+  filter: blur(28px);
+  animation: water-shimmer-hero 40s ease-in-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* Starfield */
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.9; }
+}
+@utility starfield {
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 6% 12%, white, transparent 60%),
+    radial-gradient(1px 1px at 22% 8%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 40% 20%, white, transparent 60%),
+    radial-gradient(1px 1px at 58% 6%, white, transparent 60%),
+    radial-gradient(1px 1px at 74% 18%, white, transparent 60%),
+    radial-gradient(1px 1px at 88% 10%, white, transparent 60%),
+    radial-gradient(1px 1px at 14% 34%, white, transparent 60%),
+    radial-gradient(1px 1px at 30% 42%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 46% 30%, white, transparent 60%),
+    radial-gradient(1px 1px at 64% 38%, white, transparent 60%),
+    radial-gradient(1px 1px at 82% 26%, white, transparent 60%);
+  animation: star-twinkle 4.4s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* ── Destination environments (Chapter 03 hover layers) ─────── */
+
+/* Iceland — Aurora ribbon */
+@keyframes aurora-ribbon {
+  0%   { transform: translate3d(-6%, 0, 0) scaleX(0.98); opacity: 0.55; }
+  50%  { transform: translate3d(4%, -2%, 0) scaleX(1.04); opacity: 0.85; }
+  100% { transform: translate3d(-6%, 0, 0) scaleX(0.98); opacity: 0.55; }
+}
+@utility env-aurora {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 22% at 50% 24%, color-mix(in oklab, var(--brand-mint) 55%, transparent), transparent 70%),
+    radial-gradient(50% 18% at 30% 30%, color-mix(in oklab, var(--brand-teal) 45%, transparent), transparent 72%);
+  mix-blend-mode: screen; filter: blur(16px);
+  animation: aurora-ribbon 8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Iceland — drifting snow */
+@keyframes snow-fall {
+  0%   { transform: translate3d(0, -8%, 0); }
+  100% { transform: translate3d(-2%, 108%, 0); }
+}
+@utility env-snow {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 10%, white, transparent 60%),
+    radial-gradient(1px 1px at 28% 30%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 46% 18%, white, transparent 60%),
+    radial-gradient(1px 1px at 62% 42%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 78% 26%, white, transparent 60%),
+    radial-gradient(1px 1px at 88% 8%, white, transparent 60%),
+    radial-gradient(1px 1px at 8% 58%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 34% 66%, white, transparent 60%),
+    radial-gradient(1px 1px at 56% 84%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 76% 74%, white, transparent 60%);
+  animation: snow-fall 16s linear infinite;
+  will-change: transform;
+  opacity: 0.7;
+}
+
+/* Tokyo — city window lights */
+@keyframes city-flicker {
+  0%, 100% { opacity: 0.35; }
+  40%      { opacity: 0.85; }
+  60%      { opacity: 0.55; }
+}
+@utility env-city {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1.4px 1.4px at 14% 62%, color-mix(in oklab, var(--brand-sunrise) 90%, white), transparent 60%),
+    radial-gradient(1.2px 1.2px at 22% 68%, color-mix(in oklab, var(--brand-coral) 80%, white), transparent 60%),
+    radial-gradient(1.2px 1.2px at 34% 58%, white, transparent 60%),
+    radial-gradient(1px 1px at 42% 72%, color-mix(in oklab, var(--brand-sunrise) 80%, white), transparent 60%),
+    radial-gradient(1.4px 1.4px at 56% 64%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 66% 74%, color-mix(in oklab, var(--brand-coral) 80%, white), transparent 60%),
+    radial-gradient(1px 1px at 74% 66%, white, transparent 60%),
+    radial-gradient(1.2px 1.2px at 82% 78%, color-mix(in oklab, var(--brand-sunrise) 90%, white), transparent 60%),
+    radial-gradient(1px 1px at 90% 60%, white, transparent 60%);
+  mix-blend-mode: screen;
+  animation: city-flicker 6s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* Marrakech — warm sun bloom */
+@keyframes sun-pan {
+  0%   { transform: translate3d(-10%, 4%, 0); opacity: 0.55; }
+  50%  { transform: translate3d(8%, -4%, 0);  opacity: 0.85; }
+  100% { transform: translate3d(-10%, 4%, 0); opacity: 0.55; }
+}
+@utility env-warmbloom {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(55% 45% at 32% 42%, color-mix(in oklab, var(--brand-sunrise) 65%, transparent), transparent 72%);
+  mix-blend-mode: screen; filter: blur(20px);
+  animation: sun-pan 20s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Dolomites — cold alpine mist */
+@keyframes cold-mist {
+  0%   { transform: translate3d(-4%, 0, 0); opacity: 0.35; }
+  50%  { transform: translate3d(4%, -1%, 0); opacity: 0.65; }
+  100% { transform: translate3d(-4%, 0, 0); opacity: 0.35; }
+}
+@utility env-mist {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 22% at 30% 66%, color-mix(in oklab, white 60%, transparent), transparent 70%),
+    radial-gradient(60% 24% at 72% 78%, color-mix(in oklab, var(--brand-sky) 55%, transparent), transparent 72%);
+  mix-blend-mode: screen; filter: blur(22px);
+  animation: cold-mist 24s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Bali — water ribbon */
+@keyframes water-ribbon {
+  0%   { transform: translate3d(-40%, 0, 0); opacity: 0; }
+  30%  { opacity: 0.7; }
+  70%  { opacity: 0.7; }
+  100% { transform: translate3d(40%, 0, 0); opacity: 0; }
+}
+@utility env-water {
+  position: absolute; inset: auto 0 12% 0; height: 22%; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, white 26%, transparent), transparent);
+  mix-blend-mode: overlay; filter: blur(10px);
+  animation: water-ribbon 8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Lisbon — warm pan + tram flicker */
+@utility env-lisbon-pan {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(50% 40% at 22% 62%, color-mix(in oklab, var(--brand-sunrise) 55%, transparent), transparent 72%);
+  mix-blend-mode: screen; filter: blur(24px);
+  animation: sun-pan 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes tram-flicker {
+  0%, 100% { opacity: 0.4; }
+  35%      { opacity: 0.95; }
+  55%      { opacity: 0.55; }
+  80%      { opacity: 0.9; }
+}
+@utility env-tram {
+  position: absolute; inset: auto 8% 22% auto; width: 3px; height: 3px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--brand-sunrise) 90%, white);
+  box-shadow:
+    -18px 6px 0 0 color-mix(in oklab, var(--brand-coral) 80%, white),
+    0 0 12px 3px color-mix(in oklab, var(--brand-sunrise) 60%, transparent),
+    -18px 6px 12px 3px color-mix(in oklab, var(--brand-coral) 55%, transparent);
+  animation: tram-flicker 5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* Passport stamp — Chapter 07 */
+@keyframes stamp-draw {
+  0%   { stroke-dashoffset: 620; opacity: 0; transform: rotate(-8deg); transform-origin: center; }
+  20%  { opacity: 1; }
+  100% { stroke-dashoffset: 0;   opacity: 1; transform: rotate(0deg); transform-origin: center; }
+}
+@utility stamp-draw {
+  stroke-dasharray: 620;
+  stroke-dashoffset: 620;
+  animation: stamp-draw 1200ms var(--ease-cinema) both;
+}
+
+/* Sunrise wipe — Journey Studio departure */
+@keyframes sunrise-wipe-kf {
+  0%   { transform: translate3d(0, 100%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@utility sunrise-wipe {
+  position: fixed; inset: 0; z-index: 100; pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--brand-sunrise) 90%, transparent), var(--brand-ink));
+  transform: translate3d(0, 100%, 0);
+  animation: sunrise-wipe-kf 560ms var(--ease-cinema) both;
+  will-change: transform;
+}
+
+/* Coral rule — draw on scroll-in */
+@keyframes rule-draw {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@utility rule-draw {
+  transform-origin: left center;
+  animation: rule-draw 900ms var(--ease-cinema) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
