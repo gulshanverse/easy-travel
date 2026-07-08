@@ -384,11 +384,14 @@ function LandingPage() {
     return () => window.clearTimeout(id);
   }, [birdKey, reduced]);
 
-  const stampDate = useMemo(() => {
+  const [stampDate, setStampDate] = useState("");
+  useEffect(() => {
     try {
-      return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-        .format(new Date()).toUpperCase();
-    } catch { return ""; }
+      setStampDate(
+        new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+          .format(new Date()).toUpperCase()
+      );
+    } catch { /* noop */ }
   }, []);
 
   return (
@@ -901,7 +904,7 @@ function LandingPage() {
               <span className="block text-brand-sunrise">We just help you get there first.</span>
             </p>
             <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-white/45">
-              <time dateTime={new Date().toISOString().slice(0, 10)}>{stampDate}</time>
+              <time suppressHydrationWarning>{stampDate}</time>
               {" · "}issued by Easy Trip
             </p>
           </div>
