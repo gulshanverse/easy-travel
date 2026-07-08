@@ -391,6 +391,32 @@
 }
 @utility ring-pulse { animation: ring-pulse 2.4s ease-out infinite; }
 
+/* Marquee for editorial motion strips */
+@keyframes marquee-x {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+@utility marquee { animation: marquee-x 60s linear infinite; }
+
+/* Aurora border glow — premium chrome for hero cards */
+@utility aurora-ring {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--brand-coral) 22%, transparent),
+    0 30px 60px -30px color-mix(in oklab, var(--brand-coral) 40%, transparent),
+    0 10px 30px -12px color-mix(in oklab, var(--brand-teal) 30%, transparent);
+}
+
+/* Editorial rule — hairline with coral fade */
+@utility rule-editorial {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in oklab, var(--brand-coral) 40%, transparent) 20%,
+    color-mix(in oklab, var(--foreground) 22%, transparent) 50%,
+    color-mix(in oklab, var(--brand-coral) 40%, transparent) 80%,
+    transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
