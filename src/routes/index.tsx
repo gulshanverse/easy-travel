@@ -384,11 +384,14 @@ function LandingPage() {
     return () => window.clearTimeout(id);
   }, [birdKey, reduced]);
 
-  const stampDate = useMemo(() => {
+  const [stampDate, setStampDate] = useState("");
+  useEffect(() => {
     try {
-      return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-        .format(new Date()).toUpperCase();
-    } catch { return ""; }
+      setStampDate(
+        new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+          .format(new Date()).toUpperCase()
+      );
+    } catch { /* noop */ }
   }, []);
 
   return (
