@@ -322,7 +322,7 @@ function LandingPage() {
               className="mt-10 max-w-2xl"
             >
               <div
-                className={cnHero(
+                className={cn(
                   "group relative rounded-[28px] p-[1.5px] transition-all duration-500",
                   focused || prompt
                     ? "bg-[conic-gradient(from_180deg,var(--brand-coral),var(--brand-sunrise),var(--brand-teal),var(--brand-coral))] shadow-[0_40px_120px_-30px_oklch(0_0_0/0.65)]"
