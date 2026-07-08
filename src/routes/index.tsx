@@ -343,7 +343,7 @@ function LandingPage() {
         </div>
 
         {/* ── Hero content ───────────────────────────────────── */}
-        <Container className="relative z-10 flex flex-1 flex-col justify-center pt-24 pb-28 md:pt-32 md:pb-24">
+        <Container className="relative z-10 flex flex-1 flex-col justify-center pt-20 pb-20 sm:pt-24 sm:pb-28 md:pt-32 md:pb-24 [@media(max-height:640px)]:pt-16 [@media(max-height:640px)]:pb-14">
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-[10px] font-mono uppercase tracking-[0.28em] text-white/80 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
