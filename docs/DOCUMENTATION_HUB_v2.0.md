@@ -111,7 +111,8 @@ Every EDS §Interfaces item MUST cite the PRD requirement or ADR that motivated 
 | TIOS Hardening | Hardening addendum | Platform Eng | Ops | Approved | 1.0 | Semiannual |
 | TIE | Domain engine | Platform Eng | Capabilities | Approved | 1.0 | Quarterly |
 | Capabilities | Capability layer | Platform Eng | Impl | Approved | 1.0 | Quarterly |
-| EDS-001 | Memory engineering | Intelligence Eng | Impl, Tests | Frozen | 1.1 | Amendment-only |
+| EDS-001 v1.1 | Memory engineering (historical) | Intelligence Eng | Impl, Tests | Superseded | 1.1 | Successor: v2.0 |
+| EDS-001 v2.0 | Memory engineering (production spec) | Intelligence Eng | Impl, Tests | Frozen | 2.0 | Amendment-only |
 | EDS-002 | POE engineering | Intelligence Eng | Impl, Tests | Frozen | 1.0 | Amendment-only |
 | EBP-001 | Engineering constitution | Platform Governance + Eng Leadership | All Eng | Frozen | 1.0 | Amendment-only |
 | Documentation Hub v2.0 | Governance root | Governance | All | Frozen | 2.0 | Amendment-only |
