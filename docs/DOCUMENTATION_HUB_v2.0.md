@@ -59,6 +59,7 @@ Every node declares Parent, Children, Dependencies, Consumers — see §2 and §
 | Capabilities | TIOS Contracts | — | TIOS Contracts | Impl | TIE |
 | EDS-001 Memory Engine | JIP v1.3 | — | JIP v1.3 | EDS-002, Impl, Tests | JIP v1.3 |
 | EDS-002 POE | JIP v1.3 | — | JIP v1.3, EDS-001, AI Core | Impl, Tests | AI Core, EDS-001 |
+| EBP-001 Engineering Blueprint | Hub v2.0 | — | Vision, PRD v2.0, JIP v1.3, EDS-001, EDS-002 | All Impl, All future EDS | JIP v1.3, EDS-001, EDS-002, Glossary |
 | Documentation Hub v2.0 (this) | — (governance root) | Glossary, Changelog, ADR log, EDR log, Roadmap, Traceability, Ownership, Lifecycle, Workflow, Repo Map | All docs (for indexing) | All contributors | All |
 | Glossary | Hub v2.0 | — | Hub v2.0 | All docs | — |
 | Changelog | Hub v2.0 | — | Hub v2.0 | All docs | — |
@@ -111,6 +112,7 @@ Every EDS §Interfaces item MUST cite the PRD requirement or ADR that motivated 
 | Capabilities | Capability layer | Platform Eng | Impl | Approved | 1.0 | Quarterly |
 | EDS-001 | Memory engineering | Intelligence Eng | Impl, Tests | Frozen | 1.1 | Amendment-only |
 | EDS-002 | POE engineering | Intelligence Eng | Impl, Tests | Frozen | 1.0 | Amendment-only |
+| EBP-001 | Engineering constitution | Platform Governance + Eng Leadership | All Eng | Frozen | 1.0 | Amendment-only |
 | Documentation Hub v2.0 | Governance root | Governance | All | Frozen | 2.0 | Amendment-only |
 | Glossary | Canonical terms | Governance | All | Approved | 1.1 | Quarterly |
 | Changelog | Doc history | Governance | All | Living | rolling | Continuous |

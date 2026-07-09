@@ -2,7 +2,14 @@
 
 Governed by `docs/DOCUMENTATION_HUB_v2.0.md`.
 
+## 2026-07-09 — EBP-001 Engineering Constitution Freeze
+- **Added** `docs/engineering/EBP-001_ENGINEERING_BLUEPRINT.md` v1.0 — engineering constitution defining philosophy, module boundaries, dependency rules, event standards, error/logging/observability, testing, security, performance budgets, accessibility, design-system engineering, AI engineering standards, Git workflow, Definition of Done, governance, and traceability. **Frozen.**
+- **Added** `docs/Knowledge_Graph.mmd` — Mermaid source for the master knowledge graph referenced by Hub v2.0 §1; EBP-001 registered as a governance node.
+- **Updated** `docs/DOCUMENTATION_HUB_v2.0.md` — EBP-001 registered in §2 dependency graph and §4 ownership matrix; §1 knowledge graph annotated with EBP node.
+- **Governance:** JIP v1.3, EDS-001, EDS-002, Hub v2.0 remain untouched. No product, UI, backend, API, routing, database, or auth code was modified.
+
 ## 2026-07-09 — Documentation Hub v2.0 Freeze
+
 - **Added** `docs/DOCUMENTATION_HUB_v2.0.md` — final governance root, supersedes v1.0. Frozen.
 - **Added** `docs/ENGINEERING_ROADMAP.md` v1.0 — delivery waves + maturity dashboard.
 - **Added** `docs/adr/README.md` (updated) and `docs/edr/README.md` (updated).
