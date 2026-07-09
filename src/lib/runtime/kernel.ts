@@ -66,7 +66,7 @@ export class RuntimeKernel {
     });
     this.registry = new ServiceRegistry();
     this.capabilities = new CapabilityRuntime({
-      eventBus: this.eventBus,
+      eventBus: this.eventBus as unknown as EventBus<CapabilityRuntimeEvents>,
       metrics: this.metrics,
       telemetry: this.telemetry,
       config: this.config,
