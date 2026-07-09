@@ -57,8 +57,9 @@ Every node declares Parent, Children, Dependencies, Consumers — see §2 and §
 | TIOS Hardening | TIOS | — | TIOS | Ops (future) | — |
 | TIE | JIP v1.3 | — | JIP v1.3 | Capabilities, Impl | — |
 | Capabilities | TIOS Contracts | — | TIOS Contracts | Impl | TIE |
-| EDS-001 Memory Engine | JIP v1.3 | — | JIP v1.3 | EDS-002, Impl, Tests | JIP v1.3 |
-| EDS-002 POE | JIP v1.3 | — | JIP v1.3, EDS-001, AI Core | Impl, Tests | AI Core, EDS-001 |
+| EDS-001 Memory Engine v1.1 | JIP v1.3 | EDS-001 v2.0 (successor) | JIP v1.3 | — (historical) | JIP v1.3 |
+| EDS-001 v2.0 Memory Engine (Production Spec) | JIP v1.3 | — | JIP v1.3, EDS-001 v1.1, EBP-001 | EDS-002, Impl, Tests | JIP v1.3, EBP-001 |
+| EDS-002 POE | JIP v1.3 | — | JIP v1.3, EDS-001 v2.0, AI Core | Impl, Tests | AI Core, EDS-001 v2.0 |
 | EBP-001 Engineering Blueprint | Hub v2.0 | — | Vision, PRD v2.0, JIP v1.3, EDS-001, EDS-002 | All Impl, All future EDS | JIP v1.3, EDS-001, EDS-002, Glossary |
 | Documentation Hub v2.0 (this) | — (governance root) | Glossary, Changelog, ADR log, EDR log, Roadmap, Traceability, Ownership, Lifecycle, Workflow, Repo Map | All docs (for indexing) | All contributors | All |
 | Glossary | Hub v2.0 | — | Hub v2.0 | All docs | — |
@@ -110,7 +111,8 @@ Every EDS §Interfaces item MUST cite the PRD requirement or ADR that motivated 
 | TIOS Hardening | Hardening addendum | Platform Eng | Ops | Approved | 1.0 | Semiannual |
 | TIE | Domain engine | Platform Eng | Capabilities | Approved | 1.0 | Quarterly |
 | Capabilities | Capability layer | Platform Eng | Impl | Approved | 1.0 | Quarterly |
-| EDS-001 | Memory engineering | Intelligence Eng | Impl, Tests | Frozen | 1.1 | Amendment-only |
+| EDS-001 v1.1 | Memory engineering (historical) | Intelligence Eng | Impl, Tests | Superseded | 1.1 | Successor: v2.0 |
+| EDS-001 v2.0 | Memory engineering (production spec) | Intelligence Eng | Impl, Tests | Frozen | 2.0 | Amendment-only |
 | EDS-002 | POE engineering | Intelligence Eng | Impl, Tests | Frozen | 1.0 | Amendment-only |
 | EBP-001 | Engineering constitution | Platform Governance + Eng Leadership | All Eng | Frozen | 1.0 | Amendment-only |
 | Documentation Hub v2.0 | Governance root | Governance | All | Frozen | 2.0 | Amendment-only |

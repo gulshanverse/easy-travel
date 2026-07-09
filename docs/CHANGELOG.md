@@ -2,6 +2,13 @@
 
 Governed by `docs/DOCUMENTATION_HUB_v2.0.md`.
 
+## 2026-07-09 — EDS-001 v2.0 Memory Engine Production Spec Freeze
+- **Added** `docs/engineering/EDS-001_MEMORY_ENGINE_v2.0.md` — production-grade engineering specification for the Memory Engine covering purpose/non-responsibilities, 15 memory classes, full lifecycle, envelope object model, retrieval pipeline (10 stages, deterministic), confidence framework, memory graph, privacy/RTBF, retrieval budget, failure modes, reserved interfaces + logical schema, 9 event contracts, integration matrix, 5 sequence diagrams, state machine, 12 EDRs, traceability, and audits. **Frozen.**
+- **Superseded** `docs/EDS-001_MEMORY_ENGINE.md` v1.1 — retained as historical predecessor; successor is v2.0.
+- **Updated** `docs/DOCUMENTATION_HUB_v2.0.md` — v1.1 marked Superseded, v2.0 registered in dependency graph + ownership matrix; EDS-002 dependency updated to point at v2.0.
+- **Updated** `docs/Knowledge_Graph.mmd` — added `EDS001v2` node with edges from JIP and predecessor; POE edge repointed.
+- **Governance:** No UI, backend, API, routing, database, auth, JIP, EBP-001, or existing frozen EDS content modified.
+
 ## 2026-07-09 — EBP-001 Engineering Constitution Freeze
 - **Added** `docs/engineering/EBP-001_ENGINEERING_BLUEPRINT.md` v1.0 — engineering constitution defining philosophy, module boundaries, dependency rules, event standards, error/logging/observability, testing, security, performance budgets, accessibility, design-system engineering, AI engineering standards, Git workflow, Definition of Done, governance, and traceability. **Frozen.**
 - **Added** `docs/Knowledge_Graph.mmd` — Mermaid source for the master knowledge graph referenced by Hub v2.0 §1; EBP-001 registered as a governance node.

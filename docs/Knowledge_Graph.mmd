@@ -7,7 +7,8 @@ graph TD
   TIOS[TIOS]
   TIE[TIE]
   CAPS[Capabilities]
-  EDS001[EDS-001 Memory Engine · Frozen]
+  EDS001[EDS-001 v1.1 Memory Engine · Superseded]
+  EDS001v2[EDS-001 v2.0 Memory Engine · Frozen]
   EDS002[EDS-002 Prompt Orchestration Engine · Frozen]
   HUB[Documentation Hub v2.0 · Frozen]
   EBP[EBP-001 Engineering Blueprint · Frozen]
@@ -25,8 +26,10 @@ graph TD
   JIP --> TIE
   JIP --> CAPS
   JIP --> EDS001
+  JIP --> EDS001v2
   JIP --> EDS002
-  EDS001 --> EDS002
+  EDS001 --> EDS001v2
+  EDS001v2 --> EDS002
   AICore --> EDS002
 
   HUB --> GLOSS
