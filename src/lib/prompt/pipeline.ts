@@ -95,7 +95,7 @@ export class PromptPipeline {
       const semanticKey = this.deps.cache.compiledKey(entry.promptId, entry.version, compiled.fingerprint);
       const cachedResp = this.deps.cache.semantic.get(semanticKey);
       if (cachedResp) {
-        this.deps.metrics.counter(METRIC_NAMES.cacheHits).inc({ kind: "semantic" });
+        this.deps.metrics.counter(METRIC_NAMES.cacheHits).inc(1, { kind: "semantic" });
         publish("PromptCacheHit", { kind: "semantic" });
         const result: ExecutionResult<T> = {
           correlationId,
@@ -112,7 +112,7 @@ export class PromptPipeline {
         publish("PromptCompleted", { cached: true }, "completed");
         return result;
       }
-      this.deps.metrics.counter(METRIC_NAMES.cacheMisses).inc({ kind: "semantic" });
+      this.deps.metrics.counter(METRIC_NAMES.cacheMisses).inc(1, { kind: "semantic" });
       publish("PromptCacheMiss", { kind: "semantic" });
 
       // 7. Provider preparation → execution.
@@ -186,12 +186,12 @@ export class PromptPipeline {
     const key = this.deps.cache.compiledKey(ir.promptId, ir.version, compiled.fingerprint);
     const cached = this.deps.cache.compiled.get(key);
     if (cached) {
-      this.deps.metrics.counter(METRIC_NAMES.cacheHits).inc({ kind: "compiled" });
+      this.deps.metrics.counter(METRIC_NAMES.cacheHits).inc(1, { kind: "compiled" });
       publish("PromptCacheHit", { kind: "compiled" }, "compilation");
       return cached;
     }
     this.deps.cache.compiled.set(key, compiled);
-    this.deps.metrics.counter(METRIC_NAMES.cacheMisses).inc({ kind: "compiled" });
+    this.deps.metrics.counter(METRIC_NAMES.cacheMisses).inc(1, { kind: "compiled" });
     publish("PromptCompiled", { fingerprint: compiled.fingerprint, tokens: compiled.estimatedTokens }, "compilation");
     return compiled;
   }
