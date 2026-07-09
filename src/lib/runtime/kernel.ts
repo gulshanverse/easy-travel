@@ -41,7 +41,7 @@ export class RuntimeKernel {
   readonly container: Container;
   readonly telemetry: RuntimeTelemetry;
   readonly metrics: RuntimeMetrics;
-  readonly eventBus: EventBus<CapabilityRuntimeEvents & Record<string, unknown>>;
+  readonly eventBus: EventBus;
   readonly registry: ServiceRegistry;
   readonly capabilities: CapabilityRuntime;
   readonly contextBuilder: ContextBuilder;
