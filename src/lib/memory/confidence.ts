@@ -16,11 +16,11 @@ const EXPLICITNESS_WEIGHT: Record<MemorySource["kind"], number> = {
 };
 
 export interface ConfidenceSignals {
-  freshness?: number;      // [0,1]
-  frequency?: number;      // [0,1]
-  agreement?: number;      // [0,1]
+  freshness?: number; // [0,1]
+  frequency?: number; // [0,1]
+  agreement?: number; // [0,1]
   contradictions?: number; // [0,1] — higher = more contradiction
-  trust?: number;          // [0,1] — source trust
+  trust?: number; // [0,1] — source trust
   evidenceWeight?: number; // [0,1] — mean evidence weight
 }
 
@@ -29,15 +29,19 @@ export class MemoryConfidenceEngine {
   compute(source: MemorySource, signals: ConfidenceSignals): number {
     const expl = EXPLICITNESS_WEIGHT[source.kind] ?? 0.5;
     const parts = [
-      { w: 0.20, v: signals.freshness ?? 0.6 },
-      { w: 0.10, v: signals.frequency ?? 0.3 },
+      { w: 0.2, v: signals.freshness ?? 0.6 },
+      { w: 0.1, v: signals.frequency ?? 0.3 },
       { w: 0.15, v: signals.agreement ?? 0.6 },
       { w: 0.15, v: signals.trust ?? 0.6 },
       { w: 0.15, v: signals.evidenceWeight ?? 0.5 },
       { w: 0.25, v: expl },
     ];
-    let sum = 0, wsum = 0;
-    for (const p of parts) { sum += p.w * p.v; wsum += p.w; }
+    let sum = 0,
+      wsum = 0;
+    for (const p of parts) {
+      sum += p.w * p.v;
+      wsum += p.w;
+    }
     let confidence = sum / wsum;
     const contra = signals.contradictions ?? 0;
     confidence *= 1 - Math.min(1, contra) * 0.5;
@@ -74,4 +78,6 @@ export class MemoryConfidenceEngine {
   }
 }
 
-function clamp(n: number): number { return Math.min(1, Math.max(0, n)); }
+function clamp(n: number): number {
+  return Math.min(1, Math.max(0, n));
+}

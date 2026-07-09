@@ -69,7 +69,12 @@ export class MemoryPolicyError extends MemoryError {
   }
 }
 
-export function toPublicMemoryError(err: unknown): { code: string; message: string; status: number } {
-  if (err instanceof MemoryError) return { code: err.code, message: err.message, status: err.status };
+export function toPublicMemoryError(err: unknown): {
+  code: string;
+  message: string;
+  status: number;
+} {
+  if (err instanceof MemoryError)
+    return { code: err.code, message: err.message, status: err.status };
   return { code: "internal_error", message: "Memory engine error", status: 500 };
 }

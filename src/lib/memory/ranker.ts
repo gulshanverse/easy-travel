@@ -9,11 +9,11 @@ import type { MemoryEnvelope, RankedMemory, RetrievalPurpose, ScoreDecomposition
 import { MemoryConfidenceEngine } from "./confidence";
 
 export interface RankInputs {
-  similarity: number;         // [0,1]
-  goalAlignment?: number;      // [0,1]
+  similarity: number; // [0,1]
+  goalAlignment?: number; // [0,1]
   contradictionPenalty?: number; // [0,1]
-  trust?: number;              // override for source trust
-  now?: number;                // ms
+  trust?: number; // override for source trust
+  now?: number; // ms
 }
 
 export class MemoryRanker {
@@ -66,7 +66,9 @@ export class MemoryRanker {
   }
 }
 
-function clamp(n: number): number { return Math.min(1, Math.max(0, n)); }
+function clamp(n: number): number {
+  return Math.min(1, Math.max(0, n));
+}
 
 function recencyScore(updatedAt: string, now: number): number {
   const t = Date.parse(updatedAt);

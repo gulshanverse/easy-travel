@@ -25,7 +25,12 @@ export interface MemoryStore {
   put(env: MemoryEnvelope): Promise<MemoryEnvelope>;
   patch(memoryId: string, patch: Partial<MemoryEnvelope>): Promise<MemoryEnvelope>;
   get(memoryId: string, ownerId: string): Promise<MemoryEnvelope | null>;
-  findByContentHash(ownerId: string, class_: MemoryClass, kind: string, hash: string): Promise<MemoryEnvelope | null>;
+  findByContentHash(
+    ownerId: string,
+    class_: MemoryClass,
+    kind: string,
+    hash: string,
+  ): Promise<MemoryEnvelope | null>;
   list(filter: StoreListFilter): Promise<MemoryEnvelope[]>;
   hardDelete(memoryId: string, ownerId: string): Promise<void>;
   countByOwner(ownerId: string): Promise<number>;

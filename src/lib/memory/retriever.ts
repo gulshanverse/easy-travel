@@ -25,7 +25,13 @@ import { queryHash } from "./hash";
 
 const SESSION_CLASSES: MemoryClass[] = ["short_term", "working", "conversation"];
 const SEMANTIC_CLASSES: MemoryClass[] = [
-  "semantic", "episodic", "preference", "journey", "spatial", "reflection", "portfolio",
+  "semantic",
+  "episodic",
+  "preference",
+  "journey",
+  "spatial",
+  "reflection",
+  "portfolio",
 ];
 
 export interface SemanticSearcher {
@@ -54,7 +60,10 @@ export class LexicalSearcher implements SemanticSearcher {
 
 function tokenize(s: string): Set<string> {
   return new Set(
-    s.toLowerCase().split(/[^a-z0-9]+/g).filter((w) => w.length >= 2 && w.length <= 32),
+    s
+      .toLowerCase()
+      .split(/[^a-z0-9]+/g)
+      .filter((w) => w.length >= 2 && w.length <= 32),
   );
 }
 
@@ -109,7 +118,7 @@ export class MemoryRetriever {
 
     // Stage 3 — Relationship expansion (from top-K session+semantic).
     const seed = [...sessionCandidates, ...semanticCandidates];
-    let relationshipCandidates: MemoryEnvelope[] = [];
+    const relationshipCandidates: MemoryEnvelope[] = [];
     if (this.config.flags.enableRelationshipExpansion) {
       const relatedIds = new Set<string>();
       for (const s of seed) {
@@ -161,8 +170,12 @@ export class MemoryRetriever {
     // Merge candidate pool (dedup by memoryId).
     const pool = new Map<string, MemoryEnvelope>();
     for (const m of [
-      ...sessionCandidates, ...semanticCandidates, ...relationshipCandidates,
-      ...journeyCandidates, ...preferenceCandidates, ...goalCandidates,
+      ...sessionCandidates,
+      ...semanticCandidates,
+      ...relationshipCandidates,
+      ...journeyCandidates,
+      ...preferenceCandidates,
+      ...goalCandidates,
     ]) {
       if (!pool.has(m.memoryId)) pool.set(m.memoryId, m);
     }
@@ -188,13 +201,15 @@ export class MemoryRetriever {
 
     // Stage 8 — Ranking.
     const goalSet = new Set(query.goalIds ?? []);
-    const ranked = filtered.map((m) => this.ranker.score(m, query.purpose, {
-      similarity: query.text ? this.searcher.score(query.text, m) : 0,
-      goalAlignment: (m.goalIds ?? []).some((g) => goalSet.has(g)) ? 1 : 0,
-      contradictionPenalty: m.status === "needs_reconciliation" ? 1 : 0,
-      trust: m.trustSourceId ? 0.7 : 0.5,
-      now,
-    }));
+    const ranked = filtered.map((m) =>
+      this.ranker.score(m, query.purpose, {
+        similarity: query.text ? this.searcher.score(query.text, m) : 0,
+        goalAlignment: (m.goalIds ?? []).some((g) => goalSet.has(g)) ? 1 : 0,
+        contradictionPenalty: m.status === "needs_reconciliation" ? 1 : 0,
+        trust: m.trustSourceId ? 0.7 : 0.5,
+        now,
+      }),
+    );
     const sorted = this.ranker.sort(ranked);
     trace.stageCounts["ranked"] = sorted.length;
 

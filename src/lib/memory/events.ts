@@ -129,7 +129,13 @@ export class MemoryEventPublisher {
   publish<N extends MemoryEventName>(
     name: N,
     payload: PayloadMap[N],
-    opts: { ownerId?: string | null; tenantId?: string | null; correlationId?: string; causationId?: string | null; meta?: Record<string, unknown> } = {},
+    opts: {
+      ownerId?: string | null;
+      tenantId?: string | null;
+      correlationId?: string;
+      causationId?: string | null;
+      meta?: Record<string, unknown>;
+    } = {},
   ): MemoryEventEnvelope<PayloadMap[N]> {
     const env: MemoryEventEnvelope<PayloadMap[N]> = {
       eventId: newCorrelationId("evt"),

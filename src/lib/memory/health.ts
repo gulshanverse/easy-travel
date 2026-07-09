@@ -13,7 +13,10 @@ export interface HealthReport {
 }
 
 export class MemoryHealthChecks {
-  constructor(private store: MemoryStore, private metrics: MemoryMetrics) {}
+  constructor(
+    private store: MemoryStore,
+    private metrics: MemoryMetrics,
+  ) {}
 
   async check(): Promise<HealthReport> {
     const checks: HealthReport["checks"] = {};
@@ -31,13 +34,21 @@ export class MemoryHealthChecks {
     else checks.retrievalLatency = { status: "healthy", detail: `p95=${p95}ms` };
     // Error rate
     const totalErrs = Object.values(snap.errors).reduce((a, b) => a + b, 0);
-    checks.errorRate = totalErrs > 100 ? { status: "degraded", detail: `${totalErrs} errors` } : { status: "healthy" };
-    const worst = Object.values(checks).reduce<HealthStatus>((acc, c) => rank(c.status) > rank(acc) ? c.status : acc, "healthy");
+    checks.errorRate =
+      totalErrs > 100
+        ? { status: "degraded", detail: `${totalErrs} errors` }
+        : { status: "healthy" };
+    const worst = Object.values(checks).reduce<HealthStatus>(
+      (acc, c) => (rank(c.status) > rank(acc) ? c.status : acc),
+      "healthy",
+    );
     return { status: worst, checks, timestamp: new Date().toISOString() };
   }
 }
 
-function rank(s: HealthStatus): number { return s === "healthy" ? 0 : s === "degraded" ? 1 : 2; }
+function rank(s: HealthStatus): number {
+  return s === "healthy" ? 0 : s === "degraded" ? 1 : 2;
+}
 
 function percentile(xs: number[], p: number): number {
   if (!xs.length) return 0;

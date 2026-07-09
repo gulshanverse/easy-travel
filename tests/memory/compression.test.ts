@@ -52,8 +52,12 @@ describe("MemoryArchiver.sweep", () => {
     const m = new MemoryManager();
     const past = new Date(Date.now() - 1000).toISOString();
     const env = await m.write({
-      class: "short_term", kind: "short-term/turn", ownerId: OWNER, scope: "session",
-      payload: { text: "expiring" }, source: { kind: "system_derived", actorId: "sys" },
+      class: "short_term",
+      kind: "short-term/turn",
+      ownerId: OWNER,
+      scope: "session",
+      payload: { text: "expiring" },
+      source: { kind: "system_derived", actorId: "sys" },
       ttlExpiresAt: past,
     });
     const stats = await m.sweep(OWNER);

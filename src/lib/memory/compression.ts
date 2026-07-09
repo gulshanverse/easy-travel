@@ -25,12 +25,18 @@ export interface CompressionSummariser {
 
 export class DeterministicSummariser implements CompressionSummariser {
   async summarise(inputs: MemoryEnvelope[]): Promise<{
-    kind: string; payload: unknown; importance: number; confidence: number; tags: string[];
+    kind: string;
+    payload: unknown;
+    importance: number;
+    confidence: number;
+    tags: string[];
   }> {
     const payload = {
       summaryOf: inputs.map((i) => i.memoryId),
       count: inputs.length,
-      text: inputs.map((i) => (typeof i.payload === "string" ? i.payload : JSON.stringify(i.payload))).join(" | "),
+      text: inputs
+        .map((i) => (typeof i.payload === "string" ? i.payload : JSON.stringify(i.payload)))
+        .join(" | "),
     };
     const importance = clamp(avg(inputs.map((i) => i.importance)));
     const confidence = clamp(avg(inputs.map((i) => i.confidence)));
@@ -49,7 +55,10 @@ export class MemoryCompressionEngine {
     private summariser: CompressionSummariser = new DeterministicSummariser(),
   ) {}
 
-  async compress(inputs: MemoryEnvelope[], opts: { targetClass?: MemoryEnvelope["class"] } = {}): Promise<MemoryEnvelope | null> {
+  async compress(
+    inputs: MemoryEnvelope[],
+    opts: { targetClass?: MemoryEnvelope["class"] } = {},
+  ): Promise<MemoryEnvelope | null> {
     if (!this.config.flags.enableCompression) return null;
     if (inputs.length < 2) return null;
     const owner = inputs[0].ownerId;
@@ -71,16 +80,24 @@ export class MemoryCompressionEngine {
       importance: summary.importance,
       confidence: summary.confidence,
       tags: summary.tags,
-      relationships: inputs.map((i) => ({ type: "derived_from" as const, targetId: i.memoryId, weight: 1 })),
+      relationships: inputs.map((i) => ({
+        type: "derived_from" as const,
+        targetId: i.memoryId,
+        weight: 1,
+      })),
       relatedIds: inputs.map((i) => i.memoryId),
     };
     const created = await this.factories.fromDraft(draft);
     const stored = await this.store.put(created);
-    this.publisher.publish("MemoryCompressed", {
-      sourceIds: inputs.map((i) => i.memoryId),
-      summaryId: stored.memoryId,
-      ratio: inputs.length,
-    }, { ownerId: owner, tenantId: stored.tenantId });
+    this.publisher.publish(
+      "MemoryCompressed",
+      {
+        sourceIds: inputs.map((i) => i.memoryId),
+        summaryId: stored.memoryId,
+        ratio: inputs.length,
+      },
+      { ownerId: owner, tenantId: stored.tenantId },
+    );
     // Archive the originals (never hard delete on compression).
     for (const i of inputs) {
       await this.lifecycle.archive(i.memoryId, owner, { actorId: "system", reason: "compressed" });
@@ -89,10 +106,22 @@ export class MemoryCompressionEngine {
   }
 }
 
-function avg(xs: number[]): number { return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; }
-function clamp(n: number): number { return Math.min(1, Math.max(0, n)); }
+function avg(xs: number[]): number {
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+}
+function clamp(n: number): number {
+  return Math.min(1, Math.max(0, n));
+}
 
 function strictestVisibility(inputs: MemoryEnvelope[]): MemoryEnvelope["visibility"] {
-  const order: Record<MemoryEnvelope["visibility"], number> = { private: 0, shared: 1, team: 2, public: 3 };
-  return inputs.reduce<MemoryEnvelope["visibility"]>((acc, i) => (order[i.visibility] < order[acc] ? i.visibility : acc), "public");
+  const order: Record<MemoryEnvelope["visibility"], number> = {
+    private: 0,
+    shared: 1,
+    team: 2,
+    public: 3,
+  };
+  return inputs.reduce<MemoryEnvelope["visibility"]>(
+    (acc, i) => (order[i.visibility] < order[acc] ? i.visibility : acc),
+    "public",
+  );
 }

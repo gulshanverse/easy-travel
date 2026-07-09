@@ -35,17 +35,32 @@ export class MemoryTelemetry {
     this.sink = sink;
   }
 
-  debug(msg: string, fields?: LogFields): void { this.sink.log("debug", msg, fields); }
-  info(msg: string, fields?: LogFields): void { this.sink.log("info", msg, fields); }
-  warn(msg: string, fields?: LogFields): void { this.sink.log("warn", msg, fields); }
-  error(msg: string, fields?: LogFields): void { this.sink.log("error", msg, fields); }
+  debug(msg: string, fields?: LogFields): void {
+    this.sink.log("debug", msg, fields);
+  }
+  info(msg: string, fields?: LogFields): void {
+    this.sink.log("info", msg, fields);
+  }
+  warn(msg: string, fields?: LogFields): void {
+    this.sink.log("warn", msg, fields);
+  }
+  error(msg: string, fields?: LogFields): void {
+    this.sink.log("error", msg, fields);
+  }
 
   span(name: string, fields?: LogFields): Span {
     if (this.sink.span) return this.sink.span(name, fields);
     const started = Date.now();
     return {
-      end: (extra) => this.debug(`span.end ${name}`, { ...fields, ...extra, ms: Date.now() - started }),
-      fail: (err, extra) => this.warn(`span.fail ${name}`, { ...fields, ...extra, error: String(err), ms: Date.now() - started }),
+      end: (extra) =>
+        this.debug(`span.end ${name}`, { ...fields, ...extra, ms: Date.now() - started }),
+      fail: (err, extra) =>
+        this.warn(`span.fail ${name}`, {
+          ...fields,
+          ...extra,
+          error: String(err),
+          ms: Date.now() - started,
+        }),
     };
   }
 }

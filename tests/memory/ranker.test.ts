@@ -1,12 +1,24 @@
 import { describe, it, expect } from "vitest";
-import { MemoryManager, MemoryRanker, loadMemoryConfiguration, MemoryFactories, type MemoryDraft } from "../../src/lib/memory";
+import {
+  MemoryManager,
+  MemoryRanker,
+  loadMemoryConfiguration,
+  MemoryFactories,
+  type MemoryDraft,
+} from "../../src/lib/memory";
 
 async function envOf(overrides: Partial<MemoryDraft>) {
   const factories = new MemoryFactories(loadMemoryConfiguration());
   return factories.fromDraft({
-    class: "preference", kind: "preference/x", ownerId: "u", scope: "user",
-    payload: { text: "x" }, source: { kind: "user_explicit", actorId: "u" },
-    importance: 0.5, confidence: 0.8, ...overrides,
+    class: "preference",
+    kind: "preference/x",
+    ownerId: "u",
+    scope: "user",
+    payload: { text: "x" },
+    source: { kind: "user_explicit", actorId: "u" },
+    importance: 0.5,
+    confidence: 0.8,
+    ...overrides,
   });
 }
 
@@ -43,8 +55,12 @@ describe("MemoryManager metrics & health", () => {
     const m = new MemoryManager();
     m.metrics.reset();
     await m.write({
-      class: "preference", kind: "preference/x", ownerId: "u", scope: "user",
-      payload: { a: 1 }, source: { kind: "user_explicit", actorId: "u" },
+      class: "preference",
+      kind: "preference/x",
+      ownerId: "u",
+      scope: "user",
+      payload: { a: 1 },
+      source: { kind: "user_explicit", actorId: "u" },
     });
     const snap = m.metrics.snapshot();
     expect(snap.writes).toBe(1);

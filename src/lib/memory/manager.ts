@@ -27,11 +27,7 @@ import { MemoryMetrics, defaultMemoryMetrics } from "./metrics";
 import { MemoryHealthChecks } from "./health";
 import { InMemoryMemoryStore } from "./store/in-memory-store";
 import type { MemoryStore } from "./store/types";
-import {
-  MemoryConflictError,
-  MemoryError,
-  MemoryNotFoundError,
-} from "./errors";
+import { MemoryConflictError, MemoryError, MemoryNotFoundError } from "./errors";
 
 export interface MemoryManagerOptions {
   config?: Partial<MemoryConfiguration>;
@@ -71,8 +67,22 @@ export class MemoryManager {
     this.confidence = new MemoryConfidenceEngine();
     this.retriever = new MemoryRetriever(this.config, this.store, opts.searcher);
     this.lifecycle = new MemoryLifecycleManager(this.config, this.store, this.publisher);
-    this.promotion = new MemoryPromotionEngine(this.config, this.store, this.factories, this.publisher, this.lifecycle, opts.promotionRules);
-    this.compression = new MemoryCompressionEngine(this.config, this.store, this.factories, this.publisher, this.lifecycle, opts.summariser);
+    this.promotion = new MemoryPromotionEngine(
+      this.config,
+      this.store,
+      this.factories,
+      this.publisher,
+      this.lifecycle,
+      opts.promotionRules,
+    );
+    this.compression = new MemoryCompressionEngine(
+      this.config,
+      this.store,
+      this.factories,
+      this.publisher,
+      this.lifecycle,
+      opts.summariser,
+    );
     this.archiver = new MemoryArchiver(this.config, this.store, this.lifecycle);
     this.health = new MemoryHealthChecks(this.store, this.metrics);
   }
@@ -84,20 +94,35 @@ export class MemoryManager {
       MemoryValidators.validateDraft(draft);
       const env = await this.factories.fromDraft(draft);
       // Idempotency: dedup on (owner, class, kind, contentHash).
-      const existing = await this.store.findByContentHash(env.ownerId, env.class, env.kind, env.contentHash);
+      const existing = await this.store.findByContentHash(
+        env.ownerId,
+        env.class,
+        env.kind,
+        env.contentHash,
+      );
       if (existing) {
         this.telemetry.debug("write.dedup", { memoryId: existing.memoryId });
         return existing as MemoryEnvelope<T>;
       }
       MemoryValidators.validateEnvelope(env);
       const stored = await this.store.put(env);
-      this.publisher.publish("MemoryCreated", {
-        memoryId: stored.memoryId, class: stored.class, kind: stored.kind,
-        ownerId: stored.ownerId, tenantId: stored.tenantId, scope: stored.scope,
-        visibility: stored.visibility, confidence: stored.confidence,
-        sourceKind: stored.source.kind, evidenceCount: stored.evidence.length,
-        contentHash: stored.contentHash,
-      }, { ownerId: stored.ownerId, tenantId: stored.tenantId });
+      this.publisher.publish(
+        "MemoryCreated",
+        {
+          memoryId: stored.memoryId,
+          class: stored.class,
+          kind: stored.kind,
+          ownerId: stored.ownerId,
+          tenantId: stored.tenantId,
+          scope: stored.scope,
+          visibility: stored.visibility,
+          confidence: stored.confidence,
+          sourceKind: stored.source.kind,
+          evidenceCount: stored.evidence.length,
+          contentHash: stored.contentHash,
+        },
+        { ownerId: stored.ownerId, tenantId: stored.tenantId },
+      );
       this.metrics.incWrite(stored.class, Date.now() - started);
       return stored as MemoryEnvelope<T>;
     } catch (err) {
@@ -110,7 +135,9 @@ export class MemoryManager {
   async update(
     memoryId: string,
     ownerId: string,
-    patch: Partial<Pick<MemoryEnvelope, "tags" | "importance" | "trustSourceId" | "relatedIds" | "relationships">>,
+    patch: Partial<
+      Pick<MemoryEnvelope, "tags" | "importance" | "trustSourceId" | "relatedIds" | "relationships">
+    >,
   ): Promise<MemoryEnvelope> {
     const env = await this.store.get(memoryId, ownerId);
     if (!env) throw new MemoryNotFoundError(memoryId);
@@ -119,9 +146,16 @@ export class MemoryManager {
     }
     const changed = Object.keys(patch);
     const updated = await this.store.patch(memoryId, { ...patch, version: env.version + 1 });
-    this.publisher.publish("MemoryUpdated", {
-      memoryId, changedFields: changed, priorVersion: env.version, newVersion: env.version + 1,
-    }, { ownerId, tenantId: env.tenantId });
+    this.publisher.publish(
+      "MemoryUpdated",
+      {
+        memoryId,
+        changedFields: changed,
+        priorVersion: env.version,
+        newVersion: env.version + 1,
+      },
+      { ownerId, tenantId: env.tenantId },
+    );
     return updated;
   }
 
@@ -149,23 +183,45 @@ export class MemoryManager {
     const result = await this.retriever.retrieve(query);
     this.metrics.incRetrieval(query.purpose, result.trace.latencyMs, result.trace.degraded);
     const qh = result.trace.queryHash;
-    this.publisher.publish("MemoryRetrieved", {
-      queryHash: qh, ownerId: query.ownerId, purpose: query.purpose,
-      itemCount: result.items.length, degraded: result.trace.degraded, traceHash: qh,
-    }, { ownerId: query.ownerId });
+    this.publisher.publish(
+      "MemoryRetrieved",
+      {
+        queryHash: qh,
+        ownerId: query.ownerId,
+        purpose: query.purpose,
+        itemCount: result.items.length,
+        degraded: result.trace.degraded,
+        traceHash: qh,
+      },
+      { ownerId: query.ownerId },
+    );
     return result;
   }
 
   // ─── Lifecycle passthroughs ───────────────────────────────────────────────
-  archive(memoryId: string, ownerId: string, actor: LifecycleActor) { return this.lifecycle.archive(memoryId, ownerId, actor); }
-  softDelete(memoryId: string, ownerId: string, actor: LifecycleActor) { return this.lifecycle.softDelete(memoryId, ownerId, actor); }
-  restore(memoryId: string, ownerId: string) { return this.lifecycle.restore(memoryId, ownerId); }
-  forget(memoryId: string, ownerId: string, actor: LifecycleActor) { return this.lifecycle.hardDelete(memoryId, ownerId, actor); }
+  archive(memoryId: string, ownerId: string, actor: LifecycleActor) {
+    return this.lifecycle.archive(memoryId, ownerId, actor);
+  }
+  softDelete(memoryId: string, ownerId: string, actor: LifecycleActor) {
+    return this.lifecycle.softDelete(memoryId, ownerId, actor);
+  }
+  restore(memoryId: string, ownerId: string) {
+    return this.lifecycle.restore(memoryId, ownerId);
+  }
+  forget(memoryId: string, ownerId: string, actor: LifecycleActor) {
+    return this.lifecycle.hardDelete(memoryId, ownerId, actor);
+  }
 
   // ─── Promotion / Compression / Sweep ──────────────────────────────────────
-  promote(env: MemoryEnvelope) { return this.promotion.maybePromote(env); }
-  compress(inputs: MemoryEnvelope[]) { return this.compression.compress(inputs); }
-  sweep(ownerId: string, now?: number) { return this.archiver.sweep(ownerId, now); }
+  promote(env: MemoryEnvelope) {
+    return this.promotion.maybePromote(env);
+  }
+  compress(inputs: MemoryEnvelope[]) {
+    return this.compression.compress(inputs);
+  }
+  sweep(ownerId: string, now?: number) {
+    return this.archiver.sweep(ownerId, now);
+  }
 }
 
 /** Convenience singleton for callers that want the default configuration. */
@@ -174,4 +230,6 @@ export function getDefaultMemoryManager(): MemoryManager {
   if (!_default) _default = new MemoryManager();
   return _default;
 }
-export function resetDefaultMemoryManager(): void { _default = null; }
+export function resetDefaultMemoryManager(): void {
+  _default = null;
+}

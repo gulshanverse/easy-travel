@@ -31,7 +31,9 @@ export class MemoryMetrics {
     this.m.writeLatencyMs.push(latencyMs);
     trimSample(this.m.writeLatencyMs);
   }
-  incRead(): void { this.m.reads += 1; }
+  incRead(): void {
+    this.m.reads += 1;
+  }
   incRetrieval(purpose: RetrievalPurpose, latencyMs: number, degraded: boolean): void {
     this.m.retrievals += 1;
     this.m.retrievalByPurpose[purpose] = (this.m.retrievalByPurpose[purpose] ?? 0) + 1;
@@ -39,13 +41,27 @@ export class MemoryMetrics {
     trimSample(this.m.retrievalLatencyMs);
     if (degraded) this.m.degradedRetrievals += 1;
   }
-  incArchived(): void { this.m.archived += 1; }
-  incSoftDeleted(): void { this.m.softDeleted += 1; }
-  incHardDeleted(): void { this.m.hardDeleted += 1; }
-  incPromotion(): void { this.m.promotions += 1; }
-  incCompression(): void { this.m.compressions += 1; }
-  incContradiction(): void { this.m.contradictions += 1; }
-  incError(code: string): void { this.m.errors[code] = (this.m.errors[code] ?? 0) + 1; }
+  incArchived(): void {
+    this.m.archived += 1;
+  }
+  incSoftDeleted(): void {
+    this.m.softDeleted += 1;
+  }
+  incHardDeleted(): void {
+    this.m.hardDeleted += 1;
+  }
+  incPromotion(): void {
+    this.m.promotions += 1;
+  }
+  incCompression(): void {
+    this.m.compressions += 1;
+  }
+  incContradiction(): void {
+    this.m.contradictions += 1;
+  }
+  incError(code: string): void {
+    this.m.errors[code] = (this.m.errors[code] ?? 0) + 1;
+  }
 
   snapshot(): MemoryMetricsSnapshot {
     return {
@@ -58,16 +74,28 @@ export class MemoryMetrics {
     };
   }
 
-  reset(): void { this.m = fresh(); }
+  reset(): void {
+    this.m = fresh();
+  }
 }
 
 function fresh(): MemoryMetricsSnapshot {
   return {
-    writes: 0, reads: 0, retrievals: 0, archived: 0,
-    softDeleted: 0, hardDeleted: 0, promotions: 0, compressions: 0,
-    contradictions: 0, degradedRetrievals: 0,
-    byClass: {}, retrievalLatencyMs: [], writeLatencyMs: [],
-    retrievalByPurpose: {}, errors: {},
+    writes: 0,
+    reads: 0,
+    retrievals: 0,
+    archived: 0,
+    softDeleted: 0,
+    hardDeleted: 0,
+    promotions: 0,
+    compressions: 0,
+    contradictions: 0,
+    degradedRetrievals: 0,
+    byClass: {},
+    retrievalLatencyMs: [],
+    writeLatencyMs: [],
+    retrievalByPurpose: {},
+    errors: {},
   };
 }
 

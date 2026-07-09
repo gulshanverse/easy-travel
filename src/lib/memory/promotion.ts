@@ -21,18 +21,42 @@ export interface PromotionRule {
 }
 
 export const DEFAULT_PROMOTION_RULES: PromotionRule[] = [
-  { from: "short_term", to: "working", trigger: "repeat_exposure",
-    shouldPromote: (e) => e.readCount >= 2 },
-  { from: "working", to: "conversation", trigger: "repeat_exposure",
-    shouldPromote: (e) => e.readCount >= 3 },
-  { from: "conversation", to: "episodic", trigger: "reflection",
-    shouldPromote: (e) => e.readCount >= 5 && e.importance >= 0.5 },
-  { from: "preference", to: "semantic", trigger: "evidence_accumulation",
-    shouldPromote: (e) => e.evidence.length >= 3 && e.confidence >= 0.75 },
-  { from: "journey", to: "episodic", trigger: "explicit_confirmation",
-    shouldPromote: (e) => e.status === "active" && e.confidence >= 0.7 && e.importance >= 0.6 },
-  { from: "reflection", to: "semantic", trigger: "evidence_accumulation",
-    shouldPromote: (e) => e.confidence >= 0.8 },
+  {
+    from: "short_term",
+    to: "working",
+    trigger: "repeat_exposure",
+    shouldPromote: (e) => e.readCount >= 2,
+  },
+  {
+    from: "working",
+    to: "conversation",
+    trigger: "repeat_exposure",
+    shouldPromote: (e) => e.readCount >= 3,
+  },
+  {
+    from: "conversation",
+    to: "episodic",
+    trigger: "reflection",
+    shouldPromote: (e) => e.readCount >= 5 && e.importance >= 0.5,
+  },
+  {
+    from: "preference",
+    to: "semantic",
+    trigger: "evidence_accumulation",
+    shouldPromote: (e) => e.evidence.length >= 3 && e.confidence >= 0.75,
+  },
+  {
+    from: "journey",
+    to: "episodic",
+    trigger: "explicit_confirmation",
+    shouldPromote: (e) => e.status === "active" && e.confidence >= 0.7 && e.importance >= 0.6,
+  },
+  {
+    from: "reflection",
+    to: "semantic",
+    trigger: "evidence_accumulation",
+    shouldPromote: (e) => e.confidence >= 0.8,
+  },
 ];
 
 export class MemoryPromotionEngine {
@@ -49,7 +73,9 @@ export class MemoryPromotionEngine {
     this.rules = rules;
   }
 
-  register(rule: PromotionRule): void { this.rules.push(rule); }
+  register(rule: PromotionRule): void {
+    this.rules.push(rule);
+  }
 
   /** Evaluate rules for a single memory. Returns the new memory id if promoted. */
   async maybePromote(env: MemoryEnvelope): Promise<MemoryEnvelope | null> {
@@ -86,12 +112,22 @@ export class MemoryPromotionEngine {
     const promoted = await this.factories.fromDraft(draft);
     promoted.promotedFrom = env.memoryId;
     const stored = await this.store.put(promoted);
-    this.publisher.publish("MemoryPromoted", {
-      sourceId: env.memoryId, targetId: stored.memoryId,
-      fromClass: env.class, toClass: rule.to, trigger: rule.trigger,
-    }, { ownerId: env.ownerId, tenantId: env.tenantId });
+    this.publisher.publish(
+      "MemoryPromoted",
+      {
+        sourceId: env.memoryId,
+        targetId: stored.memoryId,
+        fromClass: env.class,
+        toClass: rule.to,
+        trigger: rule.trigger,
+      },
+      { ownerId: env.ownerId, tenantId: env.tenantId },
+    );
     // Source is archived after successful promotion.
-    await this.lifecycle.archive(env.memoryId, env.ownerId, { actorId: "system", reason: "promoted" });
+    await this.lifecycle.archive(env.memoryId, env.ownerId, {
+      actorId: "system",
+      reason: "promoted",
+    });
     return stored;
   }
 }

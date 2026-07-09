@@ -15,11 +15,12 @@ export class MemoryFactories {
   async fromDraft<T>(draft: MemoryDraft<T>, now = Date.now()): Promise<MemoryEnvelope<T>> {
     const policy = this.config.classPolicies[draft.class];
     const nowIso = new Date(now).toISOString();
-    const ttl = draft.ttlExpiresAt !== undefined
-      ? draft.ttlExpiresAt
-      : policy.ttlSeconds == null
-        ? null
-        : new Date(now + policy.ttlSeconds * 1000).toISOString();
+    const ttl =
+      draft.ttlExpiresAt !== undefined
+        ? draft.ttlExpiresAt
+        : policy.ttlSeconds == null
+          ? null
+          : new Date(now + policy.ttlSeconds * 1000).toISOString();
     return {
       memoryId: newId(),
       class: draft.class,
@@ -61,4 +62,6 @@ export class MemoryFactories {
   }
 }
 
-function clamp(n: number): number { return Math.min(1, Math.max(0, n)); }
+function clamp(n: number): number {
+  return Math.min(1, Math.max(0, n));
+}

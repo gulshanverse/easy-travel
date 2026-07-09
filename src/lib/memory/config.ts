@@ -28,13 +28,13 @@ const DEFAULT_FLAGS: MemoryFeatureFlags = {
 
 // ─── Class policies (defaults) ──────────────────────────────────────────────
 export interface ClassPolicy {
-  ttlSeconds: number | null;           // null = indefinite
-  decayHalfLifeSeconds: number;         // 0 = no decay
+  ttlSeconds: number | null; // null = indefinite
+  decayHalfLifeSeconds: number; // 0 = no decay
   promotable: boolean;
   archiveOnExpire: boolean;
   archiveOrHardDelete: "archive" | "hard_delete";
   softDeleteGraceSeconds: number;
-  compressionThreshold: number;         // #memories in cluster before compress
+  compressionThreshold: number; // #memories in cluster before compress
   maxImportance: number;
   minImportanceToPromote: number;
 }
@@ -102,22 +102,54 @@ export const DEFAULT_RANK_PROFILES: Record<RetrievalPurpose, RankProfile> = {
   companion_turn: {
     name: "companion_turn",
     version: 1,
-    weights: { confidence: 0.25, similarity: 0.25, recency: 0.2, importance: 0.15, trust: 0.1, goalAlignment: 0.05, contradictionPenalty: 0.3 },
+    weights: {
+      confidence: 0.25,
+      similarity: 0.25,
+      recency: 0.2,
+      importance: 0.15,
+      trust: 0.1,
+      goalAlignment: 0.05,
+      contradictionPenalty: 0.3,
+    },
   },
   composer_suggest: {
     name: "composer_suggest",
     version: 1,
-    weights: { confidence: 0.2, similarity: 0.3, recency: 0.15, importance: 0.15, trust: 0.05, goalAlignment: 0.15, contradictionPenalty: 0.3 },
+    weights: {
+      confidence: 0.2,
+      similarity: 0.3,
+      recency: 0.15,
+      importance: 0.15,
+      trust: 0.05,
+      goalAlignment: 0.15,
+      contradictionPenalty: 0.3,
+    },
   },
   recommendation: {
     name: "recommendation",
     version: 1,
-    weights: { confidence: 0.25, similarity: 0.15, recency: 0.05, importance: 0.2, trust: 0.15, goalAlignment: 0.2, contradictionPenalty: 0.4 },
+    weights: {
+      confidence: 0.25,
+      similarity: 0.15,
+      recency: 0.05,
+      importance: 0.2,
+      trust: 0.15,
+      goalAlignment: 0.2,
+      contradictionPenalty: 0.4,
+    },
   },
   explanation: {
     name: "explanation",
     version: 1,
-    weights: { confidence: 0.3, similarity: 0.2, recency: 0.05, importance: 0.15, trust: 0.2, goalAlignment: 0.1, contradictionPenalty: 0.5 },
+    weights: {
+      confidence: 0.3,
+      similarity: 0.2,
+      recency: 0.05,
+      importance: 0.15,
+      trust: 0.2,
+      goalAlignment: 0.1,
+      contradictionPenalty: 0.5,
+    },
   },
 };
 
@@ -174,15 +206,26 @@ function bool(name: string, def: boolean): boolean {
 }
 
 /** Load config from env, deep-merging with defaults. */
-export function loadMemoryConfiguration(overrides: Partial<MemoryConfiguration> = {}): MemoryConfiguration {
+export function loadMemoryConfiguration(
+  overrides: Partial<MemoryConfiguration> = {},
+): MemoryConfiguration {
   const base: MemoryConfiguration = {
     flags: {
       ...DEFAULT_FLAGS,
       enableCompression: bool("MEMORY_ENABLE_COMPRESSION", DEFAULT_FLAGS.enableCompression),
       enablePromotion: bool("MEMORY_ENABLE_PROMOTION", DEFAULT_FLAGS.enablePromotion),
-      enableSemanticSearch: bool("MEMORY_ENABLE_SEMANTIC_SEARCH", DEFAULT_FLAGS.enableSemanticSearch),
-      enableRelationshipExpansion: bool("MEMORY_ENABLE_REL_EXPANSION", DEFAULT_FLAGS.enableRelationshipExpansion),
-      strictContradictionCheck: bool("MEMORY_STRICT_CONTRADICTIONS", DEFAULT_FLAGS.strictContradictionCheck),
+      enableSemanticSearch: bool(
+        "MEMORY_ENABLE_SEMANTIC_SEARCH",
+        DEFAULT_FLAGS.enableSemanticSearch,
+      ),
+      enableRelationshipExpansion: bool(
+        "MEMORY_ENABLE_REL_EXPANSION",
+        DEFAULT_FLAGS.enableRelationshipExpansion,
+      ),
+      strictContradictionCheck: bool(
+        "MEMORY_STRICT_CONTRADICTIONS",
+        DEFAULT_FLAGS.strictContradictionCheck,
+      ),
       softDeleteEnabled: bool("MEMORY_SOFT_DELETE", DEFAULT_FLAGS.softDeleteEnabled),
     },
     classPolicies: DEFAULT_CLASS_POLICIES,

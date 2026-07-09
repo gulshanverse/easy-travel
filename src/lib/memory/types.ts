@@ -27,14 +27,7 @@ export const MEMORY_CLASSES = [
 export type MemoryClass = (typeof MEMORY_CLASSES)[number];
 
 // ─── Scope, visibility, status, source ──────────────────────────────────────
-export type MemoryScope =
-  | "session"
-  | "thread"
-  | "journey"
-  | "user"
-  | "group"
-  | "tenant"
-  | "global";
+export type MemoryScope = "session" | "thread" | "journey" | "user" | "group" | "tenant" | "global";
 
 export type MemoryVisibility = "private" | "shared" | "team" | "public";
 

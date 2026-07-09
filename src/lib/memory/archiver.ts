@@ -22,16 +22,32 @@ export class MemoryArchiver {
   ) {}
 
   async sweep(ownerId: string, now = Date.now()): Promise<ArchiveSweepStats> {
-    const rows = await this.store.list({ ownerId, includeExpired: true, statuses: ["active", "deleted"], now });
-    const stats: ArchiveSweepStats = { scanned: rows.length, archived: 0, hardDeleted: 0, softDeleteGraceExpired: 0 };
+    const rows = await this.store.list({
+      ownerId,
+      includeExpired: true,
+      statuses: ["active", "deleted"],
+      now,
+    });
+    const stats: ArchiveSweepStats = {
+      scanned: rows.length,
+      archived: 0,
+      hardDeleted: 0,
+      softDeleteGraceExpired: 0,
+    };
     for (const r of rows) {
       if (r.ttlExpiresAt && Date.parse(r.ttlExpiresAt) <= now && r.status === "active") {
         const policy = this.config.classPolicies[r.class];
         if (policy.archiveOnExpire) {
-          await this.lifecycle.archive(r.memoryId, ownerId, { actorId: "system", reason: "ttl_expired" });
+          await this.lifecycle.archive(r.memoryId, ownerId, {
+            actorId: "system",
+            reason: "ttl_expired",
+          });
           stats.archived += 1;
         } else {
-          await this.lifecycle.hardDelete(r.memoryId, ownerId, { actorId: "system", reason: "ttl_expired" });
+          await this.lifecycle.hardDelete(r.memoryId, ownerId, {
+            actorId: "system",
+            reason: "ttl_expired",
+          });
           stats.hardDeleted += 1;
         }
         continue;
@@ -40,7 +56,10 @@ export class MemoryArchiver {
         const policy = this.config.classPolicies[r.class];
         const expiredAt = Date.parse(r.updatedAt) + policy.softDeleteGraceSeconds * 1000;
         if (expiredAt <= now) {
-          await this.lifecycle.hardDelete(r.memoryId, ownerId, { actorId: "system", reason: "soft_delete_grace_expired" });
+          await this.lifecycle.hardDelete(r.memoryId, ownerId, {
+            actorId: "system",
+            reason: "soft_delete_grace_expired",
+          });
           stats.softDeleteGraceExpired += 1;
         }
       }

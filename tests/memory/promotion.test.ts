@@ -25,7 +25,9 @@ describe("MemoryPromotionEngine", () => {
   it("promotes preference → semantic when evidence + confidence high", async () => {
     const m = new MemoryManager();
     const events: string[] = [];
-    m.publisher.on("MemoryPromoted", (e) => events.push(`${e.payload.fromClass}->${e.payload.toClass}`));
+    m.publisher.on("MemoryPromoted", (e) =>
+      events.push(`${e.payload.fromClass}->${e.payload.toClass}`),
+    );
     const env = await m.write(d());
     const promoted = await m.promote(env);
     expect(promoted).not.toBeNull();
@@ -43,7 +45,18 @@ describe("MemoryPromotionEngine", () => {
   });
 
   it("respects enablePromotion flag", async () => {
-    const m = new MemoryManager({ config: { flags: { enableCompression: true, enablePromotion: false, enableSemanticSearch: true, enableRelationshipExpansion: true, strictContradictionCheck: false, softDeleteEnabled: true } } });
+    const m = new MemoryManager({
+      config: {
+        flags: {
+          enableCompression: true,
+          enablePromotion: false,
+          enableSemanticSearch: true,
+          enableRelationshipExpansion: true,
+          strictContradictionCheck: false,
+          softDeleteEnabled: true,
+        },
+      },
+    });
     const env = await m.write(d());
     expect(await m.promote(env)).toBeNull();
   });

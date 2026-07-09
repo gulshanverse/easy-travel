@@ -42,9 +42,19 @@ export class InMemoryMemoryStore implements MemoryStore {
     return { ...row };
   }
 
-  async findByContentHash(ownerId: string, class_: MemoryEnvelope["class"], kind: string, hash: string): Promise<MemoryEnvelope | null> {
+  async findByContentHash(
+    ownerId: string,
+    class_: MemoryEnvelope["class"],
+    kind: string,
+    hash: string,
+  ): Promise<MemoryEnvelope | null> {
     for (const row of this.rows.values()) {
-      if (row.ownerId === ownerId && row.class === class_ && row.kind === kind && row.contentHash === hash) {
+      if (
+        row.ownerId === ownerId &&
+        row.class === class_ &&
+        row.kind === kind &&
+        row.contentHash === hash
+      ) {
         return { ...row };
       }
     }
@@ -62,8 +72,10 @@ export class InMemoryMemoryStore implements MemoryStore {
       if (filter.threadId !== undefined && row.threadId !== filter.threadId) continue;
       if (filter.journeyId !== undefined && row.journeyId !== filter.journeyId) continue;
       if (filter.tags?.length && !filter.tags.every((t) => row.tags.includes(t))) continue;
-      if (filter.goalIds?.length && !(row.goalIds ?? []).some((g) => filter.goalIds!.includes(g))) continue;
-      if (!filter.includeExpired && row.ttlExpiresAt && Date.parse(row.ttlExpiresAt) <= now) continue;
+      if (filter.goalIds?.length && !(row.goalIds ?? []).some((g) => filter.goalIds!.includes(g)))
+        continue;
+      if (!filter.includeExpired && row.ttlExpiresAt && Date.parse(row.ttlExpiresAt) <= now)
+        continue;
       out.push({ ...row });
     }
     if (filter.limit) return out.slice(0, filter.limit);
