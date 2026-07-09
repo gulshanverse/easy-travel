@@ -65,7 +65,7 @@ export class PromptBudgetManager {
     const maxInput = budget.hard - budget.reservedOutput;
     if (maxInput <= 0) throw new BudgetExceededError(0, budget.hard);
 
-    let working = fragments.map((f) => ({
+    let working: PromptFragment[] = fragments.map((f) => ({
       ...f,
       estimatedTokens: f.estimatedTokens ?? estimateTokens(f.content),
     }));
