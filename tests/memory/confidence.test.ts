@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MemoryConfidenceEngine, MemoryFactories, loadMemoryConfiguration } from "@/lib/memory";
+import { MemoryConfidenceEngine, MemoryFactories, loadMemoryConfiguration } from "../../src/lib/memory";
 
 describe("MemoryConfidenceEngine", () => {
   const conf = new MemoryConfidenceEngine();

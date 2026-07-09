@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MemoryManager, MemoryRanker, loadMemoryConfiguration, MemoryFactories, type MemoryDraft } from "@/lib/memory";
+import { MemoryManager, MemoryRanker, loadMemoryConfiguration, MemoryFactories, type MemoryDraft } from "../../src/lib/memory";
 
 async function envOf(overrides: Partial<MemoryDraft>) {
   const factories = new MemoryFactories(loadMemoryConfiguration());

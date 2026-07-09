@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MemoryManager, type MemoryDraft } from "@/lib/memory";
+import { MemoryManager, type MemoryDraft } from "../../src/lib/memory";
 
 const OWNER = "user-r";
 
