@@ -90,7 +90,7 @@ export class ExecutionPipeline {
 
         const estimated = entry.adapter.estimateUsage(candidate.model, request.payload);
         const normalized: TokenUsage = normalizeUsage(estimated, request.payload);
-        assertContextWindow(candidate.model, normalized);
+        assertUsageWithinContextWindow(candidate.model, normalized);
         assertBudget(candidate.model, normalized, request.budget);
 
         await publisher.publish({
