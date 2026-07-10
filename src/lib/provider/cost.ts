@@ -47,7 +47,7 @@ export function assertBudget(model: ModelDescriptor, usage: TokenUsage, budget?:
   }
 }
 
-export function assertContextWindow(model: ModelDescriptor, usage: TokenUsage): void {
+export function assertUsageWithinContextWindow(model: ModelDescriptor, usage: TokenUsage): void {
   if (usage.totalTokens > model.contextWindow) {
     throw new ProviderBudgetError(
       `Estimated tokens ${usage.totalTokens} exceed context window ${model.contextWindow} for model '${model.id}'`,

@@ -8,7 +8,7 @@
 import type { AdapterContext } from "./adapter";
 import { assertCapabilities, assertContextWindow as assertCtxCaps } from "./capabilities";
 import type { ProviderConfiguration } from "./config";
-import { assertBudget, assertContextWindow, computeCost, estimatePayloadTokens, UsageTracker } from "./cost";
+import { assertBudget, assertUsageWithinContextWindow, computeCost, estimatePayloadTokens, UsageTracker } from "./cost";
 import type { CredentialManager } from "./credentials";
 import {
   ProviderCancellationError,
