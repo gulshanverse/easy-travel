@@ -56,3 +56,16 @@ Governed by `docs/DOCUMENTATION_HUB_v2.0.md`.
 - JIP v1.0 → v1.3 completed; v1.3 Frozen.
 - Journey Studio PRD v1.0 → v2.0; v2.0 authoritative.
 - Master Vision v1.0 established.
+
+## Sprint I-005 — Knowledge Graph Runtime
+- feat(graph): implement graph runtime (GraphRuntime, GraphRegistry, GraphFactory, GraphManager, GraphPolicies, config)
+- feat(graph): implement node & edge runtime with typed kinds, tags, metadata, versioning, lifecycle
+- feat(graph): implement in-memory index (kind / tag / metadata / incidence / version)
+- feat(graph): implement deterministic query engine (lookup, filter, neighbours, ranking, search, subgraph)
+- feat(graph): implement traversal engine (BFS, DFS, shortest path, depth/node limits, cycle detection)
+- feat(graph): implement typed event bus (Node/Edge/Traversal/Subgraph/Graph events with correlation/causation)
+- feat(graph): implement validation (schema, referential integrity, cycle, consistency, version)
+- feat(graph): implement serialization (snapshot, export/import, compression, diff, merge, rollback)
+- feat(graph): implement metrics, telemetry, health checks
+- feat(graph): expose interface-only ports for Memory, Prompt, Runtime Kernel, Provider, Journey, Recommendation, Trust, Goal, Spatial, AI Agents
+- test(graph): 15 unit/integration/traversal/serialization/stress tests (full suite: 129/129 passing)
