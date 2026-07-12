@@ -114,10 +114,12 @@ export class GraphManager {
   }
 
   async deleteNode(id: string, ctx: EventContext = {}): Promise<GraphNode | undefined> {
+    // Capture incident edges BEFORE removing the node — the index drops
+    // the node's edge sets on removeNode.
+    const incident = [...this.index.edgesIncident(id)];
     const removed = this.index.removeNode(id);
     if (!removed) return undefined;
-    // Cascade: remove incident edges.
-    for (const eid of this.index.edgesIncident(id)) this.index.removeEdge(eid);
+    for (const eid of incident) this.index.removeEdge(eid);
     this.metrics.counter("graph.node.deleted");
     this.metrics.gauge("graph.node.count", this.index.nodeCount());
     if (this.config.observability.emitLifecycleEvents) {
