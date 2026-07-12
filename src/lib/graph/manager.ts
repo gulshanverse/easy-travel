@@ -172,9 +172,7 @@ export class GraphManager {
     this.metrics.counter("graph.edge.deleted");
     this.metrics.gauge("graph.edge.count", this.index.edgeCount());
     if (this.config.observability.emitLifecycleEvents) {
-      await this.events.emit(makeEventEnvelope(this.id, "EdgeDeleted", { node: removed as unknown as GraphNode } as never, ctx));
-      // NOTE: the above never-cast keeps the envelope type-safe; we emit the
-      // proper edge payload below via a second, narrowly typed helper.
+      await this.events.emit(makeEventEnvelope(this.id, "EdgeDeleted", { edge: removed }, ctx));
     }
     return removed;
   }
