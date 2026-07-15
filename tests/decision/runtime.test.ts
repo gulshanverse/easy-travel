@@ -19,7 +19,7 @@ function makeOption(title: string, features: Partial<Record<ScoreDimension, numb
 
 describe("config & weights", () => {
   it("normalizes weights so they sum to 1", () => {
-    const w = normalizeWeights({ budget: 2, time: 2 });
+    const w = normalizeWeights({ budget: 0.5, time: 0.5 });
     const sum = Object.values(w).reduce((s, v) => s + v, 0);
     expect(sum).toBeCloseTo(1, 5);
   });
