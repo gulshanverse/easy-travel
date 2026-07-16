@@ -123,49 +123,48 @@ export class TrustManager {
 
   /* ---------- Trust computation ---------- */
   computeTrust(subject: string): TrustScore {
-    return this.deps.telemetry.span("trust.compute", () => {
-      const bundle = this.bundleFor(subject);
-      const evidence = bundle.references.map((r) => this.evidence.require(r.evidenceId));
-      const scores = this.scoreBundle(bundle);
-      const confidence = calculateConfidence({ evidence, scores }, this.deps.config);
-      const overall = scores.length
-        ? scores.reduce((acc, s) => acc + s.overall, 0) / scores.length
-        : 0;
-      const value = clamp01(0.6 * overall + 0.4 * confidence.value);
-      const level = levelFor(value, this.deps.config);
-      const conflicts = detectConflicts(evidence, this.deps.config, this.deps.now());
-      for (const c of conflicts) {
-        this.conflicts.set(c.id, c);
-        this.deps.events.emit({
-          name: "ConflictDetected", at: this.deps.now(),
-          subject, data: { conflictId: c.id, kind: c.kind, evidenceIds: c.evidenceIds },
-        });
-      }
-      const reasons = buildReasons(evidence.length, confidence.agreement, conflicts.length);
-      const score: TrustScore = Object.freeze({
-        id: newTrustId(),
-        subject,
-        bundleId: bundle.id,
-        level,
-        value,
-        confidence,
-        evidenceScores: scores,
-        reasons,
-        computedAt: this.deps.now(),
-      });
-      this.recordHistory(score);
-      this.deps.metrics.inc("trust.score.computed");
-      this.deps.metrics.observe("trust.score.value", value);
+    this.deps.telemetry.event("trust.compute.begin", { subject });
+    const bundle = this.bundleFor(subject);
+    const evidence = bundle.references.map((r) => this.evidence.require(r.evidenceId));
+    const scores = this.scoreBundle(bundle);
+    const confidence = calculateConfidence({ evidence, scores }, this.deps.config);
+    const overall = scores.length
+      ? scores.reduce((acc, s) => acc + s.overall, 0) / scores.length
+      : 0;
+    const value = clamp01(0.6 * overall + 0.4 * confidence.value);
+    const level = levelFor(value, this.deps.config);
+    const conflicts = detectConflicts(evidence, this.deps.config, this.deps.now());
+    for (const c of conflicts) {
+      this.conflicts.set(c.id, c);
       this.deps.events.emit({
-        name: "TrustCalculated", at: this.deps.now(),
-        subject, data: { trustId: score.id, value, level },
+        name: "ConflictDetected", at: this.deps.now(),
+        subject, data: { conflictId: c.id, kind: c.kind, evidenceIds: c.evidenceIds },
       });
-      this.deps.events.emit({
-        name: "ConfidenceCalculated", at: this.deps.now(),
-        subject, data: { value: confidence.value, agreement: confidence.agreement },
-      });
-      return score;
-    }, { subject });
+    }
+    const reasons = buildReasons(evidence.length, confidence.agreement, conflicts.length);
+    const score: TrustScore = Object.freeze({
+      id: newTrustId(),
+      subject,
+      bundleId: bundle.id,
+      level,
+      value,
+      confidence,
+      evidenceScores: scores,
+      reasons,
+      computedAt: this.deps.now(),
+    });
+    this.recordHistory(score);
+    this.deps.metrics.inc("trust.score.computed");
+    this.deps.metrics.observe("trust.score.value", value);
+    this.deps.events.emit({
+      name: "TrustCalculated", at: this.deps.now(),
+      subject, data: { trustId: score.id, value, level },
+    });
+    this.deps.events.emit({
+      name: "ConfidenceCalculated", at: this.deps.now(),
+      subject, data: { value: confidence.value, agreement: confidence.agreement },
+    });
+    return score;
   }
 
   decide(subject: string, policyId = "policy.default"): TrustDecision {
