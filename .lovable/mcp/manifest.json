@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "sdk_version": "0.22.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://mzftorfazxbvbuszhyas.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "easy-trip-mcp",
+      "version": "0.1.0",
+      "title": "Easy Trip"
+    },
+    "tools": [
+      {
+        "name": "whoami",
+        "title": "Who am I",
+        "description": "Return the signed-in Easy Trip user's id and email.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_trips",
+        "title": "List my trips",
+        "description": "List trips owned by the signed-in Easy Trip user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "description": "Max number of trips to return."
+            },
+            "status": {
+              "type": "string",
+              "description": "Optional trip status to filter by (e.g. 'draft', 'planned', 'active')."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_trip",
+        "title": "Get trip detail",
+        "description": "Fetch one Easy Trip trip with its day-by-day itinerary and activities.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "trip_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The trip UUID (from list_trips)."
+            }
+          },
+          "required": [
+            "trip_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_trip",
+        "title": "Create trip",
+        "description": "Create a new draft trip owned by the signed-in Easy Trip user.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Trip title."
+            },
+            "summary": {
+              "type": "string",
+              "maxLength": 2000,
+              "description": "Short trip summary."
+            },
+            "start_date": {
+              "type": "string",
+              "description": "ISO date (YYYY-MM-DD) trip start."
+            },
+            "end_date": {
+              "type": "string",
+              "description": "ISO date (YYYY-MM-DD) trip end."
+            },
+            "currency": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "description": "ISO 4217 currency code."
+            },
+            "traveler_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "title"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
