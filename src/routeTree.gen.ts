@@ -15,6 +15,7 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as RestaurantsRouteImport } from './routes/restaurants'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as HotelsRouteImport } from './routes/hotels'
 import { Route as FlightsRouteImport } from './routes/flights'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
@@ -35,7 +36,11 @@ import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedMyTripsRouteImport } from './routes/_authenticated/my-trips'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiAiInvokeRouteImport } from './routes/api/ai/invoke'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const TrainsRoute = TrainsRouteImport.update({
   id: '/trains',
@@ -65,6 +70,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HotelsRoute = HotelsRouteImport.update({
@@ -166,9 +176,32 @@ const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAiInvokeRoute = ApiAiInvokeRouteImport.update({
   id: '/api/ai/invoke',
   path: '/api/ai/invoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -185,12 +218,15 @@ export interface FileRoutesByFullPath {
   '/experiences': typeof ExperiencesRoute
   '/flights': typeof FlightsRoute
   '/hotels': typeof HotelsRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurants': typeof RestaurantsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trains': typeof TrainsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/bookings': typeof AuthenticatedBookingsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-trips': typeof AuthenticatedMyTripsRoute
@@ -198,6 +234,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
 export interface FileRoutesByTo {
@@ -213,12 +251,15 @@ export interface FileRoutesByTo {
   '/experiences': typeof ExperiencesRoute
   '/flights': typeof FlightsRoute
   '/hotels': typeof HotelsRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurants': typeof RestaurantsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trains': typeof TrainsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/bookings': typeof AuthenticatedBookingsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-trips': typeof AuthenticatedMyTripsRoute
@@ -226,6 +267,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/wishlist': typeof AuthenticatedWishlistRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
 export interface FileRoutesById {
@@ -243,12 +286,15 @@ export interface FileRoutesById {
   '/experiences': typeof ExperiencesRoute
   '/flights': typeof FlightsRoute
   '/hotels': typeof HotelsRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/restaurants': typeof RestaurantsRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/trains': typeof TrainsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/bookings': typeof AuthenticatedBookingsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/my-trips': typeof AuthenticatedMyTripsRoute
@@ -256,6 +302,8 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/ai/invoke': typeof ApiAiInvokeRoute
 }
 export interface FileRouteTypes {
@@ -273,12 +321,15 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/flights'
     | '/hotels'
+    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/restaurants'
     | '/support'
     | '/terms'
     | '/trains'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/bookings'
     | '/dashboard'
     | '/my-trips'
@@ -286,6 +337,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/wishlist'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/ai/invoke'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -301,12 +354,15 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/flights'
     | '/hotels'
+    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/restaurants'
     | '/support'
     | '/terms'
     | '/trains'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/bookings'
     | '/dashboard'
     | '/my-trips'
@@ -314,6 +370,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/wishlist'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/ai/invoke'
   id:
     | '__root__'
@@ -330,12 +388,15 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/flights'
     | '/hotels'
+    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/restaurants'
     | '/support'
     | '/terms'
     | '/trains'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/bookings'
     | '/_authenticated/dashboard'
     | '/_authenticated/my-trips'
@@ -343,6 +404,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/studio'
     | '/_authenticated/wishlist'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/ai/invoke'
   fileRoutesById: FileRoutesById
 }
@@ -360,12 +423,17 @@ export interface RootRouteChildren {
   ExperiencesRoute: typeof ExperiencesRoute
   FlightsRoute: typeof FlightsRoute
   HotelsRoute: typeof HotelsRoute
+  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RestaurantsRoute: typeof RestaurantsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   TrainsRoute: typeof TrainsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAiInvokeRoute: typeof ApiAiInvokeRoute
 }
 
@@ -411,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hotels': {
@@ -553,11 +628,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/invoke': {
       id: '/api/ai/invoke'
       path: '/api/ai/invoke'
       fullPath: '/api/ai/invoke'
       preLoaderRoute: typeof ApiAiInvokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -600,12 +703,18 @@ const rootRouteChildren: RootRouteChildren = {
   ExperiencesRoute: ExperiencesRoute,
   FlightsRoute: FlightsRoute,
   HotelsRoute: HotelsRoute,
+  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RestaurantsRoute: RestaurantsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   TrainsRoute: TrainsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAiInvokeRoute: ApiAiInvokeRoute,
 }
 export const routeTree = rootRouteImport
