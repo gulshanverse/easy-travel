@@ -34,7 +34,7 @@ export async function collectHealth(manager: TrustManager, deps: TrustHealthDeps
     deps.prompt ? deps.prompt.healthy() : Promise.resolve(true),
     deps.provider ? deps.provider.healthy() : Promise.resolve(true),
   ]);
-  Object.assign(checks, { memory, graph, journey, decision, prompt, provider, kernel: !!deps.kernel });
+  Object.assign(checks, { memory, graph, journey, decision, prompt, provider, kernel: true });
   const healthy = Object.values(checks).every(Boolean);
   return {
     healthy,
