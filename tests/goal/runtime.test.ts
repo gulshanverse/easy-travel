@@ -199,7 +199,7 @@ describe("GoalRuntime — cross-engine integration via public ports only", () =>
   it("interoperates with Trust, Decision, Journey, Graph runtimes through ports", async () => {
     const trust = createTrustRuntime();
     const decision = createDecisionRuntime({ namespace: "test" });
-    const journey = createJourneyRuntime();
+    const journey = createJourneyRuntime({ namespace: "test" });
     const graph = createGraphRuntime();
 
     const src = trust.registerSource(makeSource({ name: "s", category: "official", authority: 0.9, reliability: 0.9 }));
