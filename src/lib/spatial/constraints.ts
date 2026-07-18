@@ -78,9 +78,9 @@ export function evaluateConstraint(ctx: ConstraintContext, c: SpatialConstraint,
     case "cross_border": {
       const allow = c.params.allow === 1 || c.params.allow === "true";
       if (allow) return { constraintId: c.id, ok: true };
-      const target = "countryCode" in (target as Place) ? (target as Place).countryCode : undefined;
+      const targetCountry = typeof target === "object" && "countryCode" in target ? (target as Place).countryCode : undefined;
       const originCountry = c.params.originCountry;
-      return target && originCountry && target !== originCountry
+      return targetCountry && originCountry && targetCountry !== originCountry
         ? { constraintId: c.id, ok: false, reason: "cross-border not allowed" }
         : { constraintId: c.id, ok: true };
     }
