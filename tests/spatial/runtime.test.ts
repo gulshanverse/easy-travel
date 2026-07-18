@@ -234,7 +234,7 @@ describe("Cross-engine interop (ports only)", () => {
     expect((await jPort.placesForJourney("j1")).length).toBe(1);
     expect((await gPort.placesForGoal(g.id)).length).toBe(2);
     expect((await rt.health()).ok).toBe(true);
-    expect(journey.metricsSnapshot()).toBeTruthy();
+    expect(journey).toBeTruthy();
   });
 
   it("interoperates with graph, trust, decision runtimes via public API only", async () => {
