@@ -216,7 +216,7 @@ describe("Stress", () => {
 
 describe("Cross-engine interop (ports only)", () => {
   it("consumes journey/goal port results without importing internals", async () => {
-    const journey = createJourneyRuntime();
+    const journey = createJourneyRuntime({ namespace: "test" });
     const goal = createGoalRuntime();
     const g = goal.createGoal({
       ownerId: "u", title: "Kyoto trip", description: "d",
@@ -240,7 +240,7 @@ describe("Cross-engine interop (ports only)", () => {
   it("interoperates with graph, trust, decision runtimes via public API only", async () => {
     const graph = createGraphRuntime();
     const trust = createTrustRuntime();
-    const decision = createDecisionRuntime();
+    const decision = createDecisionRuntime({ namespace: "test" });
     const rt = createSpatialRuntime();
     rt.manager.createPlace({ name: "T", coord: TOKYO });
     expect(graph.listGraphs().length).toBeGreaterThanOrEqual(0);
