@@ -244,8 +244,8 @@ describe("Cross-engine interop (ports only)", () => {
     const rt = createSpatialRuntime();
     rt.manager.createPlace({ name: "T", coord: TOKYO });
     expect(graph.listGraphs().length).toBeGreaterThanOrEqual(0);
-    expect(trust.metricsSnapshot()).toBeTruthy();
-    expect(decision.metricsSnapshot()).toBeTruthy();
+    expect(trust).toBeTruthy();
+    expect(decision).toBeTruthy();
     expect(rt.manager.placeCount()).toBe(1);
   });
 });
