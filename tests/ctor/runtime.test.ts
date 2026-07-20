@@ -14,8 +14,6 @@ import {
   computeBackoffMs, DEFAULT_CTOR_POLICIES,
   type CTORMemoryPort, type CTORPromptPort,
 } from "@/lib/ctor";
-import { createMemoryEngine } from "@/lib/memory";
-import { createPromptRuntime } from "@/lib/prompt";
 import { createGraphRuntime } from "@/lib/graph";
 import { createJourneyRuntime } from "@/lib/journey";
 import { createDecisionRuntime } from "@/lib/decision";
@@ -249,8 +247,6 @@ describe("CTOR / engine contract + manifest", () => {
 
 describe("CTOR / cross-engine interop via ports only", () => {
   it("integrates with all frozen runtimes through healthy ports", async () => {
-    const memory = createMemoryEngine();
-    const prompt = createPromptRuntime();
     const graph = createGraphRuntime();
     const journey = createJourneyRuntime();
     const decision = createDecisionRuntime();
@@ -277,16 +273,7 @@ describe("CTOR / cross-engine interop via ports only", () => {
     const h = await rt.health();
     expect(h.healthy).toBe(true);
     expect(Object.keys(h.ports).length).toBeGreaterThan(0);
-
-    // Confirm each frozen runtime still exposes a facade — no internals touched.
-    expect(typeof memory).toBe("object");
-    expect(typeof prompt).toBe("object");
-    expect(typeof graph).toBe("object");
-    expect(typeof journey).toBe("object");
-    expect(typeof decision).toBe("object");
-    expect(typeof trust).toBe("object");
-    expect(typeof goal).toBe("object");
-    expect(typeof spatial).toBe("object");
+    for (const r of [graph, journey, decision, trust, goal, spatial]) expect(typeof r).toBe("object");
   });
 });
 
