@@ -3,6 +3,7 @@ import { ExecutionCancelledError, ExecutionTimeoutError, WorkflowExecutionError 
 import { computeBackoffMs, resolveStepPolicy, type CTORPolicies } from "./policies";
 import { computeLayers, topologicalSort } from "./dependency";
 import { childContext, snapshotContext, withVariables } from "./context";
+import { makeWorkflow } from "./factories";
 import type {
   ExecutionContext, StepResult, StepStatus, WorkflowDefinition, WorkflowRunResult, WorkflowStep,
 } from "./types";
@@ -17,11 +18,7 @@ export class WorkflowBuilder {
   private steps: WorkflowStep[] = [];
   constructor(private readonly opts: WorkflowBuilderOptions) {}
   add(s: WorkflowStep): this { this.steps.push(Object.freeze({ ...s, dependsOn: Object.freeze([...s.dependsOn]) })); return this; }
-  build(): WorkflowDefinition {
-    // Local import avoids circular via factories
-    const { makeWorkflow } = require("./factories") as typeof import("./factories");
-    return makeWorkflow({ ...this.opts, steps: this.steps });
-  }
+  build(): WorkflowDefinition { return makeWorkflow({ ...this.opts, steps: this.steps }); }
 }
 
 export interface ExecuteWorkflowOptions {
