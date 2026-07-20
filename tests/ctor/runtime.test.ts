@@ -247,13 +247,7 @@ describe("CTOR / engine contract + manifest", () => {
 
 describe("CTOR / cross-engine interop via ports only", () => {
   it("integrates with all frozen runtimes through healthy ports", async () => {
-    const mk = (fn: (o?: unknown) => unknown) => { try { return fn({ namespace: "ctor-test" }); } catch { try { return fn(); } catch { return {}; } } };
-    const graph = mk(createGraphRuntime as unknown as (o?: unknown) => unknown);
-    const journey = mk(createJourneyRuntime as unknown as (o?: unknown) => unknown);
-    const decision = mk(createDecisionRuntime as unknown as (o?: unknown) => unknown);
-    const trust = mk(createTrustRuntime as unknown as (o?: unknown) => unknown);
-    const goal = mk(createGoalRuntime as unknown as (o?: unknown) => unknown);
-    const spatial = mk(createSpatialRuntime as unknown as (o?: unknown) => unknown);
+    // CTOR touches other engines only through ports — no direct instantiation required.
 
     const memPort: CTORMemoryPort = { async healthy() { return true; } };
     const promptPort: CTORPromptPort = { async healthy() { return true; }, registeredPromptCount() { return 0; } };
