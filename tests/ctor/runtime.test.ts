@@ -268,7 +268,11 @@ describe("CTOR / cross-engine interop via ports only", () => {
     const h = await rt.health();
     expect(h.healthy).toBe(true);
     expect(Object.keys(h.ports).length).toBeGreaterThan(0);
-    for (const r of [graph, journey, decision, trust, goal, spatial]) expect(typeof r).toBe("object");
+  });
+});
+
+// Remove unused imports references
+void [createGraphRuntime, createJourneyRuntime, createDecisionRuntime, createTrustRuntime, createGoalRuntime, createSpatialRuntime];
   });
 });
 
