@@ -64,11 +64,11 @@ export class AgentRuntime {
   listManagers(): readonly string[] { return [...this.managers.keys()]; }
 
   startSession(input: { agentId: string; userId?: string; locale?: string; timezone?: string; variables?: Record<string, unknown>; ttlMs?: number }): Session {
-    const s = this.manager.sessions.create(makeSession({
+    const s = this.manager.sessions.create({
       agentId: input.agentId,
       context: { userId: input.userId, locale: input.locale, timezone: input.timezone, variables: input.variables },
       ttlMs: input.ttlMs ?? this.config.defaultSessionTtlMs,
-    }));
+    });
     this.metrics.sessionCreated();
     this.events.emit({ name: "SessionCreated", agentId: input.agentId, sessionId: s.id, data: { id: s.id } });
     return s;
@@ -81,7 +81,7 @@ export class AgentRuntime {
   }
   createConversation(input: { sessionId: string }): Conversation {
     const s = this.manager.sessions.get(input.sessionId);
-    const c = this.manager.conversations.create(makeConversation({ sessionId: s.id, agentId: s.agentId }));
+    const c = this.manager.conversations.create({ sessionId: s.id, agentId: s.agentId });
     this.manager.sessions.linkConversation(s.id, c.id);
     this.metrics.conversationCreated();
     this.events.emit({ name: "ConversationCreated", agentId: s.agentId, sessionId: s.id, conversationId: c.id, data: { id: c.id } });
