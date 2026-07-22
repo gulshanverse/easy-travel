@@ -9,7 +9,6 @@ import { AgentManager } from "./manager";
 import { mergeGovernancePolicies, type AgentGovernancePolicies } from "./policies";
 import type { AgentAuditPort, AgentCTORPort, AgentKernelPort, AgentPolicyPort } from "./ports";
 import { noopAuditPort, noopCTORPort, noopKernelPort, noopPolicyPort } from "./ports";
-import { makeSession, makeConversation } from "./factories";
 import type { Session, Conversation } from "./types";
 
 export interface AgentRuntimeOptions {
