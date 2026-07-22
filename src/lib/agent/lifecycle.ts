@@ -2,17 +2,24 @@
 import { AgentLifecycleError } from "./errors";
 import type { AgentStatus, ConversationStatus, SessionStatus } from "./types";
 
+// Reasoning phases are permissive between active states so concurrent
+// requests against the same registered agent do not deadlock on transitions.
+const ACTIVE: readonly AgentStatus[] = [
+  "ready", "receiving-request", "understanding-intent", "planning",
+  "selecting-capabilities", "executing-workflow", "waiting",
+  "synthesizing-response", "completed",
+];
 const AGENT: Record<AgentStatus, readonly AgentStatus[]> = {
   registered: ["ready", "failed", "archived"],
-  ready: ["receiving-request", "archived", "failed"],
-  "receiving-request": ["understanding-intent", "failed", "ready"],
-  "understanding-intent": ["planning", "failed", "ready"],
-  planning: ["selecting-capabilities", "failed", "ready"],
-  "selecting-capabilities": ["executing-workflow", "failed", "ready"],
-  "executing-workflow": ["waiting", "synthesizing-response", "failed"],
-  waiting: ["executing-workflow", "synthesizing-response", "failed"],
-  "synthesizing-response": ["completed", "failed"],
-  completed: ["ready", "archived"],
+  ready: ACTIVE.concat("archived", "failed") as readonly AgentStatus[],
+  "receiving-request": ACTIVE.concat("failed") as readonly AgentStatus[],
+  "understanding-intent": ACTIVE.concat("failed") as readonly AgentStatus[],
+  planning: ACTIVE.concat("failed") as readonly AgentStatus[],
+  "selecting-capabilities": ACTIVE.concat("failed") as readonly AgentStatus[],
+  "executing-workflow": ACTIVE.concat("failed") as readonly AgentStatus[],
+  waiting: ACTIVE.concat("failed") as readonly AgentStatus[],
+  "synthesizing-response": ACTIVE.concat("failed") as readonly AgentStatus[],
+  completed: ACTIVE.concat("archived") as readonly AgentStatus[],
   archived: [],
   failed: ["ready", "archived"],
 };

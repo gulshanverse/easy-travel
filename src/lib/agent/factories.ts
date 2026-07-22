@@ -42,9 +42,9 @@ export function makeAgent(i: MakeAgentInput): Agent {
   });
   const agent: Agent = Object.freeze({
     identity, profile, role,
-    capabilities: fArr(i.capabilities).map(c => Object.freeze({ ...c })) as readonly AgentCapability[],
-    goals: fArr(i.goals).map(g => Object.freeze({ ...g })) as readonly AgentGoal[],
-    memory: fArr(i.memory).map(m => Object.freeze({ ...m })) as readonly AgentMemoryReference[],
+    capabilities: Object.freeze(fArr(i.capabilities).map(c => Object.freeze({ ...c }))) as readonly AgentCapability[],
+    goals: Object.freeze(fArr(i.goals).map(g => Object.freeze({ ...g }))) as readonly AgentGoal[],
+    memory: Object.freeze(fArr(i.memory).map(m => Object.freeze({ ...m }))) as readonly AgentMemoryReference[],
     policy: fObj(i.policy ?? {}),
     metadata: Object.freeze({
       tags: fArr(i.tags),
