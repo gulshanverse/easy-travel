@@ -10,7 +10,7 @@ import type {
   TimelineItem, TimelineSection,
 } from "./types";
 
-void _unused;
+
 
 export function makeEmptyTimeline(): Timeline {
   const t: Timeline = Object.freeze({
