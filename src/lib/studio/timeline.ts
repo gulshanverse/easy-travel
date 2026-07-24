@@ -1,8 +1,5 @@
 /** JSR — Timeline factories and deterministic operations. */
 import {
-  newTimelineCheckpointId as _unused,
-} from "./ids";
-import {
   newTimelineEventId, newTimelineGroupId, newTimelineId,
   newTimelineItemId, newTimelineSectionId, newCheckpointId,
 } from "./ids";
