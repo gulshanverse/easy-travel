@@ -166,6 +166,7 @@ export class RailwayConnectorHealth {
   ) {}
   async report(): Promise<RailwayHealthReport> {
     const ipcf = await this.integration.health();
+    const ipcfHealthy = ipcf.status !== "unhealthy";
     const connectors: RailwayHealthEntry[] = [];
     for (const r of this.registry.list()) {
       const probe = await r.adapter.probe();
@@ -180,9 +181,9 @@ export class RailwayConnectorHealth {
       }));
     }
     return Object.freeze({
-      healthy: ipcf.healthy && connectors.some((c) => c.healthy),
+      healthy: ipcfHealthy && connectors.some((c) => c.healthy),
       at: Date.now(),
-      integrationHealthy: ipcf.healthy,
+      integrationHealthy: ipcfHealthy,
       connectors: Object.freeze(connectors),
       capabilities: this.registry.capabilities(),
     });
