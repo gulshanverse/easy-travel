@@ -16,7 +16,7 @@ export const INTEGRATION_ENGINE_CONTRACT = Object.freeze({
       "connector-sandbox", "connector-testing-framework",
     ],
     doesNotOwn: [
-      "maps", "weather", "irctc", "flights", "hotels", "payments",
+      "maps", "weather", "railway-provider-apis", "flights", "hotels", "payments",
       "notifications", "business-logic", "journey-planning",
       "decision-logic", "agent-logic", "ctor", "domain-intelligence",
       "memory", "trust", "goal", "spatial", "studio", "knowledge-graph",
