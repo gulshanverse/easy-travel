@@ -89,7 +89,7 @@ export class RailwayConnectorFactory {
       policy: makePolicy({
         rateLimit: makeRateLimit(1200, 60),
         retry: makeRetryPolicy({ maxAttempts: 3, baseDelayMs: 1, maxDelayMs: 5, jitter: false }),
-        concurrency: 16,
+        concurrency: 256,
       }),
     });
   }

@@ -44,6 +44,8 @@ function trainPayload(t: MockTrain) {
 }
 
 export interface MockRailProviderOptions {
+  /** Distinct provider id, for multi-connector scenarios. */
+  readonly id?: string;
   /** Force a failure for this capability (used by error-handling tests). */
   readonly failCapabilities?: readonly RailwayCapabilityId[];
   /** Number of leading attempts that fail transiently (retry tests). */
@@ -51,21 +53,22 @@ export interface MockRailProviderOptions {
 }
 
 export class MockRailProvider implements RailwayProviderAdapter {
-  readonly profile: RailwayProviderProfile = Object.freeze({
-    id: "mock-rail",
-    name: "Mock Rail Provider",
-    kind: "mock" as const,
-    country: "XX",
-    version: "1.0.0",
-    functional: true,
-    capabilities: RAILWAY_CAPABILITY_IDS,
-  });
+  readonly profile: RailwayProviderProfile;
 
   private remainingTransient: number;
   private readonly failSet: ReadonlySet<string>;
   private attempts = 0;
 
   constructor(private readonly options: MockRailProviderOptions = {}) {
+    this.profile = Object.freeze({
+      id: options.id ?? "mock-rail",
+      name: "Mock Rail Provider",
+      kind: "mock" as const,
+      country: "XX",
+      version: "1.0.0",
+      functional: true,
+      capabilities: RAILWAY_CAPABILITY_IDS,
+    });
     this.remainingTransient = options.transientFailures ?? 0;
     this.failSet = new Set(options.failCapabilities ?? []);
   }
