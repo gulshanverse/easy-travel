@@ -3,7 +3,7 @@
  *  transport themselves in this build and are only ever invoked from
  *  the IPCF connector executor.
  */
-import type { RailwayCapabilityId } from "./contracts";
+import type { RailwayCapabilityId } from "../contracts";
 
 export type RailwayRequestInput = Readonly<Record<string, unknown>>;
 
