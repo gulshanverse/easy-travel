@@ -47,7 +47,6 @@ export class WorkflowRuntime {
     if (options.registerBuiltins !== false) {
       for (const def of builtinWorkflows()) this.manager.register(def);
     }
-    this.clock.onAdvance?.(() => { void this.manager.tick(); });
   }
 
   register(def: WorkflowDefinition): WorkflowDefinition { return this.manager.register(def); }

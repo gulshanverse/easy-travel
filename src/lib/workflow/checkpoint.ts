@@ -56,7 +56,7 @@ export class ExecutionRecovery {
     if (!cp) return instance;
     return Object.freeze({
       ...instance,
-      state: cp.state,
+      state: Object.freeze({ ...cp.state, status: instance.state.status }),
       variables: cp.variables,
       updatedAt: at,
       history: Object.freeze([
