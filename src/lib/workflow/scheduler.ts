@@ -23,8 +23,7 @@ export class ExecutionQueue {
   push(e: Omit<QueueEntry, "seq">): QueueEntry {
     const entry: QueueEntry = Object.freeze({ ...e, seq: this.seq++ });
     this.items.push(entry);
-    this.items.sort((a, b) =>
-      a.dueAt - b.dueAt || a.priority - b.priority || a.seq - b.seq);
+    this.items.sort((a, b) => a.dueAt - b.dueAt || a.priority - b.priority || a.seq - b.seq);
     return entry;
   }
   popDue(now: number): readonly QueueEntry[] {
@@ -34,13 +33,21 @@ export class ExecutionQueue {
   }
   remove(id: string): boolean {
     const before = this.items.length;
-    this.items = this.items.filter(i => i.id !== id);
+    this.items = this.items.filter((i) => i.id !== id);
     return this.items.length < before;
   }
-  peek(): QueueEntry | undefined { return this.items[0]; }
-  size(): number { return this.items.length; }
-  list(): readonly QueueEntry[] { return [...this.items]; }
-  clear(): void { this.items = []; }
+  peek(): QueueEntry | undefined {
+    return this.items[0];
+  }
+  size(): number {
+    return this.items.length;
+  }
+  list(): readonly QueueEntry[] {
+    return [...this.items];
+  }
+  clear(): void {
+    this.items = [];
+  }
 }
 
 // ---------- Cron (5 fields: min hour dom mon dow) ----------
@@ -57,15 +64,19 @@ function parseField(field: string, min: number, max: number): readonly number[] 
   for (const part of field.split(",")) {
     const [rangePart, stepPart] = part.split("/");
     const step = stepPart ? Number(stepPart) : 1;
-    if (!Number.isInteger(step) || step < 1) throw new WorkflowSchedulerError(`Invalid cron step: ${part}`);
-    let lo = min, hi = max;
+    if (!Number.isInteger(step) || step < 1)
+      throw new WorkflowSchedulerError(`Invalid cron step: ${part}`);
+    let lo = min,
+      hi = max;
     if (rangePart !== "*") {
       const bounds = rangePart.split("-").map(Number);
-      if (bounds.some(n => !Number.isInteger(n))) throw new WorkflowSchedulerError(`Invalid cron field: ${part}`);
+      if (bounds.some((n) => !Number.isInteger(n)))
+        throw new WorkflowSchedulerError(`Invalid cron field: ${part}`);
       lo = bounds[0];
       hi = bounds.length > 1 ? bounds[1] : bounds[0];
     }
-    if (lo < min || hi > max || lo > hi) throw new WorkflowSchedulerError(`Cron field out of range: ${part}`);
+    if (lo < min || hi > max || lo > hi)
+      throw new WorkflowSchedulerError(`Cron field out of range: ${part}`);
     for (let v = lo; v <= hi; v += step) out.add(v);
   }
   return Object.freeze([...out].sort((a, b) => a - b));
@@ -73,7 +84,8 @@ function parseField(field: string, min: number, max: number): readonly number[] 
 
 export function parseCron(expr: string): CronExpression {
   const f = expr.trim().split(/\s+/);
-  if (f.length !== 5) throw new WorkflowSchedulerError(`Cron expression must have 5 fields: ${expr}`);
+  if (f.length !== 5)
+    throw new WorkflowSchedulerError(`Cron expression must have 5 fields: ${expr}`);
   return Object.freeze({
     minutes: parseField(f[0], 0, 59),
     hours: parseField(f[1], 0, 23),
@@ -98,32 +110,52 @@ export function nextCronRun(expr: string, fromMs: number): number {
       c.months.includes(d.getUTCMonth() + 1) &&
       c.daysOfMonth.includes(d.getUTCDate()) &&
       c.daysOfWeek.includes(d.getUTCDay())
-    ) return t;
+    )
+      return t;
     t += MINUTE;
   }
   throw new WorkflowSchedulerError(`Cron expression never fires within a year: ${expr}`);
 }
 
 export class CronScheduler {
-  next(expr: string, fromMs: number): number { return nextCronRun(expr, fromMs); }
-  validate(expr: string): boolean { try { parseCron(expr); return true; } catch { return false; } }
+  next(expr: string, fromMs: number): number {
+    return nextCronRun(expr, fromMs);
+  }
+  validate(expr: string): boolean {
+    try {
+      parseCron(expr);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export type SchedulerHandler = (entry: QueueEntry, now: number) => void | Promise<void>;
 
 export class TimerManager {
-  constructor(private readonly queue: ExecutionQueue, private readonly clock: WorkflowClock) {}
+  constructor(
+    private readonly queue: ExecutionQueue,
+    private readonly clock: WorkflowClock,
+  ) {}
   after(delayMs: number, payload: Readonly<Record<string, unknown>>, priority = 5): QueueEntry {
     return this.queue.push({
-      id: newScheduleId(), dueAt: this.clock.now() + Math.max(0, delayMs),
-      priority, kind: "timer", payload,
+      id: newScheduleId(),
+      dueAt: this.clock.now() + Math.max(0, delayMs),
+      priority,
+      kind: "timer",
+      payload,
     });
   }
   at(dueAt: number, payload: Readonly<Record<string, unknown>>, priority = 5): QueueEntry {
     return this.queue.push({ id: newScheduleId(), dueAt, priority, kind: "timer", payload });
   }
-  cancel(id: string): boolean { return this.queue.remove(id); }
-  pending(): number { return this.queue.size(); }
+  cancel(id: string): boolean {
+    return this.queue.remove(id);
+  }
+  pending(): number {
+    return this.queue.size();
+  }
 }
 
 export class Scheduler {
@@ -138,32 +170,85 @@ export class Scheduler {
     this.timers = new TimerManager(this.queue, clock);
   }
 
-  onDue(handler: SchedulerHandler): void { this.handler = handler; }
+  onDue(handler: SchedulerHandler): void {
+    this.handler = handler;
+  }
 
   /** Delayed one-shot execution. */
-  scheduleDelayed(definitionId: string, delayMs: number, payload: Readonly<Record<string, unknown>> = {}, priority = 5): WorkflowSchedule {
+  scheduleDelayed(
+    definitionId: string,
+    delayMs: number,
+    payload: Readonly<Record<string, unknown>> = {},
+    priority = 5,
+  ): WorkflowSchedule {
     const dueAt = this.clock.now() + Math.max(0, delayMs);
-    const entry = this.queue.push({ id: newScheduleId(), dueAt, priority, kind: "delay", payload: { ...payload, definitionId } });
+    const entry = this.queue.push({
+      id: newScheduleId(),
+      dueAt,
+      priority,
+      kind: "delay",
+      payload: { ...payload, definitionId },
+    });
     return this.remember({ id: entry.id, definitionId, kind: "delay", dueAt, payload });
   }
   /** Recurring execution. */
-  scheduleRecurring(definitionId: string, intervalMs: number, payload: Readonly<Record<string, unknown>> = {}, priority = 5): WorkflowSchedule {
+  scheduleRecurring(
+    definitionId: string,
+    intervalMs: number,
+    payload: Readonly<Record<string, unknown>> = {},
+    priority = 5,
+  ): WorkflowSchedule {
     if (intervalMs <= 0) throw new WorkflowSchedulerError("intervalMs must be > 0");
     const dueAt = this.clock.now() + intervalMs;
-    const entry = this.queue.push({ id: newScheduleId(), dueAt, priority, kind: "interval", intervalMs, payload: { ...payload, definitionId } });
-    return this.remember({ id: entry.id, definitionId, kind: "interval", dueAt, intervalMs, payload });
+    const entry = this.queue.push({
+      id: newScheduleId(),
+      dueAt,
+      priority,
+      kind: "interval",
+      intervalMs,
+      payload: { ...payload, definitionId },
+    });
+    return this.remember({
+      id: entry.id,
+      definitionId,
+      kind: "interval",
+      dueAt,
+      intervalMs,
+      payload,
+    });
   }
   /** Cron-based execution (pure, clock-driven). */
-  scheduleCron(definitionId: string, cron: string, payload: Readonly<Record<string, unknown>> = {}, priority = 5): WorkflowSchedule {
+  scheduleCron(
+    definitionId: string,
+    cron: string,
+    payload: Readonly<Record<string, unknown>> = {},
+    priority = 5,
+  ): WorkflowSchedule {
     const dueAt = this.cron.next(cron, this.clock.now());
-    const entry = this.queue.push({ id: newScheduleId(), dueAt, priority, kind: "cron", cron, payload: { ...payload, definitionId } });
+    const entry = this.queue.push({
+      id: newScheduleId(),
+      dueAt,
+      priority,
+      kind: "cron",
+      cron,
+      payload: { ...payload, definitionId },
+    });
     return this.remember({ id: entry.id, definitionId, kind: "cron", dueAt, cron, payload });
   }
 
-  cancel(id: string): boolean { this.schedules.delete(id); return this.queue.remove(id); }
-  list(): readonly WorkflowSchedule[] { return [...this.schedules.values()].sort((a, b) => a.dueAt - b.dueAt); }
-  pending(): number { return this.queue.size(); }
-  tickCount(): number { return this.ticks; }
+  cancel(id: string): boolean {
+    this.schedules.delete(id);
+    return this.queue.remove(id);
+  }
+  list(): readonly WorkflowSchedule[] {
+    return [...this.schedules.values()].sort((a, b) => a.dueAt - b.dueAt);
+  }
+  pending(): number {
+    return this.queue.size();
+  }
+  tickCount(): number {
+    return this.ticks;
+  }
 
   /** Runs all entries due at `now` (defaults to clock time). Deterministic ordering. */
   async tick(now = this.clock.now()): Promise<number> {
@@ -182,7 +267,10 @@ export class Scheduler {
     return due.length;
   }
 
-  clear(): void { this.queue.clear(); this.schedules.clear(); }
+  clear(): void {
+    this.queue.clear();
+    this.schedules.clear();
+  }
 
   private remember(s: WorkflowSchedule): WorkflowSchedule {
     const frozen = Object.freeze({ ...s });

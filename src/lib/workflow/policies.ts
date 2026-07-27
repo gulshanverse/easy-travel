@@ -53,22 +53,30 @@ export class WorkflowRateLimiter {
     w.count += 1;
     return true;
   }
-  clear(): void { this.windows.clear(); }
+  clear(): void {
+    this.windows.clear();
+  }
 }
 
 export class WorkflowConcurrencyLimiter {
   private readonly inFlight = new Map<string, number>();
   acquire(key: string, limit: number): void {
     const n = this.inFlight.get(key) ?? 0;
-    if (n >= limit) throw new WorkflowPolicyError(`Concurrency limit reached for ${key} (${limit})`);
+    if (n >= limit)
+      throw new WorkflowPolicyError(`Concurrency limit reached for ${key} (${limit})`);
     this.inFlight.set(key, n + 1);
   }
   release(key: string): void {
     const n = this.inFlight.get(key) ?? 0;
-    if (n <= 1) this.inFlight.delete(key); else this.inFlight.set(key, n - 1);
+    if (n <= 1) this.inFlight.delete(key);
+    else this.inFlight.set(key, n - 1);
   }
-  count(key: string): number { return this.inFlight.get(key) ?? 0; }
-  clear(): void { this.inFlight.clear(); }
+  count(key: string): number {
+    return this.inFlight.get(key) ?? 0;
+  }
+  clear(): void {
+    this.inFlight.clear();
+  }
 }
 
 export function assertPermitted(policy: WorkflowPolicy, granted: readonly string[]): void {

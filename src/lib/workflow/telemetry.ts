@@ -11,14 +11,22 @@ export interface WorkflowTelemetrySink {
   record(r: WorkflowTelemetryRecord): void;
 }
 
-export const noopWorkflowTelemetry: WorkflowTelemetrySink = { record() { /* no-op */ } };
+export const noopWorkflowTelemetry: WorkflowTelemetrySink = {
+  record() {
+    /* no-op */
+  },
+};
 
 export class InMemoryWorkflowTelemetry implements WorkflowTelemetrySink {
   readonly records: WorkflowTelemetryRecord[] = [];
-  record(r: WorkflowTelemetryRecord): void { this.records.push(r); }
-  clear(): void { this.records.length = 0; }
+  record(r: WorkflowTelemetryRecord): void {
+    this.records.push(r);
+  }
+  clear(): void {
+    this.records.length = 0;
+  }
   byKind(kind: WorkflowTelemetryRecord["kind"]): readonly WorkflowTelemetryRecord[] {
-    return this.records.filter(r => r.kind === kind);
+    return this.records.filter((r) => r.kind === kind);
   }
 }
 
@@ -37,10 +45,15 @@ export function startWorkflowSpan(
 ): WorkflowSpan {
   const startedAt = now();
   return {
-    name, correlationId, startedAt,
+    name,
+    correlationId,
+    startedAt,
     end(attributes = {}) {
       sink.record({
-        kind: "trace", level: "info", message: name, timestamp: now(),
+        kind: "trace",
+        level: "info",
+        message: name,
+        timestamp: now(),
         attributes: { correlationId, durationMs: now() - startedAt, ...attributes },
       });
     },

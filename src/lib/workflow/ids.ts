@@ -11,4 +11,6 @@ export const newCheckpointId = (): string => `wfc_${next()}`;
 export const newScheduleId = (): string => `wfsch_${next()}`;
 export const newWorkflowEventId = (): string => `wfev_${next()}`;
 export const newWorkflowCorrelationId = (): string => `wfcor_${next()}`;
-export const resetWorkflowIdCounter = (): void => { counter = 0; };
+export const resetWorkflowIdCounter = (): void => {
+  counter = 0;
+};

@@ -1,13 +1,28 @@
 /** WAR — immutable factories. */
-import { newWorkflowDefinitionId, newWorkflowInstanceId, newWorkflowCorrelationId, newCheckpointId } from "./ids";
+import {
+  newWorkflowDefinitionId,
+  newWorkflowInstanceId,
+  newWorkflowCorrelationId,
+  newCheckpointId,
+} from "./ids";
 import { mergeWorkflowPolicy } from "./policies";
 import { validateWorkflowDefinition } from "./validation";
 import type {
-  WorkflowCheckpoint, WorkflowDefinition, WorkflowInstance, WorkflowPolicy, WorkflowState,
-  WorkflowStep, WorkflowTrigger, WorkflowVariables, WorkflowSnapshot, WorkflowHistoryRecord,
+  WorkflowCheckpoint,
+  WorkflowDefinition,
+  WorkflowInstance,
+  WorkflowPolicy,
+  WorkflowState,
+  WorkflowStep,
+  WorkflowTrigger,
+  WorkflowVariables,
+  WorkflowSnapshot,
+  WorkflowHistoryRecord,
 } from "./types";
 
-export function makeWorkflowStep(input: Partial<WorkflowStep> & { id: string; name: string }): WorkflowStep {
+export function makeWorkflowStep(
+  input: Partial<WorkflowStep> & { id: string; name: string },
+): WorkflowStep {
   return Object.freeze({
     kind: "capability",
     dependsOn: Object.freeze([...(input.dependsOn ?? [])]),
@@ -18,17 +33,25 @@ export function makeWorkflowStep(input: Partial<WorkflowStep> & { id: string; na
 }
 
 export function makeWorkflowDefinition(input: {
-  id?: string; name: string; version: string; description?: string;
-  steps: readonly WorkflowStep[]; triggers?: readonly WorkflowTrigger[];
-  policy?: Partial<WorkflowPolicy>; metadata?: Record<string, string>; createdAt?: number;
+  id?: string;
+  name: string;
+  version: string;
+  description?: string;
+  steps: readonly WorkflowStep[];
+  triggers?: readonly WorkflowTrigger[];
+  policy?: Partial<WorkflowPolicy>;
+  metadata?: Record<string, string>;
+  createdAt?: number;
 }): WorkflowDefinition {
   const def: WorkflowDefinition = Object.freeze({
     id: input.id ?? newWorkflowDefinitionId(),
     name: input.name,
     version: input.version,
     description: input.description,
-    steps: Object.freeze(input.steps.map(s => makeWorkflowStep(s as WorkflowStep))),
-    triggers: Object.freeze([...(input.triggers ?? [{ kind: "manual" as const }])].map(t => Object.freeze({ ...t }))),
+    steps: Object.freeze(input.steps.map((s) => makeWorkflowStep(s as WorkflowStep))),
+    triggers: Object.freeze(
+      [...(input.triggers ?? [{ kind: "manual" as const }])].map((t) => Object.freeze({ ...t })),
+    ),
     policy: mergeWorkflowPolicy(input.policy),
     metadata: Object.freeze({ ...(input.metadata ?? {}) }),
     createdAt: input.createdAt ?? Date.now(),

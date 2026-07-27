@@ -1,5 +1,9 @@
 /** WAR — workflow definition registry. */
-import { WorkflowAlreadyRegisteredError, WorkflowNotFoundError, WorkflowValidationError } from "./errors";
+import {
+  WorkflowAlreadyRegisteredError,
+  WorkflowNotFoundError,
+  WorkflowValidationError,
+} from "./errors";
 import { validateWorkflowDefinition } from "./validation";
 import type { WorkflowDefinition } from "./types";
 
@@ -12,7 +16,8 @@ export class WorkflowRegistry {
   register(def: WorkflowDefinition): WorkflowDefinition {
     validateWorkflowDefinition(def);
     if (this.defs.has(def.id)) throw new WorkflowAlreadyRegisteredError(def.id);
-    if (this.defs.size >= this.maxDefinitions) throw new WorkflowValidationError("Workflow registry is full");
+    if (this.defs.size >= this.maxDefinitions)
+      throw new WorkflowValidationError("Workflow registry is full");
     this.defs.set(def.id, def);
     const set = this.byName.get(def.name) ?? new Set<string>();
     set.add(def.id);
@@ -23,17 +28,23 @@ export class WorkflowRegistry {
     if (this.defs.has(def.id)) this.remove(def.id);
     return this.register(def);
   }
-  has(id: string): boolean { return this.defs.has(id); }
+  has(id: string): boolean {
+    return this.defs.has(id);
+  }
   get(id: string): WorkflowDefinition {
     const d = this.defs.get(id);
     if (!d) throw new WorkflowNotFoundError(id);
     return d;
   }
-  find(id: string): WorkflowDefinition | undefined { return this.defs.get(id); }
-  byWorkflowName(name: string): readonly WorkflowDefinition[] {
-    return [...(this.byName.get(name) ?? [])].map(id => this.defs.get(id)!).filter(Boolean);
+  find(id: string): WorkflowDefinition | undefined {
+    return this.defs.get(id);
   }
-  list(): readonly WorkflowDefinition[] { return [...this.defs.values()].sort((a, b) => a.id < b.id ? -1 : 1); }
+  byWorkflowName(name: string): readonly WorkflowDefinition[] {
+    return [...(this.byName.get(name) ?? [])].map((id) => this.defs.get(id)!).filter(Boolean);
+  }
+  list(): readonly WorkflowDefinition[] {
+    return [...this.defs.values()].sort((a, b) => (a.id < b.id ? -1 : 1));
+  }
   remove(id: string): boolean {
     const d = this.defs.get(id);
     if (!d) return false;
@@ -41,6 +52,11 @@ export class WorkflowRegistry {
     this.byName.get(d.name)?.delete(id);
     return true;
   }
-  size(): number { return this.defs.size; }
-  clear(): void { this.defs.clear(); this.byName.clear(); }
+  size(): number {
+    return this.defs.size;
+  }
+  clear(): void {
+    this.defs.clear();
+    this.byName.clear();
+  }
 }

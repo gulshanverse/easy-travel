@@ -46,24 +46,48 @@ export interface WorkflowStatePersistencePort {
 }
 
 export const noopCtorPort: WorkflowCtorPort = {
-  async healthy() { return true; },
-  async invokeCapability({ capabilityId }) { return { capabilityId, ok: true }; },
+  async healthy() {
+    return true;
+  },
+  async invokeCapability({ capabilityId }) {
+    return { capabilityId, ok: true };
+  },
 };
 export const noopAgentPort: WorkflowAgentPort = {
-  async healthy() { return true; },
-  async reason({ instruction }) { return { instruction, ok: true }; },
+  async healthy() {
+    return true;
+  },
+  async reason({ instruction }) {
+    return { instruction, ok: true };
+  },
 };
 export const noopIntegrationPort: WorkflowIntegrationPort = {
-  async healthy() { return true; },
-  async invokeConnector({ connectorId, capabilityId }) { return { connectorId, capabilityId, ok: true }; },
+  async healthy() {
+    return true;
+  },
+  async invokeConnector({ connectorId, capabilityId }) {
+    return { connectorId, capabilityId, ok: true };
+  },
 };
 
 export class InMemoryStatePersistence implements WorkflowStatePersistencePort {
   private readonly store = new Map<string, unknown>();
-  async save(key: string, value: unknown): Promise<void> { this.store.set(key, value); }
-  async load(key: string): Promise<unknown> { return this.store.get(key); }
-  async remove(key: string): Promise<void> { this.store.delete(key); }
-  async keys(): Promise<readonly string[]> { return [...this.store.keys()].sort(); }
-  clear(): void { this.store.clear(); }
-  get size(): number { return this.store.size; }
+  async save(key: string, value: unknown): Promise<void> {
+    this.store.set(key, value);
+  }
+  async load(key: string): Promise<unknown> {
+    return this.store.get(key);
+  }
+  async remove(key: string): Promise<void> {
+    this.store.delete(key);
+  }
+  async keys(): Promise<readonly string[]> {
+    return [...this.store.keys()].sort();
+  }
+  clear(): void {
+    this.store.clear();
+  }
+  get size(): number {
+    return this.store.size;
+  }
 }

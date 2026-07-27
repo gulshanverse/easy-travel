@@ -26,26 +26,66 @@ export interface WorkflowMetricsSnapshot {
 export class WorkflowMetrics {
   private c: Record<string, number> = {};
   private durations: number[] = [];
-  private inc(k: string, n = 1): void { this.c[k] = (this.c[k] ?? 0) + n; }
+  private inc(k: string, n = 1): void {
+    this.c[k] = (this.c[k] ?? 0) + n;
+  }
 
-  definitionRegistered(): void { this.inc("definitionsRegistered"); }
-  instanceCreated(): void { this.inc("instancesCreated"); }
-  instanceStarted(): void { this.inc("instancesStarted"); }
-  instanceCompleted(ms: number): void { this.inc("instancesCompleted"); this.durations.push(ms); }
-  instanceFailed(ms: number): void { this.inc("instancesFailed"); this.durations.push(ms); }
-  instanceCancelled(): void { this.inc("instancesCancelled"); }
-  instancePaused(): void { this.inc("instancesPaused"); }
-  stepExecuted(): void { this.inc("stepsExecuted"); }
-  stepFailed(): void { this.inc("stepsFailed"); }
-  stepSkipped(): void { this.inc("stepsSkipped"); }
-  retry(): void { this.inc("retries"); }
-  timeout(): void { this.inc("timeouts"); }
-  compensation(): void { this.inc("compensations"); }
-  checkpoint(): void { this.inc("checkpoints"); }
-  timerScheduled(): void { this.inc("timersScheduled"); }
-  timerFired(): void { this.inc("timersFired"); }
-  signalDelivered(): void { this.inc("signalsDelivered"); }
-  schedulerTick(): void { this.inc("schedulerTicks"); }
+  definitionRegistered(): void {
+    this.inc("definitionsRegistered");
+  }
+  instanceCreated(): void {
+    this.inc("instancesCreated");
+  }
+  instanceStarted(): void {
+    this.inc("instancesStarted");
+  }
+  instanceCompleted(ms: number): void {
+    this.inc("instancesCompleted");
+    this.durations.push(ms);
+  }
+  instanceFailed(ms: number): void {
+    this.inc("instancesFailed");
+    this.durations.push(ms);
+  }
+  instanceCancelled(): void {
+    this.inc("instancesCancelled");
+  }
+  instancePaused(): void {
+    this.inc("instancesPaused");
+  }
+  stepExecuted(): void {
+    this.inc("stepsExecuted");
+  }
+  stepFailed(): void {
+    this.inc("stepsFailed");
+  }
+  stepSkipped(): void {
+    this.inc("stepsSkipped");
+  }
+  retry(): void {
+    this.inc("retries");
+  }
+  timeout(): void {
+    this.inc("timeouts");
+  }
+  compensation(): void {
+    this.inc("compensations");
+  }
+  checkpoint(): void {
+    this.inc("checkpoints");
+  }
+  timerScheduled(): void {
+    this.inc("timersScheduled");
+  }
+  timerFired(): void {
+    this.inc("timersFired");
+  }
+  signalDelivered(): void {
+    this.inc("signalsDelivered");
+  }
+  schedulerTick(): void {
+    this.inc("schedulerTicks");
+  }
 
   snapshot(): WorkflowMetricsSnapshot {
     const total = this.durations.reduce((a, b) => a + b, 0);
@@ -74,5 +114,8 @@ export class WorkflowMetrics {
       maxExecutionMs: this.durations.length ? Math.max(...this.durations) : 0,
     });
   }
-  reset(): void { this.c = {}; this.durations = []; }
+  reset(): void {
+    this.c = {};
+    this.durations = [];
+  }
 }

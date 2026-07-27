@@ -16,7 +16,13 @@ export async function collectWorkflowHealth(
   ports: { ctor: WorkflowCtorPort; agent: WorkflowAgentPort; integration: WorkflowIntegrationPort },
   now: () => number = Date.now,
 ): Promise<WorkflowHealthReport> {
-  const safe = async (p: Promise<boolean>) => { try { return await p; } catch { return false; } };
+  const safe = async (p: Promise<boolean>) => {
+    try {
+      return await p;
+    } catch {
+      return false;
+    }
+  };
   const checks = {
     registry: manager.registry.size() >= 0,
     scheduler: manager.scheduler.pending() >= 0,
@@ -24,7 +30,7 @@ export async function collectWorkflowHealth(
     agent: await safe(ports.agent.healthy()),
     integration: await safe(ports.integration.healthy()),
   };
-  const failed = Object.values(checks).filter(v => !v).length;
+  const failed = Object.values(checks).filter((v) => !v).length;
   return Object.freeze({
     status: failed === 0 ? "healthy" : failed <= 1 ? "degraded" : "unhealthy",
     checks: Object.freeze(checks),

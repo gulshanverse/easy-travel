@@ -1,7 +1,11 @@
 /** WAR — execution history + deterministic replay (ADR-015). */
 import type {
-  WorkflowDefinition, WorkflowHistoryRecord, WorkflowInstance, WorkflowLifecycleState,
-  WorkflowState, WorkflowStepStatus,
+  WorkflowDefinition,
+  WorkflowHistoryRecord,
+  WorkflowInstance,
+  WorkflowLifecycleState,
+  WorkflowState,
+  WorkflowStepStatus,
 } from "./types";
 
 export function appendHistory(
@@ -34,24 +38,55 @@ export function replayWorkflow(
 
   for (const r of [...history].sort((a, b) => a.seq - b.seq)) {
     switch (r.kind) {
-      case "started": status = "running"; break;
-      case "paused": status = "paused"; break;
-      case "resumed": status = "running"; break;
-      case "step-started": if (r.stepId) steps[r.stepId] = "running"; break;
-      case "step-waiting": if (r.stepId) steps[r.stepId] = "waiting"; status = "waiting"; break;
+      case "started":
+        status = "running";
+        break;
+      case "paused":
+        status = "paused";
+        break;
+      case "resumed":
+        status = "running";
+        break;
+      case "step-started":
+        if (r.stepId) steps[r.stepId] = "running";
+        break;
+      case "step-waiting":
+        if (r.stepId) steps[r.stepId] = "waiting";
+        status = "waiting";
+        break;
       case "step-succeeded":
-        if (r.stepId) { steps[r.stepId] = "succeeded"; outputs[r.stepId] = r.data?.output; }
+        if (r.stepId) {
+          steps[r.stepId] = "succeeded";
+          outputs[r.stepId] = r.data?.output;
+        }
         if (status === "waiting") status = "running";
         break;
-      case "step-failed": if (r.stepId) steps[r.stepId] = "failed"; break;
-      case "step-skipped": if (r.stepId) steps[r.stepId] = "skipped"; break;
-      case "compensation-started": status = "compensating"; break;
-      case "compensation-step": if (r.stepId) steps[r.stepId] = "compensated"; break;
-      case "completed": status = "completed"; break;
-      case "cancelled": status = "cancelled"; break;
-      case "failed": status = "failed"; break;
-      case "archived": status = "archived"; break;
-      default: break;
+      case "step-failed":
+        if (r.stepId) steps[r.stepId] = "failed";
+        break;
+      case "step-skipped":
+        if (r.stepId) steps[r.stepId] = "skipped";
+        break;
+      case "compensation-started":
+        status = "compensating";
+        break;
+      case "compensation-step":
+        if (r.stepId) steps[r.stepId] = "compensated";
+        break;
+      case "completed":
+        status = "completed";
+        break;
+      case "cancelled":
+        status = "cancelled";
+        break;
+      case "failed":
+        status = "failed";
+        break;
+      case "archived":
+        status = "archived";
+        break;
+      default:
+        break;
     }
   }
   return Object.freeze({

@@ -1,11 +1,27 @@
 /** WAR — immutable domain model. */
 
 export type WorkflowLifecycleState =
-  | "draft" | "registered" | "scheduled" | "running" | "waiting" | "paused"
-  | "retrying" | "compensating" | "completed" | "cancelled" | "failed" | "archived";
+  | "draft"
+  | "registered"
+  | "scheduled"
+  | "running"
+  | "waiting"
+  | "paused"
+  | "retrying"
+  | "compensating"
+  | "completed"
+  | "cancelled"
+  | "failed"
+  | "archived";
 
 export type WorkflowStepStatus =
-  | "pending" | "running" | "waiting" | "succeeded" | "failed" | "skipped" | "compensated";
+  | "pending"
+  | "running"
+  | "waiting"
+  | "succeeded"
+  | "failed"
+  | "skipped"
+  | "compensated";
 
 export type WorkflowStepKind = "capability" | "connector" | "agent" | "timer" | "signal" | "noop";
 
@@ -16,7 +32,9 @@ export interface WorkflowRetryPolicy {
   readonly maxDelayMs: number;
 }
 
-export interface WorkflowTimeout { readonly ms: number }
+export interface WorkflowTimeout {
+  readonly ms: number;
+}
 
 export interface WorkflowCompensation {
   readonly capabilityId: string;
@@ -100,11 +118,28 @@ export interface WorkflowTransition {
 }
 
 export type WorkflowHistoryKind =
-  | "created" | "scheduled" | "started" | "step-started" | "step-succeeded"
-  | "step-failed" | "step-skipped" | "step-waiting" | "step-retried"
-  | "signal" | "timer" | "checkpoint" | "paused" | "resumed"
-  | "compensation-started" | "compensation-step" | "compensation-completed"
-  | "completed" | "cancelled" | "failed" | "timeout" | "archived";
+  | "created"
+  | "scheduled"
+  | "started"
+  | "step-started"
+  | "step-succeeded"
+  | "step-failed"
+  | "step-skipped"
+  | "step-waiting"
+  | "step-retried"
+  | "signal"
+  | "timer"
+  | "checkpoint"
+  | "paused"
+  | "resumed"
+  | "compensation-started"
+  | "compensation-step"
+  | "compensation-completed"
+  | "completed"
+  | "cancelled"
+  | "failed"
+  | "timeout"
+  | "archived";
 
 export interface WorkflowHistoryRecord {
   readonly seq: number;
