@@ -6,8 +6,12 @@
  *  executes through the MTIP runtime, which executes through IPCF only.
  */
 import {
-  MULTIMODAL_CAPABILITY_IDS, MULTIMODAL_CONTRACTS, TRAVEL_MODES,
-  type MultiModalCapabilityContract, type MultiModalCapabilityId, type TravelMode,
+  MULTIMODAL_CAPABILITY_IDS,
+  MULTIMODAL_CONTRACTS,
+  TRAVEL_MODES,
+  type MultiModalCapabilityContract,
+  type MultiModalCapabilityId,
+  type TravelMode,
 } from "./contracts";
 import type { MultiModalTravelRuntime, TravelInvokeOptions } from "./runtime";
 import type { TravelRequestInput } from "./providers/types";
@@ -43,7 +47,10 @@ function contractFor(c: MultiModalCapabilityContract): MultiModalCtorCapabilityC
     dependencies: Object.freeze([{ capabilityId: "integration.runtime", versionRange: "1.0.0" }]),
     ports: Object.freeze(["ipcf"]),
     features: Object.freeze([
-      c.mode, c.output, `volatility:${c.volatility}`, `cacheable:${c.cacheable}`,
+      c.mode,
+      c.output,
+      `volatility:${c.volatility}`,
+      `cacheable:${c.cacheable}`,
     ]),
   });
 }
@@ -62,10 +69,12 @@ const TRAVEL_SUMMARY_CONTRACT: MultiModalCtorCapabilityContract = Object.freeze(
   features: Object.freeze(["aggregate", "summary", "volatility:live", "cacheable:false"]),
 });
 
-export const MULTIMODAL_CTOR_CONTRACTS: readonly MultiModalCtorCapabilityContract[] = Object.freeze([
-  ...MULTIMODAL_CAPABILITY_IDS.map((id) => contractFor(MULTIMODAL_CONTRACTS[id])),
-  TRAVEL_SUMMARY_CONTRACT,
-]);
+export const MULTIMODAL_CTOR_CONTRACTS: readonly MultiModalCtorCapabilityContract[] = Object.freeze(
+  [
+    ...MULTIMODAL_CAPABILITY_IDS.map((id) => contractFor(MULTIMODAL_CONTRACTS[id])),
+    TRAVEL_SUMMARY_CONTRACT,
+  ],
+);
 
 export const MULTIMODAL_CTOR_CAPABILITY_IDS: readonly string[] = Object.freeze(
   MULTIMODAL_CTOR_CONTRACTS.map((c) => c.id),
@@ -82,9 +91,9 @@ export function multiModalContractSource(modes?: readonly TravelMode[]): MultiMo
     async discover() {
       if (!modes) return MULTIMODAL_CTOR_CONTRACTS;
       return Object.freeze(
-        MULTIMODAL_CAPABILITY_IDS
-          .filter((id) => allowed.has(MULTIMODAL_CONTRACTS[id].mode))
-          .map((id) => contractFor(MULTIMODAL_CONTRACTS[id])),
+        MULTIMODAL_CAPABILITY_IDS.filter((id) => allowed.has(MULTIMODAL_CONTRACTS[id].mode)).map(
+          (id) => contractFor(MULTIMODAL_CONTRACTS[id]),
+        ),
       );
     },
   };
@@ -149,7 +158,11 @@ export async function travelSummary(
     runtime.invoke("timezone_lookup", { place: input.place }, options).catch(() => undefined),
     input.homeCurrency && input.destinationCurrency
       ? runtime
-          .invoke("exchange_rate", { from: input.homeCurrency, to: input.destinationCurrency }, options)
+          .invoke(
+            "exchange_rate",
+            { from: input.homeCurrency, to: input.destinationCurrency },
+            options,
+          )
           .catch(() => undefined)
       : Promise.resolve(undefined),
   ]);
@@ -187,50 +200,69 @@ export function multiModalToolDescriptors(
       tags: Object.freeze(["multimodal", contract.mode, contract.volatility]),
       idempotent: contract.volatility !== "live",
       impl: async (input: Readonly<Record<string, unknown>>) => {
-        const response = await runtime.invoke(id as MultiModalCapabilityId, input as TravelRequestInput);
+        const response = await runtime.invoke(
+          id as MultiModalCapabilityId,
+          input as TravelRequestInput,
+        );
         return { ok: response.ok, data: response.data };
       },
     }) as MultiModalToolDescriptor;
   });
 
-  tools.push(Object.freeze({
-    id: ctorCapabilityId(TRAVEL_SUMMARY_CAPABILITY_ID),
-    name: "Travel Summary",
-    version: MULTIMODAL_CAPABILITY_VERSION,
-    capabilityId: ctorCapabilityId(TRAVEL_SUMMARY_CAPABILITY_ID),
-    mode: "aggregate",
-    description: "Aggregate weather, timezone and currency snapshot for a destination.",
-    schema: Object.freeze({
-      input: Object.freeze([
-        Object.freeze({ name: "place", type: "string", required: true }),
-        Object.freeze({ name: "homeCurrency", type: "string", required: false }),
-        Object.freeze({ name: "destinationCurrency", type: "string", required: false }),
-      ]),
-      output: Object.freeze({ type: "object", description: "TravelSummaryResult" }),
-    }),
-    tags: Object.freeze(["multimodal", "aggregate", "live"]),
-    idempotent: false,
-    impl: async (input: Readonly<Record<string, unknown>>) =>
-      travelSummary(runtime, {
-        place: String(input.place ?? ""),
-        homeCurrency: input.homeCurrency ? String(input.homeCurrency) : undefined,
-        destinationCurrency: input.destinationCurrency ? String(input.destinationCurrency) : undefined,
+  tools.push(
+    Object.freeze({
+      id: ctorCapabilityId(TRAVEL_SUMMARY_CAPABILITY_ID),
+      name: "Travel Summary",
+      version: MULTIMODAL_CAPABILITY_VERSION,
+      capabilityId: ctorCapabilityId(TRAVEL_SUMMARY_CAPABILITY_ID),
+      mode: "aggregate",
+      description: "Aggregate weather, timezone and currency snapshot for a destination.",
+      schema: Object.freeze({
+        input: Object.freeze([
+          Object.freeze({ name: "place", type: "string", required: true }),
+          Object.freeze({ name: "homeCurrency", type: "string", required: false }),
+          Object.freeze({ name: "destinationCurrency", type: "string", required: false }),
+        ]),
+        output: Object.freeze({ type: "object", description: "TravelSummaryResult" }),
       }),
-  }) as MultiModalToolDescriptor);
+      tags: Object.freeze(["multimodal", "aggregate", "live"]),
+      idempotent: false,
+      impl: async (input: Readonly<Record<string, unknown>>) =>
+        travelSummary(runtime, {
+          place: String(input.place ?? ""),
+          homeCurrency: input.homeCurrency ? String(input.homeCurrency) : undefined,
+          destinationCurrency: input.destinationCurrency
+            ? String(input.destinationCurrency)
+            : undefined,
+        }),
+    }) as MultiModalToolDescriptor,
+  );
 
   return Object.freeze(tools);
 }
 
 /** Structural mirror of the slice of CTOR's CapabilityManager that MTIP needs. */
 export interface MultiModalCtorRegistrarPort {
-  readonly capabilities: { discover(source: MultiModalContractSource): Promise<readonly { id: string }[]> };
+  readonly capabilities: {
+    discover(source: MultiModalContractSource): Promise<readonly { id: string }[]>;
+  };
   registerTool(
     tool: {
-      id: string; name: string; version: string;
-      schema: { input: readonly MultiModalToolParameter[]; output: { type: string; description?: string } };
+      id: string;
+      name: string;
+      version: string;
+      schema: {
+        input: readonly MultiModalToolParameter[];
+        output: { type: string; description?: string };
+      };
       contract: { capabilityId?: string; idempotent: boolean; sideEffects: boolean };
       permissions: readonly { scope: string }[];
-      metadata: { tags: readonly string[]; labels: Readonly<Record<string, string>>; description?: string; createdAt: number };
+      metadata: {
+        tags: readonly string[];
+        labels: Readonly<Record<string, string>>;
+        description?: string;
+        createdAt: number;
+      };
       status: "registered";
     },
     impl?: (input: Readonly<Record<string, unknown>>) => Promise<unknown> | unknown,
@@ -257,13 +289,17 @@ export async function registerMultiModalCapabilities(
   for (const d of descriptors) {
     manager.registerTool(
       {
-        id: d.id, name: d.name, version: d.version,
+        id: d.id,
+        name: d.name,
+        version: d.version,
         schema: d.schema,
         contract: { capabilityId: d.capabilityId, idempotent: d.idempotent, sideEffects: false },
         permissions: Object.freeze([]),
         metadata: {
-          tags: d.tags, labels: Object.freeze({ suite: "multimodal", mode: d.mode }),
-          description: d.description, createdAt: now,
+          tags: d.tags,
+          labels: Object.freeze({ suite: "multimodal", mode: d.mode }),
+          description: d.description,
+          createdAt: now,
         },
         status: "registered",
       },

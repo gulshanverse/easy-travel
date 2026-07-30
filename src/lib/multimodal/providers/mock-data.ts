@@ -27,11 +27,39 @@ const CARRIERS = ["ET", "AI", "SQ", "EK", "BA", "LH", "QF", "UA", "AF", "JL"];
 const AIRCRAFT = ["A320neo", "A321", "A350-900", "B737-800", "B777-300ER", "B787-9"];
 const CABINS = ["economy", "premium_economy", "business", "first"];
 const AMENITIES = [
-  "wifi", "pool", "spa", "gym", "breakfast", "parking", "airport_shuttle",
-  "restaurant", "bar", "pet_friendly", "workspace", "laundry",
+  "wifi",
+  "pool",
+  "spa",
+  "gym",
+  "breakfast",
+  "parking",
+  "airport_shuttle",
+  "restaurant",
+  "bar",
+  "pet_friendly",
+  "workspace",
+  "laundry",
 ];
-const PLACE_CATEGORIES = ["landmark", "museum", "beach", "park", "market", "viewpoint", "restaurant", "temple"];
-const CONDITIONS = ["clear", "partly_cloudy", "cloudy", "light_rain", "rain", "thunderstorm", "fog", "haze"];
+const PLACE_CATEGORIES = [
+  "landmark",
+  "museum",
+  "beach",
+  "park",
+  "market",
+  "viewpoint",
+  "restaurant",
+  "temple",
+];
+const CONDITIONS = [
+  "clear",
+  "partly_cloudy",
+  "cloudy",
+  "light_rain",
+  "rain",
+  "thunderstorm",
+  "fog",
+  "haze",
+];
 
 /** Deterministic linear congruential generator. */
 function lcg(seed: number) {
@@ -41,36 +69,78 @@ function lcg(seed: number) {
     return s / 4294967296;
   };
 }
-function pick<T>(rng: () => number, arr: readonly T[]): T { return arr[Math.floor(rng() * arr.length) % arr.length]; }
-function round(n: number, d = 3): number { const f = 10 ** d; return Math.round(n * f) / f; }
+function pick<T>(rng: () => number, arr: readonly T[]): T {
+  return arr[Math.floor(rng() * arr.length) % arr.length];
+}
+function round(n: number, d = 3): number {
+  const f = 10 ** d;
+  return Math.round(n * f) / f;
+}
 
 export interface MockCity {
-  readonly name: string; readonly country: string; readonly timezone: string;
-  readonly currency: string; readonly lat: number; readonly lon: number;
+  readonly name: string;
+  readonly country: string;
+  readonly timezone: string;
+  readonly currency: string;
+  readonly lat: number;
+  readonly lon: number;
 }
 export interface MockAirport {
-  readonly code: string; readonly name: string; readonly city: string; readonly country: string;
-  readonly lat: number; readonly lon: number; readonly tz: string; readonly terminals: number;
+  readonly code: string;
+  readonly name: string;
+  readonly city: string;
+  readonly country: string;
+  readonly lat: number;
+  readonly lon: number;
+  readonly tz: string;
+  readonly terminals: number;
 }
 export interface MockFlight {
-  readonly number: string; readonly carrier: string; readonly from: string; readonly to: string;
-  readonly dep: number; readonly arr: number; readonly stops: number; readonly aircraft: string;
-  readonly seats: number; readonly baseFare: number; readonly currency: string; readonly wifi: boolean;
+  readonly number: string;
+  readonly carrier: string;
+  readonly from: string;
+  readonly to: string;
+  readonly dep: number;
+  readonly arr: number;
+  readonly stops: number;
+  readonly aircraft: string;
+  readonly seats: number;
+  readonly baseFare: number;
+  readonly currency: string;
+  readonly wifi: boolean;
 }
 export interface MockRoom {
-  readonly id: string; readonly hotel: string; readonly name: string;
-  readonly capacity: number; readonly bed: string; readonly price: number;
+  readonly id: string;
+  readonly hotel: string;
+  readonly name: string;
+  readonly capacity: number;
+  readonly bed: string;
+  readonly price: number;
 }
 export interface MockHotel {
-  readonly id: string; readonly name: string; readonly city: string; readonly country: string;
-  readonly stars: number; readonly rating: number; readonly lat: number; readonly lon: number;
-  readonly amenities: readonly string[]; readonly nightly: number; readonly currency: string;
+  readonly id: string;
+  readonly name: string;
+  readonly city: string;
+  readonly country: string;
+  readonly stars: number;
+  readonly rating: number;
+  readonly lat: number;
+  readonly lon: number;
+  readonly amenities: readonly string[];
+  readonly nightly: number;
+  readonly currency: string;
   readonly rooms: readonly MockRoom[];
 }
 export interface MockPlace {
-  readonly id: string; readonly name: string; readonly category: string; readonly city: string;
-  readonly country: string; readonly lat: number; readonly lon: number;
-  readonly tz: string; readonly rating: number;
+  readonly id: string;
+  readonly name: string;
+  readonly category: string;
+  readonly city: string;
+  readonly country: string;
+  readonly lat: number;
+  readonly lon: number;
+  readonly tz: string;
+  readonly rating: number;
 }
 export interface MockDataset {
   readonly cities: readonly MockCity[];
@@ -91,22 +161,25 @@ let cached: MockDataset | undefined;
 function buildDataset(): MockDataset {
   const rng = lcg(20260729);
   const cities: MockCity[] = CITIES.map(([name, country, timezone, currency, lat, lon]) =>
-    Object.freeze({ name, country, timezone, currency, lat, lon }));
+    Object.freeze({ name, country, timezone, currency, lat, lon }),
+  );
 
   const airports: MockAirport[] = [];
   for (let i = 0; i < AIRPORT_COUNT; i += 1) {
     const city = cities[i % cities.length];
-    const code = `${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + ((i / 26) | 0) % 26)}${String.fromCharCode(65 + ((i / 7) | 0) % 26)}`;
-    airports.push(Object.freeze({
-      code: `${code}${i < 26 ? "" : ""}`,
-      name: `${city.name} ${i % 3 === 0 ? "International" : "Regional"} Airport ${i + 1}`,
-      city: city.name,
-      country: city.country,
-      lat: round(city.lat + (rng() - 0.5) * 0.6),
-      lon: round(city.lon + (rng() - 0.5) * 0.6),
-      tz: city.timezone,
-      terminals: 1 + Math.floor(rng() * 4),
-    }));
+    const code = `${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + (((i / 26) | 0) % 26))}${String.fromCharCode(65 + (((i / 7) | 0) % 26))}`;
+    airports.push(
+      Object.freeze({
+        code: `${code}${i < 26 ? "" : ""}`,
+        name: `${city.name} ${i % 3 === 0 ? "International" : "Regional"} Airport ${i + 1}`,
+        city: city.name,
+        country: city.country,
+        lat: round(city.lat + (rng() - 0.5) * 0.6),
+        lon: round(city.lon + (rng() - 0.5) * 0.6),
+        tz: city.timezone,
+        terminals: 1 + Math.floor(rng() * 4),
+      }),
+    );
   }
   // Ensure unique codes deterministically.
   const seen = new Set<string>();
@@ -122,24 +195,27 @@ function buildDataset(): MockDataset {
   for (let i = 0; i < FLIGHT_COUNT; i += 1) {
     const from = uniqueAirports[Math.floor(rng() * uniqueAirports.length)];
     let to = uniqueAirports[Math.floor(rng() * uniqueAirports.length)];
-    if (to.code === from.code) to = uniqueAirports[(uniqueAirports.indexOf(from) + 7) % uniqueAirports.length];
+    if (to.code === from.code)
+      to = uniqueAirports[(uniqueAirports.indexOf(from) + 7) % uniqueAirports.length];
     const dep = Math.floor(rng() * 1380);
     const dur = 55 + Math.floor(rng() * 600);
     const carrier = pick(rng, CARRIERS);
-    flights.push(Object.freeze({
-      number: `${carrier}${(100 + i).toString().padStart(4, "0")}`,
-      carrier,
-      from: from.code,
-      to: to.code,
-      dep,
-      arr: (dep + dur) % 1440,
-      stops: rng() > 0.75 ? 1 : 0,
-      aircraft: pick(rng, AIRCRAFT),
-      seats: 120 + Math.floor(rng() * 220),
-      baseFare: 2400 + Math.floor(rng() * 42000),
-      currency: "INR",
-      wifi: rng() > 0.4,
-    }));
+    flights.push(
+      Object.freeze({
+        number: `${carrier}${(100 + i).toString().padStart(4, "0")}`,
+        carrier,
+        from: from.code,
+        to: to.code,
+        dep,
+        arr: (dep + dur) % 1440,
+        stops: rng() > 0.75 ? 1 : 0,
+        aircraft: pick(rng, AIRCRAFT),
+        seats: 120 + Math.floor(rng() * 220),
+        baseFare: 2400 + Math.floor(rng() * 42000),
+        currency: "INR",
+        wifi: rng() > 0.4,
+      }),
+    );
   }
 
   const hotels: MockHotel[] = [];
@@ -156,51 +232,68 @@ function buildDataset(): MockDataset {
     const rooms: MockRoom[] = [];
     const roomCount = 2 + Math.floor(rng() * 4);
     for (let r = 0; r < roomCount; r += 1) {
-      rooms.push(Object.freeze({
-        id: `${id}_room_${r + 1}`,
-        hotel: id,
-        name: ["Standard", "Deluxe", "Suite", "Family", "Penthouse"][r % 5],
-        capacity: 2 + (r % 3),
-        bed: ["queen", "king", "twin", "bunk"][r % 4],
-        price: Math.round(nightly * (1 + r * 0.35)),
-      }));
+      rooms.push(
+        Object.freeze({
+          id: `${id}_room_${r + 1}`,
+          hotel: id,
+          name: ["Standard", "Deluxe", "Suite", "Family", "Penthouse"][r % 5],
+          capacity: 2 + (r % 3),
+          bed: ["queen", "king", "twin", "bunk"][r % 4],
+          price: Math.round(nightly * (1 + r * 0.35)),
+        }),
+      );
     }
-    hotels.push(Object.freeze({
-      id,
-      name: `${city.name} ${["Grand", "Riverside", "Boulevard", "Heritage", "Skyline"][i % 5]} Hotel`,
-      city: city.name,
-      country: city.country,
-      stars: 2 + Math.floor(rng() * 4),
-      rating: round(6 + rng() * 4, 1),
-      lat: round(city.lat + (rng() - 0.5) * 0.3),
-      lon: round(city.lon + (rng() - 0.5) * 0.3),
-      amenities: Object.freeze(amenities),
-      nightly,
-      currency: city.currency,
-      rooms: Object.freeze(rooms),
-    }));
+    hotels.push(
+      Object.freeze({
+        id,
+        name: `${city.name} ${["Grand", "Riverside", "Boulevard", "Heritage", "Skyline"][i % 5]} Hotel`,
+        city: city.name,
+        country: city.country,
+        stars: 2 + Math.floor(rng() * 4),
+        rating: round(6 + rng() * 4, 1),
+        lat: round(city.lat + (rng() - 0.5) * 0.3),
+        lon: round(city.lon + (rng() - 0.5) * 0.3),
+        amenities: Object.freeze(amenities),
+        nightly,
+        currency: city.currency,
+        rooms: Object.freeze(rooms),
+      }),
+    );
   }
 
   const places: MockPlace[] = [];
   for (let i = 0; i < PLACE_COUNT; i += 1) {
     const city = cities[i % cities.length];
     const category = PLACE_CATEGORIES[i % PLACE_CATEGORIES.length];
-    places.push(Object.freeze({
-      id: `plc_${(i + 1).toString().padStart(4, "0")}`,
-      name: `${city.name} ${category.replace("_", " ")} ${Math.floor(i / cities.length) + 1}`,
-      category,
-      city: city.name,
-      country: city.country,
-      lat: round(city.lat + (rng() - 0.5) * 0.4),
-      lon: round(city.lon + (rng() - 0.5) * 0.4),
-      tz: city.timezone,
-      rating: round(5 + rng() * 5, 1),
-    }));
+    places.push(
+      Object.freeze({
+        id: `plc_${(i + 1).toString().padStart(4, "0")}`,
+        name: `${city.name} ${category.replace("_", " ")} ${Math.floor(i / cities.length) + 1}`,
+        category,
+        city: city.name,
+        country: city.country,
+        lat: round(city.lat + (rng() - 0.5) * 0.4),
+        lon: round(city.lon + (rng() - 0.5) * 0.4),
+        tz: city.timezone,
+        rating: round(5 + rng() * 5, 1),
+      }),
+    );
   }
 
   const rateBase: Record<string, number> = {
-    INR: 1, USD: 83.2, EUR: 90.4, GBP: 105.6, AED: 22.6, SGD: 61.8, THB: 2.3,
-    JPY: 0.55, CHF: 94.1, CAD: 61.2, AUD: 55.3, ZAR: 4.5, ISK: 0.6,
+    INR: 1,
+    USD: 83.2,
+    EUR: 90.4,
+    GBP: 105.6,
+    AED: 22.6,
+    SGD: 61.8,
+    THB: 2.3,
+    JPY: 0.55,
+    CHF: 94.1,
+    CAD: 61.2,
+    AUD: 55.3,
+    ZAR: 4.5,
+    ISK: 0.6,
   };
 
   return Object.freeze({

@@ -38,7 +38,11 @@ export interface MultiModalWorkflowBlueprint {
 }
 
 const step = (s: MultiModalWorkflowStepBlueprint): MultiModalWorkflowStepBlueprint =>
-  Object.freeze({ ...s, dependsOn: Object.freeze([...s.dependsOn]), input: Object.freeze({ ...(s.input ?? {}) }) });
+  Object.freeze({
+    ...s,
+    dependsOn: Object.freeze([...s.dependsOn]),
+    input: Object.freeze({ ...(s.input ?? {}) }),
+  });
 
 const blueprint = (b: MultiModalWorkflowBlueprint): MultiModalWorkflowBlueprint =>
   Object.freeze({
@@ -57,9 +61,27 @@ export const FLIGHT_MONITORING_WORKFLOW = blueprint({
   mode: "flight",
   triggers: [{ kind: "schedule", intervalMs: 10 * 60_000 }],
   steps: [
-    { id: "status", name: "Fetch flight status", kind: "capability", capabilityId: cap("flight_status"), dependsOn: [] },
-    { id: "delay", name: "Fetch delay information", kind: "capability", capabilityId: cap("flight_delay_information"), dependsOn: ["status"] },
-    { id: "record", name: "Record flight change", kind: "capability", capabilityId: "workflow.record.change", dependsOn: ["delay"] },
+    {
+      id: "status",
+      name: "Fetch flight status",
+      kind: "capability",
+      capabilityId: cap("flight_status"),
+      dependsOn: [],
+    },
+    {
+      id: "delay",
+      name: "Fetch delay information",
+      kind: "capability",
+      capabilityId: cap("flight_delay_information"),
+      dependsOn: ["status"],
+    },
+    {
+      id: "record",
+      name: "Record flight change",
+      kind: "capability",
+      capabilityId: "workflow.record.change",
+      dependsOn: ["delay"],
+    },
   ],
 });
 
@@ -71,10 +93,34 @@ export const WEATHER_MONITORING_WORKFLOW = blueprint({
   mode: "weather",
   triggers: [{ kind: "schedule", intervalMs: 30 * 60_000 }],
   steps: [
-    { id: "current", name: "Fetch current weather", kind: "capability", capabilityId: cap("weather"), dependsOn: [] },
-    { id: "forecast", name: "Fetch hourly forecast", kind: "capability", capabilityId: cap("forecast_hourly"), dependsOn: [] },
-    { id: "alerts", name: "Fetch travel alerts", kind: "capability", capabilityId: cap("travel_alerts"), dependsOn: ["current", "forecast"] },
-    { id: "record", name: "Record weather change", kind: "capability", capabilityId: "workflow.record.change", dependsOn: ["alerts"] },
+    {
+      id: "current",
+      name: "Fetch current weather",
+      kind: "capability",
+      capabilityId: cap("weather"),
+      dependsOn: [],
+    },
+    {
+      id: "forecast",
+      name: "Fetch hourly forecast",
+      kind: "capability",
+      capabilityId: cap("forecast_hourly"),
+      dependsOn: [],
+    },
+    {
+      id: "alerts",
+      name: "Fetch travel alerts",
+      kind: "capability",
+      capabilityId: cap("travel_alerts"),
+      dependsOn: ["current", "forecast"],
+    },
+    {
+      id: "record",
+      name: "Record weather change",
+      kind: "capability",
+      capabilityId: "workflow.record.change",
+      dependsOn: ["alerts"],
+    },
   ],
 });
 
@@ -86,9 +132,27 @@ export const HOTEL_PRICE_MONITORING_WORKFLOW = blueprint({
   mode: "hotel",
   triggers: [{ kind: "schedule", intervalMs: 60 * 60_000 }],
   steps: [
-    { id: "availability", name: "Fetch availability", kind: "capability", capabilityId: cap("hotel_availability"), dependsOn: [] },
-    { id: "pricing", name: "Fetch pricing", kind: "capability", capabilityId: cap("hotel_pricing"), dependsOn: ["availability"] },
-    { id: "record", name: "Record price delta", kind: "capability", capabilityId: "workflow.record.change", dependsOn: ["pricing"] },
+    {
+      id: "availability",
+      name: "Fetch availability",
+      kind: "capability",
+      capabilityId: cap("hotel_availability"),
+      dependsOn: [],
+    },
+    {
+      id: "pricing",
+      name: "Fetch pricing",
+      kind: "capability",
+      capabilityId: cap("hotel_pricing"),
+      dependsOn: ["availability"],
+    },
+    {
+      id: "record",
+      name: "Record price delta",
+      kind: "capability",
+      capabilityId: "workflow.record.change",
+      dependsOn: ["pricing"],
+    },
   ],
 });
 
@@ -100,9 +164,27 @@ export const TRANSIT_MONITORING_WORKFLOW = blueprint({
   mode: "transit",
   triggers: [{ kind: "schedule", intervalMs: 15 * 60_000 }],
   steps: [
-    { id: "options", name: "Fetch local transport", kind: "capability", capabilityId: cap("local_transport"), dependsOn: [] },
-    { id: "route", name: "Estimate route", kind: "capability", capabilityId: cap("route"), dependsOn: ["options"] },
-    { id: "record", name: "Record transit change", kind: "capability", capabilityId: "workflow.record.change", dependsOn: ["route"] },
+    {
+      id: "options",
+      name: "Fetch local transport",
+      kind: "capability",
+      capabilityId: cap("local_transport"),
+      dependsOn: [],
+    },
+    {
+      id: "route",
+      name: "Estimate route",
+      kind: "capability",
+      capabilityId: cap("route"),
+      dependsOn: ["options"],
+    },
+    {
+      id: "record",
+      name: "Record transit change",
+      kind: "capability",
+      capabilityId: "workflow.record.change",
+      dependsOn: ["route"],
+    },
   ],
 });
 
@@ -114,11 +196,41 @@ export const AIRPORT_DELAY_MONITORING_WORKFLOW = blueprint({
   mode: "flight",
   triggers: [{ kind: "signal", name: "flight.delay" }],
   steps: [
-    { id: "await", name: "Await delay signal", kind: "signal", signalName: "flight.delay", dependsOn: [] },
-    { id: "airport", name: "Fetch airport metadata", kind: "capability", capabilityId: cap("search_airports"), dependsOn: ["await"] },
-    { id: "delay", name: "Fetch delay information", kind: "capability", capabilityId: cap("flight_delay_information"), dependsOn: ["await"] },
-    { id: "weather", name: "Fetch airport weather", kind: "capability", capabilityId: cap("weather"), dependsOn: ["airport"] },
-    { id: "assess", name: "Assess delay impact", kind: "capability", capabilityId: "workflow.assess.delay", dependsOn: ["delay", "weather"] },
+    {
+      id: "await",
+      name: "Await delay signal",
+      kind: "signal",
+      signalName: "flight.delay",
+      dependsOn: [],
+    },
+    {
+      id: "airport",
+      name: "Fetch airport metadata",
+      kind: "capability",
+      capabilityId: cap("search_airports"),
+      dependsOn: ["await"],
+    },
+    {
+      id: "delay",
+      name: "Fetch delay information",
+      kind: "capability",
+      capabilityId: cap("flight_delay_information"),
+      dependsOn: ["await"],
+    },
+    {
+      id: "weather",
+      name: "Fetch airport weather",
+      kind: "capability",
+      capabilityId: cap("weather"),
+      dependsOn: ["airport"],
+    },
+    {
+      id: "assess",
+      name: "Assess delay impact",
+      kind: "capability",
+      capabilityId: "workflow.assess.delay",
+      dependsOn: ["delay", "weather"],
+    },
   ],
 });
 
@@ -130,10 +242,34 @@ export const TRAVEL_REMINDER_WORKFLOW = blueprint({
   mode: "timezone",
   triggers: [{ kind: "schedule", delayMs: 60_000 }],
   steps: [
-    { id: "wait", name: "Wait until reminder window", kind: "timer", delayMs: 60_000, dependsOn: [] },
-    { id: "localtime", name: "Resolve local time", kind: "capability", capabilityId: cap("local_time"), dependsOn: ["wait"] },
-    { id: "weather", name: "Fetch weather", kind: "capability", capabilityId: cap("weather"), dependsOn: ["wait"] },
-    { id: "record", name: "Record reminder", kind: "capability", capabilityId: "workflow.record.reminder", dependsOn: ["localtime", "weather"] },
+    {
+      id: "wait",
+      name: "Wait until reminder window",
+      kind: "timer",
+      delayMs: 60_000,
+      dependsOn: [],
+    },
+    {
+      id: "localtime",
+      name: "Resolve local time",
+      kind: "capability",
+      capabilityId: cap("local_time"),
+      dependsOn: ["wait"],
+    },
+    {
+      id: "weather",
+      name: "Fetch weather",
+      kind: "capability",
+      capabilityId: cap("weather"),
+      dependsOn: ["wait"],
+    },
+    {
+      id: "record",
+      name: "Record reminder",
+      kind: "capability",
+      capabilityId: "workflow.record.reminder",
+      dependsOn: ["localtime", "weather"],
+    },
   ],
 });
 
@@ -145,23 +281,55 @@ export const TRAVEL_REPLANNING_WORKFLOW = blueprint({
   mode: "flight",
   triggers: [{ kind: "signal", name: "travel.disruption" }],
   steps: [
-    { id: "await", name: "Await disruption signal", kind: "signal", signalName: "travel.disruption", dependsOn: [] },
-    { id: "flights", name: "Search alternative flights", kind: "capability", capabilityId: cap("search_flights"), dependsOn: ["await"] },
-    { id: "hotels", name: "Search alternative hotels", kind: "capability", capabilityId: cap("search_hotels"), dependsOn: ["await"] },
-    { id: "transit", name: "Search local transport", kind: "capability", capabilityId: cap("local_transport"), dependsOn: ["await"] },
-    { id: "summary", name: "Build travel summary", kind: "capability", capabilityId: cap("travel_summary"), dependsOn: ["flights", "hotels", "transit"] },
+    {
+      id: "await",
+      name: "Await disruption signal",
+      kind: "signal",
+      signalName: "travel.disruption",
+      dependsOn: [],
+    },
+    {
+      id: "flights",
+      name: "Search alternative flights",
+      kind: "capability",
+      capabilityId: cap("search_flights"),
+      dependsOn: ["await"],
+    },
+    {
+      id: "hotels",
+      name: "Search alternative hotels",
+      kind: "capability",
+      capabilityId: cap("search_hotels"),
+      dependsOn: ["await"],
+    },
+    {
+      id: "transit",
+      name: "Search local transport",
+      kind: "capability",
+      capabilityId: cap("local_transport"),
+      dependsOn: ["await"],
+    },
+    {
+      id: "summary",
+      name: "Build travel summary",
+      kind: "capability",
+      capabilityId: cap("travel_summary"),
+      dependsOn: ["flights", "hotels", "transit"],
+    },
   ],
 });
 
-export const MULTIMODAL_WORKFLOW_BLUEPRINTS: readonly MultiModalWorkflowBlueprint[] = Object.freeze([
-  FLIGHT_MONITORING_WORKFLOW,
-  WEATHER_MONITORING_WORKFLOW,
-  HOTEL_PRICE_MONITORING_WORKFLOW,
-  TRANSIT_MONITORING_WORKFLOW,
-  AIRPORT_DELAY_MONITORING_WORKFLOW,
-  TRAVEL_REMINDER_WORKFLOW,
-  TRAVEL_REPLANNING_WORKFLOW,
-]);
+export const MULTIMODAL_WORKFLOW_BLUEPRINTS: readonly MultiModalWorkflowBlueprint[] = Object.freeze(
+  [
+    FLIGHT_MONITORING_WORKFLOW,
+    WEATHER_MONITORING_WORKFLOW,
+    HOTEL_PRICE_MONITORING_WORKFLOW,
+    TRANSIT_MONITORING_WORKFLOW,
+    AIRPORT_DELAY_MONITORING_WORKFLOW,
+    TRAVEL_REMINDER_WORKFLOW,
+    TRAVEL_REPLANNING_WORKFLOW,
+  ],
+);
 
 export const MULTIMODAL_WORKFLOW_IDS: readonly string[] = Object.freeze(
   MULTIMODAL_WORKFLOW_BLUEPRINTS.map((b) => b.id),

@@ -18,6 +18,12 @@ export * from "./manifest";
 export * from "./providers/types";
 export * from "./providers/mock-providers";
 export {
-  mockTravelDataset, haversineKm, seededUnit, seededCondition,
-  MOCK_AIRPORT_COUNT, MOCK_FLIGHT_COUNT, MOCK_HOTEL_COUNT, MOCK_PLACE_COUNT,
+  mockTravelDataset,
+  haversineKm,
+  seededUnit,
+  seededCondition,
+  MOCK_AIRPORT_COUNT,
+  MOCK_FLIGHT_COUNT,
+  MOCK_HOTEL_COUNT,
+  MOCK_PLACE_COUNT,
 } from "./providers/mock-data";

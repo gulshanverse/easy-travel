@@ -1,19 +1,36 @@
 import { describe, expect, it } from "vitest";
 import {
-  createMultiModalTravelRuntime, createAllMockProviders,
-  MULTIMODAL_CAPABILITY_IDS, MULTIMODAL_CONTRACTS, MULTIMODAL_CONTRACT_LIST,
-  MULTIMODAL_TRAVEL_ENGINE_CONTRACT, MULTIMODAL_TRAVEL_CAPABILITY_MANIFEST,
-  MULTIMODAL_CTOR_CONTRACTS, MULTIMODAL_CTOR_CAPABILITY_IDS,
-  multiModalContractSource, multiModalToolDescriptors, registerMultiModalCapabilities,
-  ctorCapabilityId, travelSummary,
-  MULTIMODAL_WORKFLOW_BLUEPRINTS, MULTIMODAL_WORKFLOW_IDS, blueprintCapabilityIds,
+  createMultiModalTravelRuntime,
+  createAllMockProviders,
+  MULTIMODAL_CAPABILITY_IDS,
+  MULTIMODAL_CONTRACTS,
+  MULTIMODAL_CONTRACT_LIST,
+  MULTIMODAL_TRAVEL_ENGINE_CONTRACT,
+  MULTIMODAL_TRAVEL_CAPABILITY_MANIFEST,
+  MULTIMODAL_CTOR_CONTRACTS,
+  MULTIMODAL_CTOR_CAPABILITY_IDS,
+  multiModalContractSource,
+  multiModalToolDescriptors,
+  registerMultiModalCapabilities,
+  ctorCapabilityId,
+  travelSummary,
+  MULTIMODAL_WORKFLOW_BLUEPRINTS,
+  MULTIMODAL_WORKFLOW_IDS,
+  blueprintCapabilityIds,
   multiModalWorkflowBlueprint,
-  buildTravelPresentation, makeFlightCard, makeTravelCostCard, makeTravelTimelineCard,
+  buildTravelPresentation,
+  makeFlightCard,
+  makeTravelCostCard,
+  makeTravelTimelineCard,
   TRAVEL_CARD_KINDS,
   normalizeTravelPayload,
   type MultiModalTravelRuntime,
-  type NormalizedFlight, type NormalizedAirport, type NormalizedHotel,
-  type NormalizedWeather, type NormalizedTransit, type NormalizedTravelSegment,
+  type NormalizedFlight,
+  type NormalizedAirport,
+  type NormalizedHotel,
+  type NormalizedWeather,
+  type NormalizedTransit,
+  type NormalizedTravelSegment,
 } from "@/lib/multimodal";
 import { createCapabilityRuntime, makeTool } from "@/lib/ctor";
 import { createWorkflowRuntime, makeWorkflowDefinition, makeWorkflowStep } from "@/lib/workflow";
@@ -37,7 +54,9 @@ describe("MTIP — capability contracts", () => {
 
   it("publishes engine contract and capability manifest", () => {
     expect(MULTIMODAL_TRAVEL_ENGINE_CONTRACT.id).toBe("multimodal.travel.platform");
-    expect(MULTIMODAL_TRAVEL_CAPABILITY_MANIFEST.capabilities.length).toBe(MULTIMODAL_CAPABILITY_IDS.length);
+    expect(MULTIMODAL_TRAVEL_CAPABILITY_MANIFEST.capabilities.length).toBe(
+      MULTIMODAL_CAPABILITY_IDS.length,
+    );
     expect(MULTIMODAL_TRAVEL_ENGINE_CONTRACT.ownership.doesNotOwn).toContain("payments");
   });
 });
@@ -46,9 +65,22 @@ describe("MTIP — CTOR capability registration", () => {
   it("exposes a CTOR contract per capability plus travel_summary", () => {
     expect(MULTIMODAL_CTOR_CONTRACTS.length).toBe(MULTIMODAL_CAPABILITY_IDS.length + 1);
     expect(MULTIMODAL_CTOR_CAPABILITY_IDS).toContain("multimodal.travel_summary");
-    for (const id of ["search_flights", "search_airports", "flight_status", "search_hotels",
-      "hotel_availability", "search_places", "geocode", "reverse_geocode", "route",
-      "weather", "forecast_hourly", "local_transport", "currency_convert", "timezone_lookup"]) {
+    for (const id of [
+      "search_flights",
+      "search_airports",
+      "flight_status",
+      "search_hotels",
+      "hotel_availability",
+      "search_places",
+      "geocode",
+      "reverse_geocode",
+      "route",
+      "weather",
+      "forecast_hourly",
+      "local_transport",
+      "currency_convert",
+      "timezone_lookup",
+    ]) {
       expect(MULTIMODAL_CTOR_CAPABILITY_IDS).toContain(ctorCapabilityId(id));
     }
   });
@@ -59,12 +91,19 @@ describe("MTIP — CTOR capability registration", () => {
     const result = await registerMultiModalCapabilities(
       {
         capabilities: ctor.manager.capabilities,
-        registerTool: (tool, impl) => ctor.manager.registerTool(makeTool({
-          id: tool.id, name: tool.name, version: tool.version,
-          schema: { input: tool.schema.input, output: tool.schema.output },
-          contract: tool.contract, tags: [...tool.metadata.tags],
-          description: tool.metadata.description,
-        }), impl),
+        registerTool: (tool, impl) =>
+          ctor.manager.registerTool(
+            makeTool({
+              id: tool.id,
+              name: tool.name,
+              version: tool.version,
+              schema: { input: tool.schema.input, output: tool.schema.output },
+              contract: tool.contract,
+              tags: [...tool.metadata.tags],
+              description: tool.metadata.description,
+            }),
+            impl,
+          ),
       },
       runtime,
     );
@@ -90,13 +129,17 @@ describe("MTIP — CTOR capability registration", () => {
     const airports = descriptors.find((d) => d.id === ctorCapabilityId("search_airports"))!;
     ctor.manager.registerTool(
       makeTool({
-        id: airports.id, name: airports.name, version: airports.version,
-        schema: airports.schema, contract: { idempotent: airports.idempotent, sideEffects: false },
+        id: airports.id,
+        name: airports.name,
+        version: airports.version,
+        schema: airports.schema,
+        contract: { idempotent: airports.idempotent, sideEffects: false },
       }),
       airports.impl,
     );
-    const out = await ctor.manager.invoker.invoke(airports.id, { query: "a", limit: 3 }) as {
-      ok: boolean; data: readonly NormalizedAirport[];
+    const out = (await ctor.manager.invoker.invoke(airports.id, { query: "a", limit: 3 })) as {
+      ok: boolean;
+      data: readonly NormalizedAirport[];
     };
     expect(out.ok).toBe(true);
     expect(out.data.length).toBeGreaterThan(0);
@@ -117,15 +160,28 @@ describe("MTIP — capability invocation through IPCF", () => {
   it("invokes one capability per mode and returns normalized data", async () => {
     const runtime = await bootRuntime();
     const flights = await runtime.invoke<readonly NormalizedFlight[]>("search_flights", {
-      fromCode: (await runtime.invoke<readonly NormalizedAirport[]>("search_airports", { query: "a", limit: 2 })).data![0].code,
-      toCode: (await runtime.invoke<readonly NormalizedAirport[]>("search_airports", { query: "b", limit: 2 })).data![0].code,
+      fromCode: (
+        await runtime.invoke<readonly NormalizedAirport[]>("search_airports", {
+          query: "a",
+          limit: 2,
+        })
+      ).data![0].code,
+      toCode: (
+        await runtime.invoke<readonly NormalizedAirport[]>("search_airports", {
+          query: "b",
+          limit: 2,
+        })
+      ).data![0].code,
     });
     expect(flights.ok).toBe(true);
     const hotels = await runtime.invoke<readonly NormalizedHotel[]>("search_hotels", { limit: 3 });
     expect(hotels.ok).toBe(true);
     const weather = await runtime.invoke<NormalizedWeather>("weather", { place: "Paris" });
     expect(weather.data!.place).toBe("Paris");
-    const transit = await runtime.invoke<readonly NormalizedTransit[]>("local_transport", { from: "A", to: "B" });
+    const transit = await runtime.invoke<readonly NormalizedTransit[]>("local_transport", {
+      from: "A",
+      to: "B",
+    });
     expect(transit.ok).toBe(true);
     const rate = await runtime.invoke("exchange_rate", { from: "USD", to: "EUR" });
     expect(rate.ok).toBe(true);
@@ -149,13 +205,16 @@ describe("MTIP — capability invocation through IPCF", () => {
     const rb = await b.invoke<NormalizedWeather>("weather", { place: "Kyoto" });
     expect(ra.data!.condition).toBe(rb.data!.condition);
     expect(ra.data!.temperatureC).toBe(rb.data!.temperatureC);
-    a.shutdown(); b.shutdown();
+    a.shutdown();
+    b.shutdown();
   });
 
   it("aggregates a travel summary from multiple modes", async () => {
     const runtime = await bootRuntime();
     const summary = await travelSummary(runtime, {
-      place: "Lisbon", homeCurrency: "USD", destinationCurrency: "EUR",
+      place: "Lisbon",
+      homeCurrency: "USD",
+      destinationCurrency: "EUR",
     });
     expect(summary.place).toBe("Lisbon");
     expect(summary.weather).toBeDefined();
@@ -166,7 +225,9 @@ describe("MTIP — capability invocation through IPCF", () => {
 
   it("normalizes raw payloads and rejects malformed ones", () => {
     expect(() => normalizeTravelPayload("search_airports", null)).toThrow();
-    const ok = normalizeTravelPayload("hotel_amenities", { amenities: ["wifi"] }) as readonly string[];
+    const ok = normalizeTravelPayload("hotel_amenities", {
+      amenities: ["wifi"],
+    }) as readonly string[];
     expect(ok).toEqual(["wifi"]);
   });
 });
@@ -196,11 +257,17 @@ describe("MTIP — workflow blueprints", () => {
     await registerMultiModalCapabilities(
       {
         capabilities: ctor.manager.capabilities,
-        registerTool: (tool, impl) => ctor.manager.registerTool(makeTool({
-          id: tool.id, name: tool.name, version: tool.version,
-          schema: { input: tool.schema.input, output: tool.schema.output },
-          contract: tool.contract,
-        }), impl),
+        registerTool: (tool, impl) =>
+          ctor.manager.registerTool(
+            makeTool({
+              id: tool.id,
+              name: tool.name,
+              version: tool.version,
+              schema: { input: tool.schema.input, output: tool.schema.output },
+              contract: tool.contract,
+            }),
+            impl,
+          ),
       },
       runtime,
     );
@@ -210,7 +277,9 @@ describe("MTIP — workflow blueprints", () => {
       registerBuiltins: false,
       ports: {
         ctor: {
-          async healthy() { return true; },
+          async healthy() {
+            return true;
+          },
           async invokeCapability({ capabilityId, input }) {
             executed.push(capabilityId);
             if (!capabilityId.startsWith("multimodal.")) return { ok: true };
@@ -222,15 +291,22 @@ describe("MTIP — workflow blueprints", () => {
 
     const bp = multiModalWorkflowBlueprint("multimodal.workflow.weather-monitoring")!;
     const def = makeWorkflowDefinition({
-      id: bp.id, name: bp.name, version: bp.version, description: bp.description,
+      id: bp.id,
+      name: bp.name,
+      version: bp.version,
+      description: bp.description,
       triggers: [{ kind: "manual" }],
-      steps: bp.steps.map((s) => makeWorkflowStep({
-        id: s.id, name: s.name, kind: s.kind === "signal" ? "capability" : s.kind,
-        dependsOn: [...s.dependsOn],
-        capabilityId: s.capabilityId ?? "workflow.noop",
-        input: { place: "Paris", lat: 48.85, lon: 2.35 },
-        delayMs: 0,
-      })),
+      steps: bp.steps.map((s) =>
+        makeWorkflowStep({
+          id: s.id,
+          name: s.name,
+          kind: s.kind === "signal" ? "capability" : s.kind,
+          dependsOn: [...s.dependsOn],
+          capabilityId: s.capabilityId ?? "workflow.noop",
+          input: { place: "Paris", lat: 48.85, lon: 2.35 },
+          delayMs: 0,
+        }),
+      ),
     });
     war.register(def);
     const execution = await war.run(def.id, { place: "Paris" });
@@ -243,15 +319,26 @@ describe("MTIP — workflow blueprints", () => {
 
 describe("MTIP — Journey Studio presentation models", () => {
   const flight: NormalizedFlight = Object.freeze({
-    flightNumber: "XX100", carrier: "XX", fromCode: "AAA", toCode: "BBB",
-    departureMinutes: 480, arrivalMinutes: 600, durationMinutes: 120, stops: 0,
-    aircraft: "A320", cabins: ["economy"],
+    flightNumber: "XX100",
+    carrier: "XX",
+    fromCode: "AAA",
+    toCode: "BBB",
+    departureMinutes: 480,
+    arrivalMinutes: 600,
+    durationMinutes: 120,
+    stops: 0,
+    aircraft: "A320",
+    cabins: ["economy"],
     cost: Object.freeze({ amount: 100, currency: "USD", kind: "fare", estimated: false }),
   }) as NormalizedFlight;
 
   const segment: NormalizedTravelSegment = Object.freeze({
-    id: "seg1", mode: "flight", from: "AAA", to: "BBB",
-    startAt: 1_000, endAt: 2_000,
+    id: "seg1",
+    mode: "flight",
+    from: "AAA",
+    to: "BBB",
+    startAt: 1_000,
+    endAt: 2_000,
     duration: Object.freeze({ minutes: 120, mode: "flight", confidence: 0.9 }),
     cost: Object.freeze({ amount: 100, currency: "USD", kind: "fare", estimated: false }),
     reference: "XX100",
@@ -265,19 +352,29 @@ describe("MTIP — Journey Studio presentation models", () => {
     const card = makeFlightCard(flight);
     expect(card.kind).toBe("flight");
     expect(Object.isFrozen(card)).toBe(true);
-    expect(() => { (card as unknown as { title: string }).title = "x"; }).toThrow();
+    expect(() => {
+      (card as unknown as { title: string }).title = "x";
+    }).toThrow();
   });
 
   it("totals a cost breakdown", () => {
     const card = makeTravelCostCard([
       { label: "Flight", cost: flight.cost },
-      { label: "Hotel", cost: { amount: 50, currency: "USD", kind: "nightly", estimated: false } as never },
+      {
+        label: "Hotel",
+        cost: { amount: 50, currency: "USD", kind: "nightly", estimated: false } as never,
+      },
     ]);
     expect(card.data.total).toBe(150);
   });
 
   it("orders timeline items by start time", () => {
-    const later = { ...segment, id: "seg2", startAt: 5_000, endAt: 6_000 } as NormalizedTravelSegment;
+    const later = {
+      ...segment,
+      id: "seg2",
+      startAt: 5_000,
+      endAt: 6_000,
+    } as NormalizedTravelSegment;
     const card = makeTravelTimelineCard([later, segment]);
     expect(card.items[0].id).toBe("tli_seg1");
     expect(card.items[1].order).toBe(1);
@@ -289,9 +386,17 @@ describe("MTIP — Journey Studio presentation models", () => {
       flights: [flight],
       segments: [segment],
       weather: Object.freeze({
-        place: "Lisbon", condition: "clear", temperatureC: 22, feelsLikeC: 21, humidity: 40,
-        windKph: 8, windBearing: 90, visibilityM: 10_000, rainProbability: 0.1,
-        airQualityIndex: 30, observedAt: 1,
+        place: "Lisbon",
+        condition: "clear",
+        temperatureC: 22,
+        feelsLikeC: 21,
+        humidity: 40,
+        windKph: 8,
+        windBearing: 90,
+        visibilityM: 10_000,
+        rainProbability: 0.1,
+        airQualityIndex: 30,
+        observedAt: 1,
       }) as NormalizedWeather,
     });
     const kinds = cards.map((c) => c.kind);
@@ -305,7 +410,10 @@ describe("MTIP — Journey Studio presentation models", () => {
 });
 
 describe("MTIP — architecture fitness", () => {
-  const files = import.meta.glob("../../src/lib/multimodal/**/*.ts", { as: "raw", eager: true }) as Record<string, string>;
+  const files = import.meta.glob("../../src/lib/multimodal/**/*.ts", {
+    as: "raw",
+    eager: true,
+  }) as Record<string, string>;
 
   it("loads the multimodal source tree", () => {
     expect(Object.keys(files).length).toBeGreaterThan(10);
@@ -313,9 +421,21 @@ describe("MTIP — architecture fitness", () => {
 
   it("imports no other domain engine", () => {
     const forbidden = [
-      "@/lib/ctor", "@/lib/workflow", "@/lib/journey", "@/lib/decision", "@/lib/agent",
-      "@/lib/studio", "@/lib/memory", "@/lib/graph", "@/lib/prompt", "@/lib/trust",
-      "@/lib/goal", "@/lib/spatial", "@/lib/railway", "@/lib/provider", "@/lib/tios",
+      "@/lib/ctor",
+      "@/lib/workflow",
+      "@/lib/journey",
+      "@/lib/decision",
+      "@/lib/agent",
+      "@/lib/studio",
+      "@/lib/memory",
+      "@/lib/graph",
+      "@/lib/prompt",
+      "@/lib/trust",
+      "@/lib/goal",
+      "@/lib/spatial",
+      "@/lib/railway",
+      "@/lib/provider",
+      "@/lib/tios",
     ];
     for (const [path, src] of Object.entries(files)) {
       for (const f of forbidden) {
@@ -363,8 +483,12 @@ describe("MTIP — concurrency, stress and benchmarks", () => {
   it("stress-builds 2000 presentation cards", () => {
     const started = Date.now();
     const segments: NormalizedTravelSegment[] = Array.from({ length: 2_000 }, (_, i) => ({
-      id: `seg${i}`, mode: "transit", from: "A", to: "B",
-      startAt: i, endAt: i + 10,
+      id: `seg${i}`,
+      mode: "transit",
+      from: "A",
+      to: "B",
+      startAt: i,
+      endAt: i + 10,
       duration: { minutes: 10, mode: "transit", confidence: 0.9 },
       cost: { amount: 2, currency: "USD", kind: "fare", estimated: false },
       reference: `r${i}`,

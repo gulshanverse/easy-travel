@@ -10,7 +10,11 @@ export interface TravelProviderRawResult {
   readonly ok: boolean;
   /** Provider-shaped payload; normalization happens inside MTIP. */
   readonly data?: unknown;
-  readonly error?: { readonly code: string; readonly message: string; readonly retryable?: boolean };
+  readonly error?: {
+    readonly code: string;
+    readonly message: string;
+    readonly retryable?: boolean;
+  };
   readonly pagination?: { readonly total?: number; readonly hasMore?: boolean };
 }
 
@@ -28,7 +32,10 @@ export interface TravelProviderProfile {
 export interface TravelProviderAdapter {
   readonly profile: TravelProviderProfile;
   supports(capability: MultiModalCapabilityId): boolean;
-  execute(capability: MultiModalCapabilityId, input: TravelRequestInput): Promise<TravelProviderRawResult>;
+  execute(
+    capability: MultiModalCapabilityId,
+    input: TravelRequestInput,
+  ): Promise<TravelProviderRawResult>;
   probe(): Promise<{ readonly healthy: boolean; readonly reason?: string }>;
 }
 

@@ -3,13 +3,28 @@
  *  ever reached from the connector executor registered on IPCF.
  */
 import {
-  createIntegrationRuntime, makeCapability, makeContract, makeDefinition, makeManifest,
-  makeMetadata, makePolicy, makeRequest, makeRateLimit, makeRetryPolicy,
-  type Connector, type ConnectorExecutor, type ConnectorResponse, type IntegrationRuntime,
+  createIntegrationRuntime,
+  makeCapability,
+  makeContract,
+  makeDefinition,
+  makeManifest,
+  makeMetadata,
+  makePolicy,
+  makeRequest,
+  makeRateLimit,
+  makeRetryPolicy,
+  type Connector,
+  type ConnectorExecutor,
+  type ConnectorResponse,
+  type IntegrationRuntime,
 } from "@/lib/integration";
 import {
-  MULTIMODAL_CAPABILITY_IDS, MULTIMODAL_CONTRACTS, capabilitiesForMode, requireContract,
-  type MultiModalCapabilityId, type TravelMode,
+  MULTIMODAL_CAPABILITY_IDS,
+  MULTIMODAL_CONTRACTS,
+  capabilitiesForMode,
+  requireContract,
+  type MultiModalCapabilityId,
+  type TravelMode,
 } from "./contracts";
 import { MultiModalResolutionError, MultiModalValidationError } from "./errors";
 import { MultiModalEventBus, eventNameForMode } from "./events";
@@ -38,12 +53,19 @@ export class TravelConnectorRegistry {
     this.records.set(record.connectorId, Object.freeze({ ...record }));
     for (const c of record.capabilities) {
       let set = this.byCapability.get(c);
-      if (!set) { set = new Set(); this.byCapability.set(c, set); }
+      if (!set) {
+        set = new Set();
+        this.byCapability.set(c, set);
+      }
       set.add(record.connectorId);
     }
   }
-  get(id: string): TravelConnectorRecord | undefined { return this.records.get(id); }
-  list(): readonly TravelConnectorRecord[] { return [...this.records.values()]; }
+  get(id: string): TravelConnectorRecord | undefined {
+    return this.records.get(id);
+  }
+  list(): readonly TravelConnectorRecord[] {
+    return [...this.records.values()];
+  }
   listForMode(mode: TravelMode): readonly TravelConnectorRecord[] {
     return this.list().filter((r) => r.mode === mode);
   }
@@ -55,22 +77,33 @@ export class TravelConnectorRegistry {
   capabilities(): readonly MultiModalCapabilityId[] {
     return MULTIMODAL_CAPABILITY_IDS.filter((c) => (this.byCapability.get(c)?.size ?? 0) > 0);
   }
-  clear(): void { this.records.clear(); this.byCapability.clear(); }
-  size(): number { return this.records.size; }
+  clear(): void {
+    this.records.clear();
+    this.byCapability.clear();
+  }
+  size(): number {
+    return this.records.size;
+  }
 }
 
 /** Builds IPCF connector definitions from a travel provider adapter. */
 export class TravelConnectorFactory {
   static category(mode: TravelMode): "flight" | "hotel" | "maps" | "weather" | "custom" {
-    return mode === "flight" || mode === "hotel" || mode === "maps" || mode === "weather" ? mode : "custom";
+    return mode === "flight" || mode === "hotel" || mode === "maps" || mode === "weather"
+      ? mode
+      : "custom";
   }
 
   static definition(adapter: TravelProviderAdapter) {
     const caps = adapter.profile.capabilities.map((id) => {
       const c = requireContract(id);
       return makeCapability({
-        id: c.id, name: c.name, version: c.version, description: c.description,
-        inputs: c.inputs, outputs: [c.output],
+        id: c.id,
+        name: c.name,
+        version: c.version,
+        description: c.description,
+        inputs: c.inputs,
+        outputs: [c.output],
         metadata: { volatility: c.volatility, cacheable: c.cacheable, mode: c.mode },
       });
     });
@@ -113,12 +146,19 @@ export class TravelConnectorFactory {
   ): ConnectorExecutor {
     return async (ctx) => {
       const capability = ctx.request.capabilityId as MultiModalCapabilityId;
-      const raw = await adapter.execute(capability, (ctx.request.payload ?? {}) as TravelRequestInput);
+      const raw = await adapter.execute(
+        capability,
+        (ctx.request.payload ?? {}) as TravelRequestInput,
+      );
 
       if (!raw.ok) {
         return {
           ok: false,
-          error: raw.error ?? { code: "provider_error", message: "provider failed", retryable: false },
+          error: raw.error ?? {
+            code: "provider_error",
+            message: "provider failed",
+            retryable: false,
+          },
         };
       }
       try {
@@ -128,11 +168,16 @@ export class TravelConnectorFactory {
       } catch (e) {
         metrics.normalization(false);
         travelLog(telemetry, "error", "multimodal.normalization.failed", (e as Error).message, {
-          provider: adapter.profile.id, capability,
+          provider: adapter.profile.id,
+          capability,
         });
         return {
           ok: false,
-          error: { code: "multimodal_normalization_error", message: (e as Error).message, retryable: false },
+          error: {
+            code: "multimodal_normalization_error",
+            message: (e as Error).message,
+            retryable: false,
+          },
         };
       }
     };
@@ -142,13 +187,17 @@ export class TravelConnectorFactory {
 /** Chooses connectors for a capability, honouring preference and fallback. */
 export class TravelConnectorResolver {
   constructor(private readonly registry: TravelConnectorRegistry) {}
-  resolve(capability: MultiModalCapabilityId, preferProviderId?: string): readonly TravelConnectorRecord[] {
+  resolve(
+    capability: MultiModalCapabilityId,
+    preferProviderId?: string,
+  ): readonly TravelConnectorRecord[] {
     const all = this.registry.forCapability(capability);
     if (all.length === 0) throw new MultiModalResolutionError(capability);
     if (!preferProviderId) return all;
     const preferred = all.filter((r) => r.adapter.profile.id === preferProviderId);
     const rest = all.filter((r) => r.adapter.profile.id !== preferProviderId);
-    if (preferred.length === 0) throw new MultiModalResolutionError(`${capability} via ${preferProviderId}`);
+    if (preferred.length === 0)
+      throw new MultiModalResolutionError(`${capability} via ${preferProviderId}`);
     return [...preferred, ...rest];
   }
 }
@@ -182,15 +231,17 @@ export class TravelConnectorHealth {
     for (const r of this.registry.list()) {
       const probe = await r.adapter.probe();
       const c: Connector | undefined = this.integration.registry.get(r.connectorId);
-      connectors.push(Object.freeze({
-        connectorId: r.connectorId,
-        providerId: r.adapter.profile.id,
-        mode: r.mode,
-        functional: r.adapter.profile.functional,
-        healthy: probe.healthy,
-        status: c?.status ?? "unknown",
-        reason: probe.reason,
-      }));
+      connectors.push(
+        Object.freeze({
+          connectorId: r.connectorId,
+          providerId: r.adapter.profile.id,
+          mode: r.mode,
+          functional: r.adapter.profile.functional,
+          healthy: probe.healthy,
+          status: c?.status ?? "unknown",
+          reason: probe.reason,
+        }),
+      );
     }
     return Object.freeze({
       healthy: ipcf.status !== "unhealthy" && connectors.some((c) => c.healthy),
@@ -240,7 +291,9 @@ export class TravelConnectorManager {
     if (adapter.profile.functional) this.metrics.connectorEnabled();
     else this.integration.manager.disable(connector.id);
     travelLog(this.telemetry, "info", "multimodal.connector.registered", "connector registered", {
-      connectorId: connector.id, provider: adapter.profile.id, mode: adapter.profile.mode,
+      connectorId: connector.id,
+      provider: adapter.profile.id,
+      mode: adapter.profile.mode,
     });
     return connector.id;
   }
@@ -283,18 +336,38 @@ export class TravelConnectorManager {
       try {
         response = await this.integration.manager.invoke<T>(request);
       } catch (e) {
-        this.metrics.response(capability, record.adapter.profile.id, contract.mode, false, Date.now() - started);
+        this.metrics.response(
+          capability,
+          record.adapter.profile.id,
+          contract.mode,
+          false,
+          Date.now() - started,
+        );
         travelLog(this.telemetry, "error", "multimodal.invoke.threw", (e as Error).message, {
-          capability, provider: record.adapter.profile.id,
+          capability,
+          provider: record.adapter.profile.id,
         });
         continue;
       }
       this.metrics.response(
-        capability, record.adapter.profile.id, contract.mode, response.ok, Date.now() - started,
+        capability,
+        record.adapter.profile.id,
+        contract.mode,
+        response.ok,
+        Date.now() - started,
       );
-      travelLog(this.telemetry, response.ok ? "info" : "warn", "multimodal.invoke", "capability invoked", {
-        capability, mode: contract.mode, provider: record.adapter.profile.id, ok: response.ok,
-      });
+      travelLog(
+        this.telemetry,
+        response.ok ? "info" : "warn",
+        "multimodal.invoke",
+        "capability invoked",
+        {
+          capability,
+          mode: contract.mode,
+          provider: record.adapter.profile.id,
+          ok: response.ok,
+        },
+      );
       if (response.ok) {
         this.events.publish({
           name: eventNameForMode(contract.mode),
@@ -324,7 +397,9 @@ export class TravelModeRuntime {
     protected readonly metrics: MultiModalMetrics,
   ) {}
 
-  capabilities(): readonly MultiModalCapabilityId[] { return capabilitiesForMode(this.mode); }
+  capabilities(): readonly MultiModalCapabilityId[] {
+    return capabilitiesForMode(this.mode);
+  }
   availableCapabilities(): readonly MultiModalCapabilityId[] {
     return this.registry.capabilities().filter((c) => MULTIMODAL_CONTRACTS[c].mode === this.mode);
   }
@@ -333,7 +408,9 @@ export class TravelModeRuntime {
   }
   registerProvider(adapter: TravelProviderAdapter, priority = 0): Promise<string> {
     if (adapter.profile.mode !== this.mode) {
-      throw new MultiModalValidationError(`provider ${adapter.profile.id} is not a ${this.mode} provider`);
+      throw new MultiModalValidationError(
+        `provider ${adapter.profile.id} is not a ${this.mode} provider`,
+      );
     }
     return this.manager.registerProvider(adapter, priority);
   }
@@ -350,8 +427,12 @@ export class TravelModeRuntime {
     }
     return this.manager.invoke<T>(capability, payload, options);
   }
-  metricsSnapshot() { return this.metrics.snapshot(); }
-  healthReport(): Promise<TravelHealthReport> { return this.health.report(); }
+  metricsSnapshot() {
+    return this.metrics.snapshot();
+  }
+  healthReport(): Promise<TravelHealthReport> {
+    return this.health.report();
+  }
 }
 
 export class FlightRuntime extends TravelModeRuntime {}
@@ -393,7 +474,12 @@ export class MultiModalTravelRuntime {
     this.events = options.events ?? new MultiModalEventBus();
     this.resolver = new TravelConnectorResolver(this.registry);
     this.manager = new TravelConnectorManager(
-      this.integration, this.registry, this.resolver, this.metrics, this.telemetry, this.events,
+      this.integration,
+      this.registry,
+      this.resolver,
+      this.metrics,
+      this.telemetry,
+      this.events,
     );
     this.health = new TravelConnectorHealth(this.registry, this.integration);
     const args = [this.manager, this.registry, this.resolver, this.health, this.metrics] as const;
@@ -408,13 +494,20 @@ export class MultiModalTravelRuntime {
 
   runtimeForMode(mode: TravelMode): TravelModeRuntime {
     switch (mode) {
-      case "flight": return this.flights;
-      case "hotel": return this.hotels;
-      case "maps": return this.maps;
-      case "weather": return this.weather;
-      case "transit": return this.transit;
-      case "currency": return this.currency;
-      case "timezone": return this.timezone;
+      case "flight":
+        return this.flights;
+      case "hotel":
+        return this.hotels;
+      case "maps":
+        return this.maps;
+      case "weather":
+        return this.weather;
+      case "transit":
+        return this.transit;
+      case "currency":
+        return this.currency;
+      case "timezone":
+        return this.timezone;
     }
   }
 
@@ -438,8 +531,12 @@ export class MultiModalTravelRuntime {
     }));
   }
 
-  metricsSnapshot() { return this.metrics.snapshot(); }
-  healthReport(): Promise<TravelHealthReport> { return this.health.report(); }
+  metricsSnapshot() {
+    return this.metrics.snapshot();
+  }
+  healthReport(): Promise<TravelHealthReport> {
+    return this.health.report();
+  }
   shutdown(): void {
     this.registry.clear();
     this.metrics.reset();

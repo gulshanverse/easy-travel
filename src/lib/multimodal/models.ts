@@ -64,7 +64,14 @@ export interface NormalizedFlight {
 }
 export interface NormalizedFlightStatus {
   readonly flightNumber: string;
-  readonly state: "scheduled" | "boarding" | "departed" | "en_route" | "landed" | "delayed" | "cancelled";
+  readonly state:
+    | "scheduled"
+    | "boarding"
+    | "departed"
+    | "en_route"
+    | "landed"
+    | "delayed"
+    | "cancelled";
   readonly delayMinutes: number;
   readonly gate: string;
   readonly terminal: string;
@@ -163,7 +170,14 @@ export interface NormalizedWeatherAlert {
   readonly issuedAt: number;
 }
 export const TRANSIT_MODES = Object.freeze([
-  "metro", "bus", "taxi", "auto", "walking", "cycling", "ferry", "ride_share",
+  "metro",
+  "bus",
+  "taxi",
+  "auto",
+  "walking",
+  "cycling",
+  "ferry",
+  "ride_share",
 ] as const);
 export type TransitModeKind = (typeof TRANSIT_MODES)[number];
 export interface NormalizedTransit {
@@ -259,7 +273,9 @@ export function freezeModel<T>(value: T): T {
   return Object.freeze(value);
 }
 
-export function makeTravelCost(input: Partial<NormalizedTravelCost> & { amount: number; currency: string }): NormalizedTravelCost {
+export function makeTravelCost(
+  input: Partial<NormalizedTravelCost> & { amount: number; currency: string },
+): NormalizedTravelCost {
   return freezeModel({
     amount: Math.round(input.amount * 100) / 100,
     currency: input.currency,
@@ -269,7 +285,11 @@ export function makeTravelCost(input: Partial<NormalizedTravelCost> & { amount: 
   });
 }
 
-export function makeTravelDuration(minutes: number, mode = "unknown", confidence = 0.9): NormalizedTravelDuration {
+export function makeTravelDuration(
+  minutes: number,
+  mode = "unknown",
+  confidence = 0.9,
+): NormalizedTravelDuration {
   const m = Math.max(0, Math.round(minutes));
   const h = Math.floor(m / 60);
   return freezeModel({
@@ -280,9 +300,12 @@ export function makeTravelDuration(minutes: number, mode = "unknown", confidence
   });
 }
 
-export function makeTravelSegment(input: Omit<NormalizedTravelSegment, "duration"> & { duration?: NormalizedTravelDuration }): NormalizedTravelSegment {
+export function makeTravelSegment(
+  input: Omit<NormalizedTravelSegment, "duration"> & { duration?: NormalizedTravelDuration },
+): NormalizedTravelSegment {
   return freezeModel({
     ...input,
-    duration: input.duration ?? makeTravelDuration((input.endAt - input.startAt) / 60_000, input.mode),
+    duration:
+      input.duration ?? makeTravelDuration((input.endAt - input.startAt) / 60_000, input.mode),
   });
 }

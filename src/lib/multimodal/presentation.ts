@@ -4,14 +4,30 @@
 import { newTravelCardId } from "./ids";
 import { freezeModel } from "./models";
 import type {
-  NormalizedAirport, NormalizedCurrencyConversion, NormalizedExchangeRate, NormalizedFlight,
-  NormalizedFlightStatus, NormalizedHotel, NormalizedMapRoute, NormalizedTransit,
-  NormalizedTravelCost, NormalizedTravelSegment, NormalizedWeather,
+  NormalizedAirport,
+  NormalizedCurrencyConversion,
+  NormalizedExchangeRate,
+  NormalizedFlight,
+  NormalizedFlightStatus,
+  NormalizedHotel,
+  NormalizedMapRoute,
+  NormalizedTransit,
+  NormalizedTravelCost,
+  NormalizedTravelSegment,
+  NormalizedWeather,
 } from "./models";
 
 export const TRAVEL_CARD_KINDS = Object.freeze([
-  "flight", "airport", "hotel", "weather", "transit",
-  "currency", "travel-summary", "travel-cost", "travel-timeline", "travel-segment",
+  "flight",
+  "airport",
+  "hotel",
+  "weather",
+  "transit",
+  "currency",
+  "travel-summary",
+  "travel-cost",
+  "travel-timeline",
+  "travel-segment",
 ] as const);
 export type TravelCardKind = (typeof TRAVEL_CARD_KINDS)[number];
 
@@ -26,15 +42,33 @@ export interface TravelCardBase {
   readonly data: Readonly<Record<string, unknown>>;
 }
 
-export interface FlightCard extends TravelCardBase { readonly kind: "flight" }
-export interface AirportCard extends TravelCardBase { readonly kind: "airport" }
-export interface HotelCard extends TravelCardBase { readonly kind: "hotel" }
-export interface WeatherCard extends TravelCardBase { readonly kind: "weather" }
-export interface TransitCard extends TravelCardBase { readonly kind: "transit" }
-export interface CurrencyCard extends TravelCardBase { readonly kind: "currency" }
-export interface TravelSummaryCard extends TravelCardBase { readonly kind: "travel-summary" }
-export interface TravelCostCard extends TravelCardBase { readonly kind: "travel-cost" }
-export interface TravelSegmentCard extends TravelCardBase { readonly kind: "travel-segment" }
+export interface FlightCard extends TravelCardBase {
+  readonly kind: "flight";
+}
+export interface AirportCard extends TravelCardBase {
+  readonly kind: "airport";
+}
+export interface HotelCard extends TravelCardBase {
+  readonly kind: "hotel";
+}
+export interface WeatherCard extends TravelCardBase {
+  readonly kind: "weather";
+}
+export interface TransitCard extends TravelCardBase {
+  readonly kind: "transit";
+}
+export interface CurrencyCard extends TravelCardBase {
+  readonly kind: "currency";
+}
+export interface TravelSummaryCard extends TravelCardBase {
+  readonly kind: "travel-summary";
+}
+export interface TravelCostCard extends TravelCardBase {
+  readonly kind: "travel-cost";
+}
+export interface TravelSegmentCard extends TravelCardBase {
+  readonly kind: "travel-segment";
+}
 
 export interface TravelTimelineItem {
   readonly id: string;
@@ -51,12 +85,28 @@ export interface TravelTimelineCard extends TravelCardBase {
 }
 
 export type TravelCard =
-  | FlightCard | AirportCard | HotelCard | WeatherCard | TransitCard
-  | CurrencyCard | TravelSummaryCard | TravelCostCard | TravelSegmentCard | TravelTimelineCard;
+  | FlightCard
+  | AirportCard
+  | HotelCard
+  | WeatherCard
+  | TransitCard
+  | CurrencyCard
+  | TravelSummaryCard
+  | TravelCostCard
+  | TravelSegmentCard
+  | TravelTimelineCard;
 
 function card<K extends TravelCardKind>(
   kind: K,
-  input: { title: string; subtitle?: string; body?: string; tags?: readonly string[]; data?: Readonly<Record<string, unknown>>; id?: string; createdAt?: number },
+  input: {
+    title: string;
+    subtitle?: string;
+    body?: string;
+    tags?: readonly string[];
+    data?: Readonly<Record<string, unknown>>;
+    id?: string;
+    createdAt?: number;
+  },
 ): TravelCardBase & { kind: K } {
   return freezeModel({
     id: input.id ?? newTravelCardId(),
@@ -71,9 +121,13 @@ function card<K extends TravelCardKind>(
 }
 
 const money = (c: NormalizedTravelCost) => `${c.currency} ${c.amount}`;
-const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+const hhmm = (m: number) =>
+  `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
-export function makeFlightCard(flight: NormalizedFlight, status?: NormalizedFlightStatus): FlightCard {
+export function makeFlightCard(
+  flight: NormalizedFlight,
+  status?: NormalizedFlightStatus,
+): FlightCard {
   return card("flight", {
     title: `${flight.carrier} ${flight.flightNumber}`,
     subtitle: `${flight.fromCode} → ${flight.toCode}`,
@@ -130,7 +184,9 @@ export function makeCurrencyCard(
   return card("currency", {
     title: `${rate.from} → ${rate.to}`,
     subtitle: `1 ${rate.from} = ${rate.rate} ${rate.to}`,
-    body: conversion ? `${conversion.amount} ${conversion.from} = ${conversion.converted} ${conversion.to}` : undefined,
+    body: conversion
+      ? `${conversion.amount} ${conversion.from} = ${conversion.converted} ${conversion.to}`
+      : undefined,
     tags: ["currency", rate.from, rate.to],
     data: { rate, conversion },
   }) as CurrencyCard;
@@ -169,7 +225,10 @@ export interface TravelCostLine {
   readonly cost: NormalizedTravelCost;
 }
 
-export function makeTravelCostCard(lines: readonly TravelCostLine[], currency?: string): TravelCostCard {
+export function makeTravelCostCard(
+  lines: readonly TravelCostLine[],
+  currency?: string,
+): TravelCostCard {
   const cur = currency ?? lines[0]?.cost.currency ?? "USD";
   const total = lines
     .filter((l) => l.cost.currency === cur)
@@ -245,12 +304,14 @@ export function buildTravelPresentation(input: TravelPresentationInput): readonl
     ...(input.transit ?? []).map((t) => ({ label: `Transit ${t.kind}`, cost: t.cost })),
   ];
   if (costLines.length) cards.push(makeTravelCostCard(costLines));
-  cards.push(makeTravelSummaryCard({
-    place: input.place ?? input.weather?.place ?? "destination",
-    weather: input.weather,
-    flights: input.flights,
-    hotels: input.hotels,
-    route: input.route,
-  }));
+  cards.push(
+    makeTravelSummaryCard({
+      place: input.place ?? input.weather?.place ?? "destination",
+      weather: input.weather,
+      flights: input.flights,
+      hotels: input.hotels,
+      route: input.route,
+    }),
+  );
   return Object.freeze(cards);
 }
