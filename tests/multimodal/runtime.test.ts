@@ -165,7 +165,8 @@ describe("MTIP — capability invocation through IPCF", () => {
   });
 
   it("normalizes raw payloads and rejects malformed ones", () => {
-    expect(() => normalizeTravelPayload("search_airports", { nope: true })).toThrow();
+    expect(() => normalizeTravelPayload("search_airports", null)).toThrow();
+    expect(() => normalizeTravelPayload("flight_status", { flight_no: 1 })).toThrow();
   });
 });
 
@@ -208,14 +209,15 @@ describe("MTIP — workflow blueprints", () => {
       registerBuiltins: false,
       ports: {
         ctor: {
-          async executeCapability(capabilityId: string, input: Record<string, unknown>) {
+          async healthy() { return true; },
+          async invokeCapability({ capabilityId, input }) {
             executed.push(capabilityId);
             if (!capabilityId.startsWith("multimodal.")) return { ok: true };
             return ctor.manager.invoker.invoke(capabilityId, input);
           },
         },
       },
-    } as never);
+    });
 
     const bp = multiModalWorkflowBlueprint("multimodal.workflow.weather-monitoring")!;
     const def = makeWorkflowDefinition({
@@ -353,7 +355,7 @@ describe("MTIP — concurrency, stress and benchmarks", () => {
     expect(results.every((r) => r.ok)).toBe(true);
     expect(Date.now() - started).toBeLessThan(5_000);
     const snapshot = runtime.metricsSnapshot();
-    expect(snapshot.totalRequests).toBeGreaterThanOrEqual(200);
+    expect(snapshot.requests).toBeGreaterThanOrEqual(200);
     runtime.shutdown();
   });
 
