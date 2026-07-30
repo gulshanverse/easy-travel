@@ -3,8 +3,13 @@ import { newTravelEventId } from "./ids";
 import type { TravelMode } from "./contracts";
 
 export type MultiModalEventName =
-  | "FlightUpdated" | "WeatherChanged" | "HotelPriceChanged" | "TransitUpdated"
-  | "CurrencyUpdated" | "TimezoneResolved" | "TravelSegmentUpdated";
+  | "FlightUpdated"
+  | "WeatherChanged"
+  | "HotelPriceChanged"
+  | "TransitUpdated"
+  | "CurrencyUpdated"
+  | "TimezoneResolved"
+  | "TravelSegmentUpdated";
 
 export interface MultiModalEvent {
   readonly id: string;
@@ -22,16 +27,23 @@ export class MultiModalEventBus {
   private readonly listeners = new Set<MultiModalEventListener>();
   private readonly history: MultiModalEvent[] = [];
   private limit: number;
-  constructor(limit = 1000) { this.limit = limit; }
+  constructor(limit = 1000) {
+    this.limit = limit;
+  }
 
   on(listener: MultiModalEventListener): () => void {
     this.listeners.add(listener);
-    return () => { this.listeners.delete(listener); };
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   publish(input: {
-    name: MultiModalEventName; mode: TravelMode;
-    data?: Record<string, unknown>; correlationId?: string; causationId?: string;
+    name: MultiModalEventName;
+    mode: TravelMode;
+    data?: Record<string, unknown>;
+    correlationId?: string;
+    causationId?: string;
   }): MultiModalEvent {
     const event: MultiModalEvent = Object.freeze({
       id: newTravelEventId(),
@@ -51,7 +63,10 @@ export class MultiModalEventBus {
   recent(name?: MultiModalEventName): readonly MultiModalEvent[] {
     return name ? this.history.filter((e) => e.name === name) : [...this.history];
   }
-  clear(): void { this.history.length = 0; this.listeners.clear(); }
+  clear(): void {
+    this.history.length = 0;
+    this.listeners.clear();
+  }
 }
 
 const EVENT_BY_MODE: Readonly<Record<TravelMode, MultiModalEventName>> = Object.freeze({
@@ -64,4 +79,6 @@ const EVENT_BY_MODE: Readonly<Record<TravelMode, MultiModalEventName>> = Object.
   maps: "TravelSegmentUpdated",
 });
 
-export function eventNameForMode(mode: TravelMode): MultiModalEventName { return EVENT_BY_MODE[mode]; }
+export function eventNameForMode(mode: TravelMode): MultiModalEventName {
+  return EVENT_BY_MODE[mode];
+}

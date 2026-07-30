@@ -10,14 +10,22 @@ export class MultiModalError extends Error {
   }
 }
 export class MultiModalValidationError extends MultiModalError {
-  constructor(message: string) { super("multimodal_validation_error", message, false); }
+  constructor(message: string) {
+    super("multimodal_validation_error", message, false);
+  }
 }
 export class MultiModalNotFoundError extends MultiModalError {
-  constructor(kind: string, id: string) { super("multimodal_not_found", `${kind} not found: ${id}`, false); }
+  constructor(kind: string, id: string) {
+    super("multimodal_not_found", `${kind} not found: ${id}`, false);
+  }
 }
 export class MultiModalCapabilityUnsupportedError extends MultiModalError {
   constructor(providerId: string, capability: string) {
-    super("multimodal_capability_unsupported", `provider ${providerId} does not support ${capability}`, false);
+    super(
+      "multimodal_capability_unsupported",
+      `provider ${providerId} does not support ${capability}`,
+      false,
+    );
   }
 }
 export class MultiModalProviderUnavailableError extends MultiModalError {
@@ -26,10 +34,16 @@ export class MultiModalProviderUnavailableError extends MultiModalError {
   }
 }
 export class MultiModalNormalizationError extends MultiModalError {
-  constructor(message: string) { super("multimodal_normalization_error", message, false); }
+  constructor(message: string) {
+    super("multimodal_normalization_error", message, false);
+  }
 }
 export class MultiModalResolutionError extends MultiModalError {
   constructor(capability: string) {
-    super("multimodal_no_connector", `no enabled connector provides capability: ${capability}`, false);
+    super(
+      "multimodal_no_connector",
+      `no enabled connector provides capability: ${capability}`,
+      false,
+    );
   }
 }

@@ -33,7 +33,12 @@ export interface MultiModalMetricsSnapshot {
   readonly byMode: Readonly<Record<string, TravelUsageStats>>;
 }
 
-interface MutableStats { requests: number; successes: number; failures: number; totalMs: number }
+interface MutableStats {
+  requests: number;
+  successes: number;
+  failures: number;
+  totalMs: number;
+}
 
 export class MultiModalMetrics {
   private connectorsRegistered = 0;
@@ -54,15 +59,25 @@ export class MultiModalMetrics {
   private readonly provider = new Map<string, MutableStats>();
   private readonly mode = new Map<string, MutableStats>();
 
-  connectorRegistered(): void { this.connectorsRegistered += 1; }
-  connectorEnabled(): void { this.connectorsEnabled += 1; }
+  connectorRegistered(): void {
+    this.connectorsRegistered += 1;
+  }
+  connectorEnabled(): void {
+    this.connectorsEnabled += 1;
+  }
   normalization(ok = true): void {
     this.normalizations += 1;
     if (!ok) this.normalizationFailures += 1;
   }
-  fallback(): void { this.fallbacks += 1; }
-  resolutionFailure(): void { this.resolutionFailures += 1; }
-  eventPublished(): void { this.eventsPublished += 1; }
+  fallback(): void {
+    this.fallbacks += 1;
+  }
+  resolutionFailure(): void {
+    this.resolutionFailures += 1;
+  }
+  eventPublished(): void {
+    this.eventsPublished += 1;
+  }
 
   request(capability: string, providerId: string, mode: string): void {
     this.requests += 1;
@@ -71,8 +86,15 @@ export class MultiModalMetrics {
     this.bucket(this.mode, mode).requests += 1;
   }
 
-  response(capability: string, providerId: string, mode: string, success: boolean, latencyMs: number): void {
-    if (success) this.ok += 1; else this.failed += 1;
+  response(
+    capability: string,
+    providerId: string,
+    mode: string,
+    success: boolean,
+    latencyMs: number,
+  ): void {
+    if (success) this.ok += 1;
+    else this.failed += 1;
     this.latencyCount += 1;
     this.latencyTotal += latencyMs;
     this.latencyMin = Math.min(this.latencyMin, latencyMs);
@@ -83,7 +105,8 @@ export class MultiModalMetrics {
       this.bucket(this.mode, mode),
     ];
     for (const b of buckets) {
-      if (success) b.successes += 1; else b.failures += 1;
+      if (success) b.successes += 1;
+      else b.failures += 1;
       b.totalMs += latencyMs;
     }
   }
@@ -114,18 +137,31 @@ export class MultiModalMetrics {
   }
 
   reset(): void {
-    this.connectorsRegistered = 0; this.connectorsEnabled = 0;
-    this.requests = 0; this.ok = 0; this.failed = 0;
-    this.normalizations = 0; this.normalizationFailures = 0;
-    this.fallbacks = 0; this.resolutionFailures = 0; this.eventsPublished = 0;
-    this.latencyCount = 0; this.latencyTotal = 0;
-    this.latencyMin = Number.POSITIVE_INFINITY; this.latencyMax = 0;
-    this.capability.clear(); this.provider.clear(); this.mode.clear();
+    this.connectorsRegistered = 0;
+    this.connectorsEnabled = 0;
+    this.requests = 0;
+    this.ok = 0;
+    this.failed = 0;
+    this.normalizations = 0;
+    this.normalizationFailures = 0;
+    this.fallbacks = 0;
+    this.resolutionFailures = 0;
+    this.eventsPublished = 0;
+    this.latencyCount = 0;
+    this.latencyTotal = 0;
+    this.latencyMin = Number.POSITIVE_INFINITY;
+    this.latencyMax = 0;
+    this.capability.clear();
+    this.provider.clear();
+    this.mode.clear();
   }
 
   private bucket(map: Map<string, MutableStats>, key: string): MutableStats {
     let s = map.get(key);
-    if (!s) { s = { requests: 0, successes: 0, failures: 0, totalMs: 0 }; map.set(key, s); }
+    if (!s) {
+      s = { requests: 0, successes: 0, failures: 0, totalMs: 0 };
+      map.set(key, s);
+    }
     return s;
   }
   private freezeMap(map: Map<string, MutableStats>): Readonly<Record<string, TravelUsageStats>> {
