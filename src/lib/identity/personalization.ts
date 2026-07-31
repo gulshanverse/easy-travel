@@ -90,7 +90,7 @@ export function buildPersonalizationProfile(
       ? w.accessibilityWeight
       : w.accessibilityWeight * 0.5,
   ];
-  const score = Math.min(1, Number(parts.reduce((a, b) => a + b, total).toFixed(6)));
+  const score = Math.min(1, Number(parts.reduce((a, b) => a + b, 0).toFixed(6)));
 
   return deepFreeze({
     userId: input.userId,
