@@ -79,10 +79,6 @@ export function buildPersonalizationProfile(
   ].sort((a, b) => a.key.localeCompare(b.key));
 
   const w = input.config.personalization;
-  const total =
-    w.transportBias(input.preferences) +
-    w.budgetWeight * 0 +
-    0;
 
   // Deterministic completeness score in [0,1].
   const parts = [
