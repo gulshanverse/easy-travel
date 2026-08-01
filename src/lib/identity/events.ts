@@ -14,6 +14,9 @@ export type IdentityEventName =
   | "DataExportRequested" | "DataDeletionRequested"
   | "DeviceSessionStarted" | "DeviceSessionRevoked" | "DeviceSessionTouched"
   | "CompanionAdded" | "EmergencyContactAdded"
+  | "TravelProfileCreated" | "TravelProfileUpdated" | "TravelProfileActivated"
+  | "PreferencesResolved" | "PreferenceConflictDetected"
+  | "StatisticsComputed" | "PersonalizationContextPublished"
   | "PersonalizationBuilt";
 
 export interface IdentityEvent {
