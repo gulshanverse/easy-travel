@@ -13,8 +13,12 @@ export type NotificationChannel = "email" | "sms" | "push" | "in_app";
 export type NotificationCategory =
   | "reminder" | "workflow" | "delay" | "price" | "weather" | "marketing" | "security";
 export type NotificationFrequency = "instant" | "hourly" | "daily" | "weekly" | "never";
-export type FavoriteKind = "place" | "station" | "airport" | "hotel" | "route" | "search";
-export type SavedJourneyStatus = "draft" | "planned" | "active" | "completed" | "archived";
+export type FavoriteKind =
+  | "place" | "station" | "airport" | "hotel" | "route" | "search"
+  | "mode" | "season" | "companion";
+export type Season = "spring" | "summer" | "autumn" | "winter";
+export type SavedJourneyStatus =
+  | "draft" | "planned" | "published" | "active" | "completed" | "archived";
 export type ConsentKind =
   | "terms" | "privacy_policy" | "personalization" | "analytics" | "marketing" | "location";
 export type ProfileVisibility = "private" | "companions" | "public";
