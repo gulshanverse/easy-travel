@@ -235,6 +235,14 @@ export interface SavedJourneyVersion {
   readonly reason: string;
 }
 
+export interface SavedJourneyShare {
+  readonly isShared: boolean;
+  readonly shareId: string | null;
+  readonly sharedAt: number | null;
+  readonly visibility: ProfileVisibility;
+  readonly sharedWith: readonly string[];
+}
+
 export interface SavedJourney {
   readonly id: string;
   readonly userId: string;
@@ -249,6 +257,7 @@ export interface SavedJourney {
   readonly payload: Readonly<Record<string, unknown>>;
   readonly revision: number;
   readonly duplicatedFrom: string | null;
+  readonly sharing: SavedJourneyShare;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly archivedAt: number | null;
