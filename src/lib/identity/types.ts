@@ -199,9 +199,22 @@ export interface FavoriteSearch extends FavoriteBase {
   readonly query: string;
   readonly filters: Readonly<Record<string, string | number | boolean>>;
 }
+export interface FavoriteMode extends FavoriteBase {
+  readonly kind: "mode";
+  readonly mode: TransportMode;
+}
+export interface FavoriteSeason extends FavoriteBase {
+  readonly kind: "season";
+  readonly season: Season;
+}
+export interface FavoriteCompanion extends FavoriteBase {
+  readonly kind: "companion";
+  readonly companionId: string;
+}
 export type Favorite =
   | FavoritePlace | FavoriteStation | FavoriteAirport
-  | FavoriteHotel | FavoriteRoute | FavoriteSearch;
+  | FavoriteHotel | FavoriteRoute | FavoriteSearch
+  | FavoriteMode | FavoriteSeason | FavoriteCompanion;
 
 export interface SavedJourneyNote {
   readonly id: string;
