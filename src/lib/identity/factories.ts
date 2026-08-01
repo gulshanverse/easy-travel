@@ -229,6 +229,13 @@ export function makeSavedJourney(input: MakeSavedJourneyInput): SavedJourney {
     payload: { ...(input.payload ?? {}) },
     revision: input.revision ?? 1,
     duplicatedFrom: input.duplicatedFrom ?? null,
+    sharing: {
+      isShared: input.sharing?.isShared ?? false,
+      shareId: input.sharing?.shareId ?? null,
+      sharedAt: input.sharing?.sharedAt ?? null,
+      visibility: input.sharing?.visibility ?? "private",
+      sharedWith: [...(input.sharing?.sharedWith ?? [])],
+    },
     createdAt: at,
     updatedAt: at,
     archivedAt: input.archivedAt ?? null,

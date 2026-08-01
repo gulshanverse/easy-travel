@@ -123,6 +123,9 @@ export function validateFavorite(fav: Favorite): Favorite {
       }
       break;
     case "search": requireNonEmpty(fav.query, "query"); break;
+    case "mode": requireNonEmpty(fav.mode, "mode"); break;
+    case "season": requireNonEmpty(fav.season, "season"); break;
+    case "companion": requireNonEmpty(fav.companionId, "companionId"); break;
   }
   return fav;
 }
@@ -137,6 +140,9 @@ export function validateSavedJourney(j: SavedJourney): SavedJourney {
   if (new Set(j.tags).size !== j.tags.length) {
     throw new IdentityValidationError("tags contain duplicates");
   }
+  if (j.sharing.isShared && !j.sharing.shareId) {
+    throw new IdentityValidationError("shared journeys require a shareId", { id: j.id });
+  }
   return j;
 }
 
@@ -149,5 +155,8 @@ export function favoriteKey(fav: Favorite): string {
     case "hotel": return `hotel:${fav.hotelId}`;
     case "route": return `route:${fav.mode}:${fav.origin}>${fav.destination}`;
     case "search": return `search:${fav.query}`;
+    case "mode": return `mode:${fav.mode}`;
+    case "season": return `season:${fav.season}`;
+    case "companion": return `companion:${fav.companionId}`;
   }
 }

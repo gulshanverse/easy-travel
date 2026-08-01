@@ -24,3 +24,7 @@ export const newDeletionId = () => next("del");
 export const newEventId = () => next("iev");
 export const newHistoryId = () => next("ihs");
 export const newCorrelationId = () => next("cor");
+export const newTravelProfileId = () => next("tpf");
+export const newProfileHistoryId = () => next("tph");
+export const newShareId = () => next("shr");
+export const newContextHistoryId = () => next("pch");

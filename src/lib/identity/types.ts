@@ -13,8 +13,12 @@ export type NotificationChannel = "email" | "sms" | "push" | "in_app";
 export type NotificationCategory =
   | "reminder" | "workflow" | "delay" | "price" | "weather" | "marketing" | "security";
 export type NotificationFrequency = "instant" | "hourly" | "daily" | "weekly" | "never";
-export type FavoriteKind = "place" | "station" | "airport" | "hotel" | "route" | "search";
-export type SavedJourneyStatus = "draft" | "planned" | "active" | "completed" | "archived";
+export type FavoriteKind =
+  | "place" | "station" | "airport" | "hotel" | "route" | "search"
+  | "mode" | "season" | "companion";
+export type Season = "spring" | "summer" | "autumn" | "winter";
+export type SavedJourneyStatus =
+  | "draft" | "planned" | "published" | "active" | "completed" | "archived";
 export type ConsentKind =
   | "terms" | "privacy_policy" | "personalization" | "analytics" | "marketing" | "location";
 export type ProfileVisibility = "private" | "companions" | "public";
@@ -195,9 +199,22 @@ export interface FavoriteSearch extends FavoriteBase {
   readonly query: string;
   readonly filters: Readonly<Record<string, string | number | boolean>>;
 }
+export interface FavoriteMode extends FavoriteBase {
+  readonly kind: "mode";
+  readonly mode: TransportMode;
+}
+export interface FavoriteSeason extends FavoriteBase {
+  readonly kind: "season";
+  readonly season: Season;
+}
+export interface FavoriteCompanion extends FavoriteBase {
+  readonly kind: "companion";
+  readonly companionId: string;
+}
 export type Favorite =
   | FavoritePlace | FavoriteStation | FavoriteAirport
-  | FavoriteHotel | FavoriteRoute | FavoriteSearch;
+  | FavoriteHotel | FavoriteRoute | FavoriteSearch
+  | FavoriteMode | FavoriteSeason | FavoriteCompanion;
 
 export interface SavedJourneyNote {
   readonly id: string;
@@ -218,6 +235,14 @@ export interface SavedJourneyVersion {
   readonly reason: string;
 }
 
+export interface SavedJourneyShare {
+  readonly isShared: boolean;
+  readonly shareId: string | null;
+  readonly sharedAt: number | null;
+  readonly visibility: ProfileVisibility;
+  readonly sharedWith: readonly string[];
+}
+
 export interface SavedJourney {
   readonly id: string;
   readonly userId: string;
@@ -232,6 +257,7 @@ export interface SavedJourney {
   readonly payload: Readonly<Record<string, unknown>>;
   readonly revision: number;
   readonly duplicatedFrom: string | null;
+  readonly sharing: SavedJourneyShare;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly archivedAt: number | null;

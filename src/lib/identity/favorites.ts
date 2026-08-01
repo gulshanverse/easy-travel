@@ -18,6 +18,7 @@ export function favoritesByKind(
 ): Readonly<Record<FavoriteKind, readonly Favorite[]>> {
   const base: Record<FavoriteKind, Favorite[]> = {
     place: [], station: [], airport: [], hotel: [], route: [], search: [],
+    mode: [], season: [], companion: [],
   };
   for (const f of favorites) base[f.kind].push(f);
   return Object.freeze(
