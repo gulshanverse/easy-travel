@@ -3,13 +3,13 @@
  * Engine contracts are unchanged; only the implementation moves.
  */
 
-import type { MemoryEnvelope } from "../../memory/types";
-import type { MemoryStore, StoreListFilter } from "../../memory/store/types";
-import { MemoryNotFoundError } from "../../memory/errors";
-import type { WorkflowStatePersistencePort } from "../../workflow/ports";
-import { COLLECTIONS } from "../collections";
-import { spec } from "../repository/specification";
-import type { Repository } from "../repository/types";
+import type { MemoryEnvelope } from "../memory/types";
+import type { MemoryStore, StoreListFilter } from "../memory/store/types";
+import { MemoryNotFoundError } from "../memory/errors";
+import type { WorkflowStatePersistencePort } from "../workflow/ports";
+import { COLLECTIONS } from "./collections";
+import { spec } from "./repository/specification";
+import type { Repository } from "./repository/types";
 
 type Doc = Record<string, unknown>;
 
