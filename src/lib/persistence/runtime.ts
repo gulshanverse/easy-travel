@@ -67,6 +67,9 @@ export class PersistenceRuntime {
   readonly migrations?: MigrationManager;
 
   private readonly repos = new Map<string, Repository<Record<string, unknown>>>();
+  private eventStore?: EventStore;
+  private auditStore?: AuditStore;
+  private outboxStore?: OutboxStore;
 
   constructor(options: PersistenceRuntimeOptions = {}) {
     this.config = options.config ?? createPersistenceConfig();
