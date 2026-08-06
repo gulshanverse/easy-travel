@@ -20,10 +20,10 @@ export const COLLECTIONS = Object.freeze({
   connectorMetadata: "connector_metadata",
   auditLogs: "audit_logs",
   travelRecords: "travel_records",
+  events: "events",
+  outbox: "outbox",
 } as const);
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 
-export const ALL_COLLECTIONS: readonly CollectionName[] = Object.freeze(
-  Object.values(COLLECTIONS),
-);
+export const ALL_COLLECTIONS: readonly CollectionName[] = Object.freeze(Object.values(COLLECTIONS));

@@ -81,10 +81,7 @@ export class MemoryStoreAdapter implements MemoryStore {
         if (filter.threadId !== undefined && row.threadId !== filter.threadId) return false;
         if (filter.journeyId !== undefined && row.journeyId !== filter.journeyId) return false;
         if (filter.tags?.length && !filter.tags.every((t) => row.tags.includes(t))) return false;
-        if (
-          filter.goalIds?.length &&
-          !(row.goalIds ?? []).some((g) => filter.goalIds!.includes(g))
-        )
+        if (filter.goalIds?.length && !(row.goalIds ?? []).some((g) => filter.goalIds!.includes(g)))
           return false;
         if (!filter.includeExpired && row.ttlExpiresAt && Date.parse(row.ttlExpiresAt) <= now)
           return false;
@@ -171,3 +168,28 @@ export const ADAPTER_COLLECTIONS = Object.freeze({
   travel: COLLECTIONS.travelRecords,
   notifications: COLLECTIONS.notifications,
 });
+
+/* ------------------------------------------------------------------ */
+/* Domain-specific document adapters                                   */
+/* ------------------------------------------------------------------ */
+
+/** Identity/profile documents (IPUP) → persistence repository. */
+export class IdentityStoreAdapter<T extends Doc = Doc> extends DocumentStoreAdapter<T> {
+  constructor(repo: Repository<Doc>, collection: string = COLLECTIONS.profiles) {
+    super(collection, repo);
+  }
+}
+
+/** Saved journeys / planning sessions → persistence repository. */
+export class JourneyStoreAdapter<T extends Doc = Doc> extends DocumentStoreAdapter<T> {
+  constructor(repo: Repository<Doc>, collection: string = COLLECTIONS.journeys) {
+    super(collection, repo);
+  }
+}
+
+/** Normalized multi-modal travel records → persistence repository. */
+export class TravelStoreAdapter<T extends Doc = Doc> extends DocumentStoreAdapter<T> {
+  constructor(repo: Repository<Doc>, collection: string = COLLECTIONS.travelRecords) {
+    super(collection, repo);
+  }
+}

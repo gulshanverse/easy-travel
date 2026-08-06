@@ -82,9 +82,7 @@ export const DEFAULT_TTL_POLICIES: CacheTtlPolicies = Object.freeze({
   rateLimitWindowMs: 60_000,
 });
 
-export function createPersistenceConfig(
-  over: Partial<PersistenceConfig> = {},
-): PersistenceConfig {
+export function createPersistenceConfig(over: Partial<PersistenceConfig> = {}): PersistenceConfig {
   const cfg: PersistenceConfig = {
     namespace: over.namespace ?? "easytrip",
     environment: over.environment ?? "development",
@@ -119,9 +117,7 @@ export function createPersistenceConfig(
 }
 
 /** Production preset: Postgres + Redis + object storage; never in-memory. */
-export function createProductionConfig(
-  over: Partial<PersistenceConfig> = {},
-): PersistenceConfig {
+export function createProductionConfig(over: Partial<PersistenceConfig> = {}): PersistenceConfig {
   const cfg = createPersistenceConfig({
     environment: "production",
     ...over,
@@ -137,8 +133,7 @@ export function validatePersistenceConfig(cfg: PersistenceConfig): void {
   const p = cfg.database.pool;
   if (p.min < 0 || p.max < 1 || p.min > p.max)
     throw new PersistenceConfigError("invalid connection pool bounds", { pool: p });
-  if (cfg.cache.maxEntries < 1)
-    throw new PersistenceConfigError("cache maxEntries must be >= 1");
+  if (cfg.cache.maxEntries < 1) throw new PersistenceConfigError("cache maxEntries must be >= 1");
   if (cfg.storage.maxObjectBytes < 1)
     throw new PersistenceConfigError("storage maxObjectBytes must be >= 1");
 }

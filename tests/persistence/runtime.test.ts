@@ -175,8 +175,9 @@ describe("migrations", () => {
 
 describe("production configuration", () => {
   it("rejects in-memory drivers in production", () => {
-    expect(() => assertProductionConfig(createPersistenceConfig({ environment: "production" })))
-      .toThrow(PersistenceConfigError);
+    expect(() =>
+      assertProductionConfig(createPersistenceConfig({ environment: "production" })),
+    ).toThrow(PersistenceConfigError);
   });
 
   it("builds a production config selecting postgres, redis and object storage", () => {
@@ -192,9 +193,7 @@ describe("concurrency and performance", () => {
   it("serialises concurrent writes through the pool", async () => {
     const r = rt();
     const repo = repoOf(r);
-    await Promise.all(
-      Array.from({ length: 50 }, (_, i) => repo.insert(`c-${i}`, { i }, "u1")),
-    );
+    await Promise.all(Array.from({ length: 50 }, (_, i) => repo.insert(`c-${i}`, { i }, "u1")));
     expect(await repo.count({ ownerId: "u1" })).toBe(50);
     expect(r.metricsSnapshot()["db.query.insert.ok"]).toBe(50);
   });

@@ -134,8 +134,7 @@ export class PostgresDatabaseDriver implements DatabaseDriver {
     q = q.eq("version", current.version);
     const { data, error } = await q.select().single();
     if (error) this.fail("update", error);
-    if (!data)
-      throw new OptimisticLockError(row.collection, row.id, current.version, -1);
+    if (!data) throw new OptimisticLockError(row.collection, row.id, current.version, -1);
     this.record(async () => {
       await this.t()
         .update({
@@ -201,7 +200,12 @@ export class PostgresDatabaseDriver implements DatabaseDriver {
     const current = await this.findById(collection, id);
     if (!current) return false;
     const { error } = await this.t()
-      .update({ deleted_at: nowIso(), updated_at: nowIso(), updated_by: actorId ?? null, version: current.version + 1 })
+      .update({
+        deleted_at: nowIso(),
+        updated_at: nowIso(),
+        updated_by: actorId ?? null,
+        version: current.version + 1,
+      })
       .eq("collection", collection)
       .eq("id", id);
     if (error) this.fail("softDelete", error);

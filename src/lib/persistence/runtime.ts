@@ -21,7 +21,15 @@ import type { CacheDriver } from "./cache/types";
 import { ObjectStorageManager } from "./storage/manager";
 import { InMemoryObjectStorageDriver, RemoteObjectStorageDriver } from "./storage/drivers";
 import type { ObjectStorageDriver, ObjectTransport, UrlSigner } from "./storage/types";
-import { MemoryStoreAdapter, WorkflowStoreAdapter, DocumentStoreAdapter } from "./adapters";
+import {
+  MemoryStoreAdapter,
+  WorkflowStoreAdapter,
+  DocumentStoreAdapter,
+  IdentityStoreAdapter,
+  JourneyStoreAdapter,
+  TravelStoreAdapter,
+} from "./adapters";
+import { AuditStore, EventStore, OutboxStore } from "./stores";
 import { MigrationManager, type Migration, type MigrationContext } from "./migrations/framework";
 import { baselineMigrations } from "./migrations/definitions";
 import {
@@ -59,6 +67,9 @@ export class PersistenceRuntime {
   readonly migrations?: MigrationManager;
 
   private readonly repos = new Map<string, Repository<Record<string, unknown>>>();
+  private eventStore?: EventStore;
+  private auditStore?: AuditStore;
+  private outboxStore?: OutboxStore;
 
   constructor(options: PersistenceRuntimeOptions = {}) {
     this.config = options.config ?? createPersistenceConfig();
@@ -110,6 +121,32 @@ export class PersistenceRuntime {
   documentStore<T extends Record<string, unknown>>(collection: string): DocumentStoreAdapter<T> {
     return new DocumentStoreAdapter<T>(collection, this.repository(collection));
   }
+  identityStore<T extends Record<string, unknown>>(
+    collection: string = COLLECTIONS.profiles,
+  ): IdentityStoreAdapter<T> {
+    return new IdentityStoreAdapter<T>(this.repository(collection), collection);
+  }
+  journeyStore<T extends Record<string, unknown>>(
+    collection: string = COLLECTIONS.journeys,
+  ): JourneyStoreAdapter<T> {
+    return new JourneyStoreAdapter<T>(this.repository(collection), collection);
+  }
+  travelStore<T extends Record<string, unknown>>(
+    collection: string = COLLECTIONS.travelRecords,
+  ): TravelStoreAdapter<T> {
+    return new TravelStoreAdapter<T>(this.repository(collection), collection);
+  }
+
+  /** Optional persistence implementations (event sourcing, audit, outbox). */
+  events(): EventStore {
+    return (this.eventStore ??= new EventStore(this.repository(COLLECTIONS.events)));
+  }
+  audit(): AuditStore {
+    return (this.auditStore ??= new AuditStore(this.repository(COLLECTIONS.auditLogs)));
+  }
+  outbox(): OutboxStore {
+    return (this.outboxStore ??= new OutboxStore(this.repository(COLLECTIONS.outbox)));
+  }
 
   collections(): readonly string[] {
     return ALL_COLLECTIONS;
@@ -129,13 +166,9 @@ export class PersistenceRuntime {
   }
 }
 
-function buildDatabaseDriver(
-  cfg: PersistenceConfig,
-  o: PersistenceRuntimeOptions,
-): DatabaseDriver {
+function buildDatabaseDriver(cfg: PersistenceConfig, o: PersistenceRuntimeOptions): DatabaseDriver {
   if (cfg.database.driver === "postgres") {
-    if (!o.sqlClient)
-      throw new PersistenceConfigError("postgres driver requires a sqlClient");
+    if (!o.sqlClient) throw new PersistenceConfigError("postgres driver requires a sqlClient");
     return new PostgresDatabaseDriver(o.sqlClient);
   }
   return new InMemoryDatabaseDriver();

@@ -6,14 +6,7 @@
 import { RecordNotFoundError } from "../errors";
 import type { DatabaseManager } from "../database/pool";
 import type { PersistedRow, RowQuery } from "../database/types";
-import type {
-  Entity,
-  FindOptions,
-  Page,
-  PageRequest,
-  Repository,
-  SaveOptions,
-} from "./types";
+import type { Entity, FindOptions, Page, PageRequest, Repository, SaveOptions } from "./types";
 
 function toEntity<T>(row: PersistedRow): Entity<T> {
   return Object.freeze({
@@ -100,10 +93,7 @@ export class GenericRepository<T extends Record<string, unknown>> implements Rep
     return (await this.findById(id)) !== null;
   }
 
-  async paginate(
-    request: PageRequest = {},
-    options: FindOptions = {},
-  ): Promise<Page<Entity<T>>> {
+  async paginate(request: PageRequest = {}, options: FindOptions = {}): Promise<Page<Entity<T>>> {
     const page = Math.max(1, request.page ?? 1);
     const size = Math.min(500, Math.max(1, request.size ?? 25));
     const total = await this.count(options);
