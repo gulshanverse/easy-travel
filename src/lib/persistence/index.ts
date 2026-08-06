@@ -13,4 +13,5 @@ export * from "./cache";
 export * from "./storage";
 export * from "./migrations";
 export * from "./adapters";
+export * from "./stores";
 export * from "./runtime";
