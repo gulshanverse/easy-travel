@@ -21,7 +21,15 @@ import type { CacheDriver } from "./cache/types";
 import { ObjectStorageManager } from "./storage/manager";
 import { InMemoryObjectStorageDriver, RemoteObjectStorageDriver } from "./storage/drivers";
 import type { ObjectStorageDriver, ObjectTransport, UrlSigner } from "./storage/types";
-import { MemoryStoreAdapter, WorkflowStoreAdapter, DocumentStoreAdapter } from "./adapters";
+import {
+  MemoryStoreAdapter,
+  WorkflowStoreAdapter,
+  DocumentStoreAdapter,
+  IdentityStoreAdapter,
+  JourneyStoreAdapter,
+  TravelStoreAdapter,
+} from "./adapters";
+import { AuditStore, EventStore, OutboxStore } from "./stores";
 import { MigrationManager, type Migration, type MigrationContext } from "./migrations/framework";
 import { baselineMigrations } from "./migrations/definitions";
 import {
