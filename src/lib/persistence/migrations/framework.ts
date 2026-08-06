@@ -137,8 +137,7 @@ export class MigrationManager {
 
   /** Development-only: rolls everything back and re-applies from zero. */
   async reset(environment: string): Promise<void> {
-    if (environment === "production")
-      throw new MigrationError("reset is forbidden in production");
+    if (environment === "production") throw new MigrationError("reset is forbidden in production");
     const applied = await this.ctx.applied();
     await this.rollback(applied.length);
     await this.migrate();

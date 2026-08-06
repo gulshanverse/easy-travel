@@ -43,8 +43,7 @@ describe("production migrations", () => {
   it("seeds a registry row for every known collection", async () => {
     const ctx = new RecordingMigrationContext();
     await new MigrationManager(baselineMigrations, ctx).migrate();
-    for (const c of ALL_COLLECTIONS)
-      expect(ctx.statements.join("\n")).toContain(`collection:${c}`);
+    for (const c of ALL_COLLECTIONS) expect(ctx.statements.join("\n")).toContain(`collection:${c}`);
   });
 
   it("records migration history with stable checksums", async () => {
@@ -52,9 +51,7 @@ describe("production migrations", () => {
     const mgr = new MigrationManager(baselineMigrations, ctx);
     const applied = await mgr.migrate();
     for (const a of applied)
-      expect(a.checksum).toBe(
-        checksumOf(baselineMigrations.find((m) => m.version === a.version)!),
-      );
+      expect(a.checksum).toBe(checksumOf(baselineMigrations.find((m) => m.version === a.version)!));
     expect(await mgr.verify()).toEqual([]);
     expect(await mgr.currentVersion()).toBe(baselineMigrations.length);
   });
@@ -113,8 +110,9 @@ describe("production configuration enforcement", () => {
 
   it("allows in-memory drivers in development and test only", () => {
     expect(() => createPersistenceConfig({ environment: "development" })).not.toThrow();
-    expect(() => new PersistenceRuntime({ config: createPersistenceConfig({ environment: "test" }) }))
-      .not.toThrow();
+    expect(
+      () => new PersistenceRuntime({ config: createPersistenceConfig({ environment: "test" }) }),
+    ).not.toThrow();
   });
 
   it("requires structural clients for every production driver", () => {

@@ -26,6 +26,4 @@ export const COLLECTIONS = Object.freeze({
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
 
-export const ALL_COLLECTIONS: readonly CollectionName[] = Object.freeze(
-  Object.values(COLLECTIONS),
-);
+export const ALL_COLLECTIONS: readonly CollectionName[] = Object.freeze(Object.values(COLLECTIONS));

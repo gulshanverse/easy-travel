@@ -39,16 +39,10 @@ export class ObjectStorageManager {
     return this.driver.list(this.key(namespace, prefix));
   }
   async delete(namespace: string, key: string): Promise<boolean> {
-    return this.metrics.time("storage.delete", () =>
-      this.driver.delete(this.key(namespace, key)),
-    );
+    return this.metrics.time("storage.delete", () => this.driver.delete(this.key(namespace, key)));
   }
   async signedUrl(namespace: string, key: string, mode: "read" | "write"): Promise<SignedUrl> {
-    return this.driver.signedUrl(
-      this.key(namespace, key),
-      mode,
-      this.config.signedUrlTtlSeconds,
-    );
+    return this.driver.signedUrl(this.key(namespace, key), mode, this.config.signedUrlTtlSeconds);
   }
   async health(): Promise<AggregatedHealth> {
     const ok = await this.driver.healthy().catch(() => false);

@@ -81,10 +81,7 @@ export class MemoryStoreAdapter implements MemoryStore {
         if (filter.threadId !== undefined && row.threadId !== filter.threadId) return false;
         if (filter.journeyId !== undefined && row.journeyId !== filter.journeyId) return false;
         if (filter.tags?.length && !filter.tags.every((t) => row.tags.includes(t))) return false;
-        if (
-          filter.goalIds?.length &&
-          !(row.goalIds ?? []).some((g) => filter.goalIds!.includes(g))
-        )
+        if (filter.goalIds?.length && !(row.goalIds ?? []).some((g) => filter.goalIds!.includes(g)))
           return false;
         if (!filter.includeExpired && row.ttlExpiresAt && Date.parse(row.ttlExpiresAt) <= now)
           return false;

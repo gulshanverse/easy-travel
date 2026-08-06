@@ -63,8 +63,7 @@ export class PersistenceMetrics {
   }
   latency(name: string): LatencySummary {
     const list = [...(this.samples.get(name) ?? [])].sort((a, b) => a - b);
-    if (!list.length)
-      return { count: 0, totalMs: 0, minMs: 0, maxMs: 0, avgMs: 0, p95Ms: 0 };
+    if (!list.length) return { count: 0, totalMs: 0, minMs: 0, maxMs: 0, avgMs: 0, p95Ms: 0 };
     const total = list.reduce((a, b) => a + b, 0);
     const idx = Math.min(list.length - 1, Math.floor(list.length * 0.95));
     return {

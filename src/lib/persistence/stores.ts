@@ -105,10 +105,7 @@ export class AuditStore {
   private counter = 0;
   constructor(private readonly repo: Repository<Doc>) {}
 
-  async record(
-    entry: Omit<AuditEntry, "id" | "createdAt">,
-    now = new Date(),
-  ): Promise<AuditEntry> {
+  async record(entry: Omit<AuditEntry, "id" | "createdAt">, now = new Date()): Promise<AuditEntry> {
     this.counter += 1;
     const full: AuditEntry = Object.freeze({
       ...entry,

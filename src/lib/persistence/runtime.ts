@@ -152,7 +152,6 @@ export class PersistenceRuntime {
     return ALL_COLLECTIONS;
   }
 
-
   async health(): Promise<AggregatedHealth> {
     const [db, cache, storage] = await Promise.all([
       this.database.health(),
@@ -167,13 +166,9 @@ export class PersistenceRuntime {
   }
 }
 
-function buildDatabaseDriver(
-  cfg: PersistenceConfig,
-  o: PersistenceRuntimeOptions,
-): DatabaseDriver {
+function buildDatabaseDriver(cfg: PersistenceConfig, o: PersistenceRuntimeOptions): DatabaseDriver {
   if (cfg.database.driver === "postgres") {
-    if (!o.sqlClient)
-      throw new PersistenceConfigError("postgres driver requires a sqlClient");
+    if (!o.sqlClient) throw new PersistenceConfigError("postgres driver requires a sqlClient");
     return new PostgresDatabaseDriver(o.sqlClient);
   }
   return new InMemoryDatabaseDriver();
