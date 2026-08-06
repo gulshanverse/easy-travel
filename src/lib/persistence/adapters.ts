@@ -171,3 +171,28 @@ export const ADAPTER_COLLECTIONS = Object.freeze({
   travel: COLLECTIONS.travelRecords,
   notifications: COLLECTIONS.notifications,
 });
+
+/* ------------------------------------------------------------------ */
+/* Domain-specific document adapters                                   */
+/* ------------------------------------------------------------------ */
+
+/** Identity/profile documents (IPUP) → persistence repository. */
+export class IdentityStoreAdapter<T extends Doc = Doc> extends DocumentStoreAdapter<T> {
+  constructor(repo: Repository<Doc>, collection: string = COLLECTIONS.profiles) {
+    super(collection, repo);
+  }
+}
+
+/** Saved journeys / planning sessions → persistence repository. */
+export class JourneyStoreAdapter<T extends Doc = Doc> extends DocumentStoreAdapter<T> {
+  constructor(repo: Repository<Doc>, collection: string = COLLECTIONS.journeys) {
+    super(collection, repo);
+  }
+}
+
+/** Normalized multi-modal travel records → persistence repository. */
+export class TravelStoreAdapter<T extends Doc = Doc> extends DocumentStoreAdapter<T> {
+  constructor(repo: Repository<Doc>, collection: string = COLLECTIONS.travelRecords) {
+    super(collection, repo);
+  }
+}
