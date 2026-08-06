@@ -110,10 +110,37 @@ export class PersistenceRuntime {
   documentStore<T extends Record<string, unknown>>(collection: string): DocumentStoreAdapter<T> {
     return new DocumentStoreAdapter<T>(collection, this.repository(collection));
   }
+  identityStore<T extends Record<string, unknown>>(
+    collection: string = COLLECTIONS.profiles,
+  ): IdentityStoreAdapter<T> {
+    return new IdentityStoreAdapter<T>(this.repository(collection), collection);
+  }
+  journeyStore<T extends Record<string, unknown>>(
+    collection: string = COLLECTIONS.journeys,
+  ): JourneyStoreAdapter<T> {
+    return new JourneyStoreAdapter<T>(this.repository(collection), collection);
+  }
+  travelStore<T extends Record<string, unknown>>(
+    collection: string = COLLECTIONS.travelRecords,
+  ): TravelStoreAdapter<T> {
+    return new TravelStoreAdapter<T>(this.repository(collection), collection);
+  }
+
+  /** Optional persistence implementations (event sourcing, audit, outbox). */
+  events(): EventStore {
+    return (this.eventStore ??= new EventStore(this.repository(COLLECTIONS.events)));
+  }
+  audit(): AuditStore {
+    return (this.auditStore ??= new AuditStore(this.repository(COLLECTIONS.auditLogs)));
+  }
+  outbox(): OutboxStore {
+    return (this.outboxStore ??= new OutboxStore(this.repository(COLLECTIONS.outbox)));
+  }
 
   collections(): readonly string[] {
     return ALL_COLLECTIONS;
   }
+
 
   async health(): Promise<AggregatedHealth> {
     const [db, cache, storage] = await Promise.all([
