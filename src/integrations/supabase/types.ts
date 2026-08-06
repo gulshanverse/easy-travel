@@ -1671,6 +1671,201 @@ export type Database = {
         }
         Relationships: []
       }
+      persistence_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          after: Json | null
+          before: Json | null
+          collection: string
+          created_at: string
+          id: string
+          owner_id: string | null
+          record_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          collection: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          record_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          collection?: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          record_id?: string
+        }
+        Relationships: []
+      }
+      persistence_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          owner_id: string | null
+          payload: Json
+          sequence: number
+          stream: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          owner_id?: string | null
+          payload?: Json
+          sequence: number
+          stream: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          owner_id?: string | null
+          payload?: Json
+          sequence?: number
+          stream?: string
+        }
+        Relationships: []
+      }
+      persistence_migrations: {
+        Row: {
+          applied_at: string
+          checksum: string
+          id: string
+          version: number
+        }
+        Insert: {
+          applied_at?: string
+          checksum: string
+          id: string
+          version: number
+        }
+        Update: {
+          applied_at?: string
+          checksum?: string
+          id?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      persistence_objects: {
+        Row: {
+          bucket: string
+          content_type: string
+          created_at: string
+          etag: string
+          key: string
+          owner_id: string | null
+          size_bytes: number
+          updated_at: string
+        }
+        Insert: {
+          bucket: string
+          content_type: string
+          created_at?: string
+          etag: string
+          key: string
+          owner_id?: string | null
+          size_bytes: number
+          updated_at?: string
+        }
+        Update: {
+          bucket?: string
+          content_type?: string
+          created_at?: string
+          etag?: string
+          key?: string
+          owner_id?: string | null
+          size_bytes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      persistence_outbox: {
+        Row: {
+          attempts: number
+          available_at: string
+          created_at: string
+          id: string
+          last_error: string | null
+          payload: Json
+          status: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          available_at?: string
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          status?: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          available_at?: string
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          status?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      persistence_records: {
+        Row: {
+          collection: string
+          created_at: string
+          created_by: string | null
+          data: Json
+          deleted_at: string | null
+          id: string
+          owner_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          collection: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          deleted_at?: string | null
+          id: string
+          owner_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          collection?: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       places: {
         Row: {
           address: string | null
