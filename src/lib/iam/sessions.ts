@@ -167,8 +167,11 @@ export class SessionManager {
   }
 
   async historyFor(sessionId: string): Promise<readonly SessionHistoryEntry[]> {
-    return (await this.history.where((h) => h.sessionId === sessionId)).sort((a, b) => a.at - b.at);
+    return [...(await this.history.where((h) => h.sessionId === sessionId))].sort(
+      (a, b) => a.at - b.at,
+    );
   }
+
 
   async pruneExpired(at: number = this.now()): Promise<number> {
     const all = await this.sessions.all();
