@@ -406,6 +406,9 @@ export class AuthenticationManager {
       };
 
       if (!credential || !credential.secretHash) return fail("unknown_identifier");
+      const lifecycleState = (await this.lifecycle.stateOf(credential.userId)) ?? "active";
+      if (!isAuthenticatable(lifecycleState))
+        throw new AccountInactiveError(`account is ${lifecycleState}`);
       if (credential.status !== "active")
         throw new AccountInactiveError(`account is ${credential.status}`);
       if (!(await this.hasher.verify(input.password, credential.secretHash)))
@@ -425,10 +428,27 @@ export class AuthenticationManager {
         },
         this.config.loginSecurity.suspiciousRiskThreshold,
       );
+      const riskDecision: IdentityRiskDecision = await this.risk.evaluate({
+        userId: credential.userId,
+        unknownDevice: device !== null && device.firstSeenAt === device.lastSeenAt,
+        untrustedDevice: device !== null && device.trust !== "trusted",
+        newSession: true,
+        recentFailures: lockout.failures,
+        abnormalMovement: Boolean(input.country) && !knownCountries.includes(input.country as string),
+        accountStateAbnormal: lifecycleState !== "active",
+        credentialAgeMs: credential.passwordChangedAt ? started - credential.passwordChangedAt : null,
+        metadata: { ip: input.ip ?? null, country: input.country ?? null },
+      });
+      if (riskDecision.evaluation.level === "high" || riskDecision.evaluation.level === "critical")
+        this.events.emit("SecurityRiskDetected", credential.userId, {
+          level: riskDecision.evaluation.level,
+          score: riskDecision.evaluation.score,
+        });
       if (risk.suspicious) {
         this.metrics.inc(IAM_METRIC.suspiciousLogins);
         this.events.emit("SuspiciousLoginDetected", credential.userId, { factors: risk.factors });
       }
+
 
       const roles = await this.authorization.rolesFor(credential.userId, started);
       const session = await this.sessions.start({
