@@ -85,7 +85,17 @@ function normalize(identifier: string): string {
   return identifier.trim().toLowerCase();
 }
 
+const ACCOUNT_STATE_EVENTS: Partial<Record<AccountLifecycleState, IamEventKind>> = Object.freeze({
+  active: "AccountUnlocked",
+  suspended: "AccountSuspended",
+  disabled: "AccountDisabled",
+  locked: "AccountLocked",
+  deleted: "AccountDeleted",
+  archived: "AccountArchived",
+});
+
 export class AuthenticationManager {
+
   readonly credentials: CollectionStore<Credential>;
   readonly passwordHistory: CollectionStore<PasswordHistoryEntry>;
   readonly resetTokens: CollectionStore<PasswordResetToken>;
