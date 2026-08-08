@@ -26,3 +26,8 @@ export const newMfaEnrollmentId = () => next("mfa");
 export const newFederatedIdentityId = () => next("fed");
 export const newAuditId = () => next("aud");
 export const newIamEventId = () => next("iam");
+export const newAccountLifecycleId = () => next("acct");
+export const newAccountTransitionId = () => next("atr");
+export const newCredentialHistoryId = () => next("crh");
+export const newRiskEvaluationId = () => next("risk");
+
