@@ -7,6 +7,8 @@ import { SYSTEM_ROLES } from "./authorization";
 import { IamEventBus, type IamEventListener } from "./events";
 import { collectIamHealth, type IamHealthReport } from "./health";
 import { AuthenticationManager } from "./manager";
+import { SecurityEventPublisher } from "./outbox";
+
 import { IAM_METRIC, IamMetrics, type IamMetricsSnapshot } from "./metrics";
 import type { PasswordHasher } from "./password";
 import type { IamPorts } from "./ports";
