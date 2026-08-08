@@ -97,9 +97,13 @@ export class AuthenticationManager {
   readonly mfa: MfaManager;
   readonly federation: FederationManager;
   readonly loginSecurity: LoginSecurityManager;
+  readonly lifecycle: AccountLifecycleManager;
+  readonly credentialPlatform: CredentialManager;
+  readonly risk: IdentityRiskManager;
   readonly auditor: IamAuditor;
   readonly hasher: PasswordHasher;
   readonly validator: PasswordValidator;
+
 
   private readonly config: IamConfig;
   private readonly events: IamEventBus;
