@@ -8,8 +8,22 @@ import { ApiKeyManager } from "./apikeys";
 import { AuthorizationManager } from "./authorization";
 import { IAM_COLLECTIONS } from "./collections";
 import type { IamConfig } from "./config";
+import {
+  CredentialManager,
+  CredentialRegistry,
+  type CredentialVerifier,
+} from "./credentials";
 import { randomToken, sha256 } from "./crypto";
 import { DeviceManager, type DeviceProfileInput } from "./devices";
+import {
+  AccountLifecycleManager,
+  DEFAULT_ACCOUNT_LIFECYCLE_POLICY,
+  type AccountLifecycleRecord,
+  type AccountLifecycleState,
+  type AccountLifecycleTransition,
+} from "./lifecycle";
+import { IdentityRiskManager, type IdentityRiskDecision } from "./risk";
+
 import {
   AccountInactiveError,
   AccountLockedError,
