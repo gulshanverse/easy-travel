@@ -163,7 +163,42 @@ export class AuthenticationManager {
       storeFor(persistence, IAM_COLLECTIONS.loginAttempts, (a) => a.userId),
       this.clock,
     );
+    this.lifecycle = new AccountLifecycleManager(
+      storeFor(persistence, IAM_COLLECTIONS.accountLifecycle, (r) => r.userId),
+      storeFor(persistence, IAM_COLLECTIONS.accountLifecycleHistory, (h) => h.userId),
+      DEFAULT_ACCOUNT_LIFECYCLE_POLICY,
+      this.clock,
+    );
+    const registry = new CredentialRegistry();
+    registry.register({
+      type: "password",
+      materialize: (secret) => this.hasher.hash(secret),
+      verify: (secret, material) => this.hasher.verify(secret, material),
+    } satisfies CredentialVerifier);
+    registry.register({
+      type: "api_key",
+      materialize: (secret) => sha256(secret),
+      verify: async (secret, material) => (await sha256(secret)) === material,
+    } satisfies CredentialVerifier);
+    registry.register({
+      type: "service_account",
+      materialize: (secret) => sha256(secret),
+      verify: async (secret, material) => (await sha256(secret)) === material,
+    } satisfies CredentialVerifier);
+    this.credentialPlatform = new CredentialManager(
+      storeFor(persistence, IAM_COLLECTIONS.credentialStore, (c) => (c as { subjectId: string }).subjectId),
+      storeFor(persistence, IAM_COLLECTIONS.credentialHistory, (h) => h.subjectId),
+      registry,
+      undefined,
+      this.clock,
+    );
+    this.risk = new IdentityRiskManager(
+      storeFor(persistence, IAM_COLLECTIONS.riskEvaluations, (r) => r.userId),
+      undefined,
+      this.clock,
+    );
     this.auditor = new IamAuditor(deps.ports.audit, this.config.auditEnabled);
+
   }
 
   /* ------------------------------------------------------- credentials */
