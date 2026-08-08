@@ -267,9 +267,77 @@ export class AuthenticationManager {
     const credential = await this.requireCredentialByUser(userId);
     const next: Credential = Object.freeze({ ...credential, status: "active", updatedAt: this.clock() });
     await this.credentials.put(next);
+    const state = await this.lifecycle.stateOf(userId);
+    if (state !== "active") await this.changeAccountState(userId, "active", "activated", userId);
     this.events.emit("AccountActivated", userId);
     return next;
   }
+
+  /* -------------------------------------------------- account lifecycle */
+
+  /** Validated, audited account state transition. Illegal moves throw. */
+  async changeAccountState(
+    userId: string,
+    to: AccountLifecycleState,
+    reason: string | null = null,
+    actorId: string | null = null,
+  ): Promise<AccountLifecycleRecord> {
+    const result = await this.lifecycle.transition({ userId, to, reason, actorId });
+    if (to !== "active") await this.sessions.revokeAllForUser(userId, `account_${to}`);
+    if (to !== "active") await this.tokens.revokeForUser(userId, `account_${to}`);
+    const credential = await this.credentials.first((c) => c.userId === userId);
+    if (credential) {
+      const mapped =
+        to === "active" ? "active" : to === "locked" ? "locked" : to === "suspended" ? "suspended" : "deactivated";
+      await this.credentials.put(
+        Object.freeze({ ...credential, status: mapped as Credential["status"], updatedAt: this.clock() }),
+      );
+    }
+    this.events.emit("AccountLifecycleChanged", userId, {
+      from: result.transition.from,
+      to: result.transition.to,
+      reason,
+    }, { actorId });
+    const specific = ACCOUNT_STATE_EVENTS[to];
+    if (specific) this.events.emit(specific, userId, { reason }, { actorId });
+    if (result.securitySensitive) {
+      await this.auditor.record({
+        action: "security_event",
+        actorId,
+        subjectId: userId,
+        collection: IAM_COLLECTIONS.accountLifecycle,
+        recordId: result.record.id,
+        before: { state: result.transition.from },
+        after: { state: result.transition.to, reason },
+      });
+    }
+    return result.record;
+  }
+
+  suspendAccount(userId: string, reason = "suspended", actorId: string | null = null) {
+    return this.changeAccountState(userId, "suspended", reason, actorId);
+  }
+  disableAccount(userId: string, reason = "disabled", actorId: string | null = null) {
+    return this.changeAccountState(userId, "disabled", reason, actorId);
+  }
+  lockAccount(userId: string, reason = "locked", actorId: string | null = null) {
+    return this.changeAccountState(userId, "locked", reason, actorId);
+  }
+  unlockAccount(userId: string, reason = "unlocked", actorId: string | null = null) {
+    return this.changeAccountState(userId, "active", reason, actorId);
+  }
+  deleteAccount(userId: string, reason = "deleted", actorId: string | null = null) {
+    return this.changeAccountState(userId, "deleted", reason, actorId);
+  }
+  archiveAccount(userId: string, reason = "archived", actorId: string | null = null) {
+    return this.changeAccountState(userId, "archived", reason, actorId);
+  }
+
+  accountHistory(userId: string): Promise<readonly AccountLifecycleTransition[]> {
+    return this.lifecycle.historyFor(userId);
+  }
+
+
 
   async verifyEmail(userId: string): Promise<Credential> {
     const credential = await this.requireCredentialByUser(userId);
