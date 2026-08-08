@@ -19,6 +19,12 @@ export const IAM_COLLECTIONS = Object.freeze({
   loginAttempts: "iam_login_attempts",
   mfaEnrollments: "iam_mfa_enrollments",
   federatedIdentities: "iam_federated_identities",
+  accountLifecycle: "iam_account_lifecycle",
+  accountLifecycleHistory: "iam_account_lifecycle_history",
+  credentialStore: "iam_credential_store",
+  credentialHistory: "iam_credential_history",
+  riskEvaluations: "iam_risk_evaluations",
+
 } as const);
 
 export type IamCollection = (typeof IAM_COLLECTIONS)[keyof typeof IAM_COLLECTIONS];
