@@ -31,7 +31,7 @@ import {
   PasswordExpiredError,
   RateLimitError,
 } from "./errors";
-import { IamEventBus } from "./events";
+import { IamEventBus, type IamEventKind } from "./events";
 import { newCredentialId, newPasswordHistoryId, newResetTokenId } from "./ids";
 import { LoginSecurityManager, assessRisk } from "./login-security";
 import { IAM_METRIC, IamMetrics } from "./metrics";
