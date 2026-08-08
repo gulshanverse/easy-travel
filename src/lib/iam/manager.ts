@@ -21,6 +21,7 @@ import {
   type AccountLifecycleRecord,
   type AccountLifecycleState,
   type AccountLifecycleTransition,
+  isAuthenticatable,
 } from "./lifecycle";
 import { IdentityRiskManager, type IdentityRiskDecision } from "./risk";
 
