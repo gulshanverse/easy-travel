@@ -8,8 +8,23 @@ import { ApiKeyManager } from "./apikeys";
 import { AuthorizationManager } from "./authorization";
 import { IAM_COLLECTIONS } from "./collections";
 import type { IamConfig } from "./config";
+import {
+  CredentialManager,
+  CredentialRegistry,
+  type CredentialVerifier,
+} from "./credentials";
 import { randomToken, sha256 } from "./crypto";
 import { DeviceManager, type DeviceProfileInput } from "./devices";
+import {
+  AccountLifecycleManager,
+  DEFAULT_ACCOUNT_LIFECYCLE_POLICY,
+  type AccountLifecycleRecord,
+  type AccountLifecycleState,
+  type AccountLifecycleTransition,
+  isAuthenticatable,
+} from "./lifecycle";
+import { IdentityRiskManager, type IdentityRiskDecision } from "./risk";
+
 import {
   AccountInactiveError,
   AccountLockedError,
@@ -17,7 +32,7 @@ import {
   PasswordExpiredError,
   RateLimitError,
 } from "./errors";
-import { IamEventBus } from "./events";
+import { IamEventBus, type IamEventKind } from "./events";
 import { newCredentialId, newPasswordHistoryId, newResetTokenId } from "./ids";
 import { LoginSecurityManager, assessRisk } from "./login-security";
 import { IAM_METRIC, IamMetrics } from "./metrics";
@@ -71,7 +86,17 @@ function normalize(identifier: string): string {
   return identifier.trim().toLowerCase();
 }
 
+const ACCOUNT_STATE_EVENTS: Partial<Record<AccountLifecycleState, IamEventKind>> = Object.freeze({
+  active: "AccountUnlocked",
+  suspended: "AccountSuspended",
+  disabled: "AccountDisabled",
+  locked: "AccountLocked",
+  deleted: "AccountDeleted",
+  archived: "AccountArchived",
+});
+
 export class AuthenticationManager {
+
   readonly credentials: CollectionStore<Credential>;
   readonly passwordHistory: CollectionStore<PasswordHistoryEntry>;
   readonly resetTokens: CollectionStore<PasswordResetToken>;
@@ -83,9 +108,13 @@ export class AuthenticationManager {
   readonly mfa: MfaManager;
   readonly federation: FederationManager;
   readonly loginSecurity: LoginSecurityManager;
+  readonly lifecycle: AccountLifecycleManager;
+  readonly credentialPlatform: CredentialManager;
+  readonly risk: IdentityRiskManager;
   readonly auditor: IamAuditor;
   readonly hasher: PasswordHasher;
   readonly validator: PasswordValidator;
+
 
   private readonly config: IamConfig;
   private readonly events: IamEventBus;
@@ -145,7 +174,42 @@ export class AuthenticationManager {
       storeFor(persistence, IAM_COLLECTIONS.loginAttempts, (a) => a.userId),
       this.clock,
     );
+    this.lifecycle = new AccountLifecycleManager(
+      storeFor(persistence, IAM_COLLECTIONS.accountLifecycle, (r) => r.userId),
+      storeFor(persistence, IAM_COLLECTIONS.accountLifecycleHistory, (h) => h.userId),
+      DEFAULT_ACCOUNT_LIFECYCLE_POLICY,
+      this.clock,
+    );
+    const registry = new CredentialRegistry();
+    registry.register({
+      type: "password",
+      materialize: (secret) => this.hasher.hash(secret),
+      verify: (secret, material) => this.hasher.verify(secret, material),
+    } satisfies CredentialVerifier);
+    registry.register({
+      type: "api_key",
+      materialize: (secret) => sha256(secret),
+      verify: async (secret, material) => (await sha256(secret)) === material,
+    } satisfies CredentialVerifier);
+    registry.register({
+      type: "service_account",
+      materialize: (secret) => sha256(secret),
+      verify: async (secret, material) => (await sha256(secret)) === material,
+    } satisfies CredentialVerifier);
+    this.credentialPlatform = new CredentialManager(
+      storeFor(persistence, IAM_COLLECTIONS.credentialStore, (c) => (c as { subjectId: string }).subjectId),
+      storeFor(persistence, IAM_COLLECTIONS.credentialHistory, (h) => h.subjectId),
+      registry,
+      undefined,
+      this.clock,
+    );
+    this.risk = new IdentityRiskManager(
+      storeFor(persistence, IAM_COLLECTIONS.riskEvaluations, (r) => r.userId),
+      undefined,
+      this.clock,
+    );
     this.auditor = new IamAuditor(deps.ports.audit, this.config.auditEnabled);
+
   }
 
   /* ------------------------------------------------------- credentials */
@@ -182,6 +246,9 @@ export class AuthenticationManager {
       updatedAt: at,
     });
     await this.credentials.put(credential);
+    await this.lifecycle.ensure(input.userId, input.activated ? "active" : "pending");
+    this.events.emit("CredentialCreated", input.userId, { credentialId: credential.id, kind: "password" });
+
     await this.passwordHistory.put(
       Object.freeze({
         id: newPasswordHistoryId(),
@@ -211,9 +278,77 @@ export class AuthenticationManager {
     const credential = await this.requireCredentialByUser(userId);
     const next: Credential = Object.freeze({ ...credential, status: "active", updatedAt: this.clock() });
     await this.credentials.put(next);
+    const state = await this.lifecycle.stateOf(userId);
+    if (state !== "active") await this.changeAccountState(userId, "active", "activated", userId);
     this.events.emit("AccountActivated", userId);
     return next;
   }
+
+  /* -------------------------------------------------- account lifecycle */
+
+  /** Validated, audited account state transition. Illegal moves throw. */
+  async changeAccountState(
+    userId: string,
+    to: AccountLifecycleState,
+    reason: string | null = null,
+    actorId: string | null = null,
+  ): Promise<AccountLifecycleRecord> {
+    const result = await this.lifecycle.transition({ userId, to, reason, actorId });
+    if (to !== "active") await this.sessions.revokeAllForUser(userId, `account_${to}`);
+    if (to !== "active") await this.tokens.revokeForUser(userId, `account_${to}`);
+    const credential = await this.credentials.first((c) => c.userId === userId);
+    if (credential) {
+      const mapped =
+        to === "active" ? "active" : to === "locked" ? "locked" : to === "suspended" ? "suspended" : "deactivated";
+      await this.credentials.put(
+        Object.freeze({ ...credential, status: mapped as Credential["status"], updatedAt: this.clock() }),
+      );
+    }
+    this.events.emit("AccountLifecycleChanged", userId, {
+      from: result.transition.from,
+      to: result.transition.to,
+      reason,
+    }, { actorId });
+    const specific = ACCOUNT_STATE_EVENTS[to];
+    if (specific) this.events.emit(specific, userId, { reason }, { actorId });
+    if (result.securitySensitive) {
+      await this.auditor.record({
+        action: "security_event",
+        actorId,
+        subjectId: userId,
+        collection: IAM_COLLECTIONS.accountLifecycle,
+        recordId: result.record.id,
+        before: { state: result.transition.from },
+        after: { state: result.transition.to, reason },
+      });
+    }
+    return result.record;
+  }
+
+  suspendAccount(userId: string, reason = "suspended", actorId: string | null = null) {
+    return this.changeAccountState(userId, "suspended", reason, actorId);
+  }
+  disableAccount(userId: string, reason = "disabled", actorId: string | null = null) {
+    return this.changeAccountState(userId, "disabled", reason, actorId);
+  }
+  lockAccount(userId: string, reason = "locked", actorId: string | null = null) {
+    return this.changeAccountState(userId, "locked", reason, actorId);
+  }
+  unlockAccount(userId: string, reason = "unlocked", actorId: string | null = null) {
+    return this.changeAccountState(userId, "active", reason, actorId);
+  }
+  deleteAccount(userId: string, reason = "deleted", actorId: string | null = null) {
+    return this.changeAccountState(userId, "deleted", reason, actorId);
+  }
+  archiveAccount(userId: string, reason = "archived", actorId: string | null = null) {
+    return this.changeAccountState(userId, "archived", reason, actorId);
+  }
+
+  accountHistory(userId: string): Promise<readonly AccountLifecycleTransition[]> {
+    return this.lifecycle.historyFor(userId);
+  }
+
+
 
   async verifyEmail(userId: string): Promise<Credential> {
     const credential = await this.requireCredentialByUser(userId);
@@ -272,6 +407,9 @@ export class AuthenticationManager {
       };
 
       if (!credential || !credential.secretHash) return fail("unknown_identifier");
+      const lifecycleState = (await this.lifecycle.stateOf(credential.userId)) ?? "active";
+      if (!isAuthenticatable(lifecycleState))
+        throw new AccountInactiveError(`account is ${lifecycleState}`);
       if (credential.status !== "active")
         throw new AccountInactiveError(`account is ${credential.status}`);
       if (!(await this.hasher.verify(input.password, credential.secretHash)))
@@ -291,10 +429,27 @@ export class AuthenticationManager {
         },
         this.config.loginSecurity.suspiciousRiskThreshold,
       );
+      const riskDecision: IdentityRiskDecision = await this.risk.evaluate({
+        userId: credential.userId,
+        unknownDevice: device !== null && device.firstSeenAt === device.lastSeenAt,
+        untrustedDevice: device !== null && device.trust !== "trusted",
+        newSession: true,
+        recentFailures: lockout.failures,
+        abnormalMovement: Boolean(input.country) && !knownCountries.includes(input.country as string),
+        accountStateAbnormal: lifecycleState !== "active",
+        credentialAgeMs: credential.passwordChangedAt ? started - credential.passwordChangedAt : null,
+        metadata: { ip: input.ip ?? null, country: input.country ?? null },
+      });
+      if (riskDecision.evaluation.level === "high" || riskDecision.evaluation.level === "critical")
+        this.events.emit("SecurityRiskDetected", credential.userId, {
+          level: riskDecision.evaluation.level,
+          score: riskDecision.evaluation.score,
+        });
       if (risk.suspicious) {
         this.metrics.inc(IAM_METRIC.suspiciousLogins);
         this.events.emit("SuspiciousLoginDetected", credential.userId, { factors: risk.factors });
       }
+
 
       const roles = await this.authorization.rolesFor(credential.userId, started);
       const session = await this.sessions.start({

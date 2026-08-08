@@ -7,6 +7,8 @@ import { SYSTEM_ROLES } from "./authorization";
 import { IamEventBus, type IamEventListener } from "./events";
 import { collectIamHealth, type IamHealthReport } from "./health";
 import { AuthenticationManager } from "./manager";
+import { SecurityEventPublisher } from "./outbox";
+
 import { IAM_METRIC, IamMetrics, type IamMetricsSnapshot } from "./metrics";
 import type { PasswordHasher } from "./password";
 import type { IamPorts } from "./ports";
@@ -33,6 +35,7 @@ export class IamRuntime {
   readonly events = new IamEventBus();
   readonly metrics = new IamMetrics();
   readonly manager: AuthenticationManager;
+  readonly securityEvents: SecurityEventPublisher;
 
   constructor(options: IamRuntimeOptions) {
     this.config = createIamConfig(options.config ?? {});
@@ -48,7 +51,13 @@ export class IamRuntime {
       signingSecret: options.signingSecret,
       now: options.now,
     });
+    this.securityEvents = new SecurityEventPublisher({
+      eventStore: options.ports.eventStore,
+      outbox: options.ports.outbox,
+    });
+    this.securityEvents.attach(this.events);
   }
+
 
   /** Seeds the system role hierarchy. Idempotent; no business permissions. */
   async bootstrap(): Promise<void> {
