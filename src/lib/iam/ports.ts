@@ -74,6 +74,9 @@ export interface IamStudioPort {
 export interface IamPorts {
   readonly persistence?: IamPersistencePort;
   readonly audit?: IamAuditPort;
+  readonly eventStore?: IamEventStorePort;
+  readonly outbox?: IamOutboxPort;
+
   readonly identity?: IamIdentityPort;
   readonly workflow?: IamWorkflowPort;
   readonly agent?: IamAgentPort;
