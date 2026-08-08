@@ -37,7 +37,23 @@ export interface IamAuditPort {
   }): Promise<unknown>;
 }
 
+/** Event Store port backed by the P-1.1 append-only Event Store. */
+export interface IamEventStorePort {
+  append(input: {
+    stream: string;
+    eventType: string;
+    payload?: Readonly<Record<string, unknown>>;
+    ownerId?: string | null;
+  }): Promise<unknown>;
+}
+
+/** Transactional Outbox port backed by the P-1.1 Outbox Store. */
+export interface IamOutboxPort {
+  enqueue(topic: string, payload?: Readonly<Record<string, unknown>>): Promise<unknown>;
+}
+
 /** Identity Platform port — IAM extends identity, never duplicates it. */
+
 export interface IamIdentityPort {
   userExists(userId: string): Promise<boolean>;
   personalizationSuppressed?(userId: string): Promise<boolean>;
