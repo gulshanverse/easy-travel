@@ -235,6 +235,9 @@ export class AuthenticationManager {
       updatedAt: at,
     });
     await this.credentials.put(credential);
+    await this.lifecycle.ensure(input.userId, input.activated ? "active" : "pending");
+    this.events.emit("CredentialCreated", input.userId, { credentialId: credential.id, kind: "password" });
+
     await this.passwordHistory.put(
       Object.freeze({
         id: newPasswordHistoryId(),
