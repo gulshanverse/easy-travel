@@ -129,7 +129,6 @@ export class NotificationRuntime {
   }
 }
 
-type DigestResult = Awaited<ReturnType<NotificationManager["flushDigests"]>>[number];
 
 export function createNotificationRuntime(
   options: NotificationRuntimeOptions,
