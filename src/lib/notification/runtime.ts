@@ -79,8 +79,8 @@ export class NotificationRuntime {
   dispatchDue(now?: number): Promise<readonly Delivery[]> {
     return this.manager.dispatchDue(now);
   }
-  flushDigests(now?: number): Promise<readonly DigestResult> {
-    return this.manager.flushDigests(now) as unknown as Promise<readonly DigestResult>;
+  flushDigests(now?: number) {
+    return this.manager.flushDigests(now);
   }
   inbox(userId: string): Promise<readonly InAppItem[]> {
     return this.manager.listInbox(userId);
