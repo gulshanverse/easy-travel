@@ -25,6 +25,8 @@ import { renderTemplate, TemplateRegistry } from "./templates";
 import { BUILT_IN_TEMPLATES } from "./catalog";
 import { decideRetry } from "./retry";
 import { noopNotificationTelemetry, type NotificationTelemetrySink } from "./telemetry";
+import { SubscriptionRegistry, type SubscriptionRecord } from "./subscriptions";
+import { TemplateVersionStore, type TemplateVersionRecord } from "./versioning";
 import type {
   DeadLetter,
   Delivery,
