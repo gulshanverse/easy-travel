@@ -273,11 +273,14 @@ export class NotificationManager {
       });
 
       const rateVerdict = await this.limiter.check(input.userId, "all", at);
+      const unsubscribed = await this.subscriptions.isUnsubscribed(input.userId, input.category);
       const suppression = duplicate
         ? ("duplicate" as const)
-        : !rateVerdict.allowed && priority !== "critical"
-          ? ("rate_limited" as const)
-          : decision.suppression;
+        : unsubscribed
+          ? ("unsubscribed" as const)
+          : !rateVerdict.allowed && priority !== "critical"
+            ? ("rate_limited" as const)
+            : decision.suppression;
 
       const notBefore = input.notBefore ?? at;
       const state = suppression
