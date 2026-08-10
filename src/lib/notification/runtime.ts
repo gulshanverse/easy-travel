@@ -105,6 +105,9 @@ export class NotificationRuntime {
   deliveries(notificationId: string): Promise<readonly Delivery[]> {
     return this.manager.listDeliveries(notificationId);
   }
+  replayDeadLetter(id: string, now?: number): Promise<Delivery | undefined> {
+    return this.manager.replayDeadLetter(id, now);
+  }
   snapshot(): Promise<NotificationSnapshot> {
     return this.manager.snapshot();
   }
