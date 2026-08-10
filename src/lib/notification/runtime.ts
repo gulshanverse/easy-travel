@@ -173,7 +173,6 @@ export class NotificationRuntime {
   }
 }
 
-
 export function createNotificationRuntime(
   options: NotificationRuntimeOptions,
 ): NotificationRuntime {

@@ -5,7 +5,12 @@
  * always injected. The platform ships mock adapters (ADR-030: mock providers
  * are first-class) and never imports a vendor SDK.
  */
-import type { NotificationRecipient, NotificationChannel, NotificationPriority, RenderedMessage } from "./types";
+import type {
+  NotificationRecipient,
+  NotificationChannel,
+  NotificationPriority,
+  RenderedMessage,
+} from "./types";
 import type { FailureKind } from "./types";
 
 export interface ChannelSendRequest {

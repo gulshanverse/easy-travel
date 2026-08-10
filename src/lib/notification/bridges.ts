@@ -72,9 +72,7 @@ export interface IdentityBridgeSources {
 }
 
 /** Builds an identity port from Identity Platform readers. */
-export function identityPortFromIdentity(
-  sources: IdentityBridgeSources,
-): NotificationIdentityPort {
+export function identityPortFromIdentity(sources: IdentityBridgeSources): NotificationIdentityPort {
   return {
     recipient: (userId) => sources.recipient(userId),
     async preferences(userId) {
@@ -106,64 +104,63 @@ export interface SecurityNotificationMapping {
 }
 
 /** Security events that are *always* delivered — they bypass preferences. */
-export const IAM_SECURITY_NOTIFICATIONS: Readonly<
-  Record<string, SecurityNotificationMapping>
-> = Object.freeze({
-  AccountLocked: {
-    type: "security.account_locked",
-    templateId: "security.account_alert",
-    priority: "critical",
-    title: "Your account was locked",
-  },
-  AccountUnlocked: {
-    type: "security.account_unlocked",
-    templateId: "security.account_alert",
-    priority: "high",
-    title: "Your account was unlocked",
-  },
-  PasswordChanged: {
-    type: "security.password_changed",
-    templateId: "security.account_alert",
-    priority: "high",
-    title: "Your password was changed",
-  },
-  PasswordResetRequested: {
-    type: "security.password_reset",
-    templateId: "security.account_alert",
-    priority: "high",
-    title: "A password reset was requested",
-  },
-  TokenReuseDetected: {
-    type: "security.token_reuse",
-    templateId: "security.account_alert",
-    priority: "critical",
-    title: "Suspicious session activity detected",
-  },
-  SuspiciousLoginDetected: {
-    type: "security.suspicious_login",
-    templateId: "security.account_alert",
-    priority: "critical",
-    title: "Suspicious sign-in blocked",
-  },
-  SecurityRiskDetected: {
-    type: "security.risk",
-    templateId: "security.account_alert",
-    priority: "high",
-    title: "Unusual activity on your account",
-  },
-  DeviceRegistered: {
-    type: "security.device_registered",
-    templateId: "security.account_alert",
-    priority: "normal",
-    title: "A new device was added",
-  },
-  MfaEnrolled: {
-    type: "security.mfa_enrolled",
-    templateId: "security.account_alert",
-    priority: "normal",
-    title: "Two-factor authentication enabled",
-  },
-});
+export const IAM_SECURITY_NOTIFICATIONS: Readonly<Record<string, SecurityNotificationMapping>> =
+  Object.freeze({
+    AccountLocked: {
+      type: "security.account_locked",
+      templateId: "security.account_alert",
+      priority: "critical",
+      title: "Your account was locked",
+    },
+    AccountUnlocked: {
+      type: "security.account_unlocked",
+      templateId: "security.account_alert",
+      priority: "high",
+      title: "Your account was unlocked",
+    },
+    PasswordChanged: {
+      type: "security.password_changed",
+      templateId: "security.account_alert",
+      priority: "high",
+      title: "Your password was changed",
+    },
+    PasswordResetRequested: {
+      type: "security.password_reset",
+      templateId: "security.account_alert",
+      priority: "high",
+      title: "A password reset was requested",
+    },
+    TokenReuseDetected: {
+      type: "security.token_reuse",
+      templateId: "security.account_alert",
+      priority: "critical",
+      title: "Suspicious session activity detected",
+    },
+    SuspiciousLoginDetected: {
+      type: "security.suspicious_login",
+      templateId: "security.account_alert",
+      priority: "critical",
+      title: "Suspicious sign-in blocked",
+    },
+    SecurityRiskDetected: {
+      type: "security.risk",
+      templateId: "security.account_alert",
+      priority: "high",
+      title: "Unusual activity on your account",
+    },
+    DeviceRegistered: {
+      type: "security.device_registered",
+      templateId: "security.account_alert",
+      priority: "normal",
+      title: "A new device was added",
+    },
+    MfaEnrolled: {
+      type: "security.mfa_enrolled",
+      templateId: "security.account_alert",
+      priority: "normal",
+      title: "Two-factor authentication enabled",
+    },
+  });
 
 /** Template used by every IAM security bridge notification. */
 export const SECURITY_BRIDGE_TEMPLATES: readonly NotificationTemplate[] = Object.freeze([
@@ -228,7 +225,15 @@ export function bridgeIamSecurityEvents(
 /** Emits workflow signals for terminal notification outcomes. */
 export function workflowSignalBridge(
   workflow: NotificationWorkflowPort,
-  events: { on(listener: (event: { kind: string; userId: string | null; notificationId: string | null }) => void): () => void },
+  events: {
+    on(
+      listener: (event: {
+        kind: string;
+        userId: string | null;
+        notificationId: string | null;
+      }) => void,
+    ): () => void;
+  },
   kinds: readonly string[] = [
     "NotificationSent",
     "NotificationDelivered",

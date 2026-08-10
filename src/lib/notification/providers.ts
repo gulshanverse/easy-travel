@@ -5,7 +5,13 @@
  * platform is verified against, and they behave identically on every run.
  */
 import { fingerprint } from "./ids";
-import { fail, ok, type ChannelAdapter, type ChannelSendRequest, type ChannelSendResult } from "./channels";
+import {
+  fail,
+  ok,
+  type ChannelAdapter,
+  type ChannelSendRequest,
+  type ChannelSendResult,
+} from "./channels";
 import { isValidEmail, isValidPhone, maskAddress } from "./security";
 import type { FailureKind, NotificationChannel, NotificationRecipient } from "./types";
 
@@ -43,7 +49,10 @@ abstract class BaseMockAdapter implements ChannelAdapter {
   protected injectedFailure(request: ChannelSendRequest): ChannelSendResult | null {
     const every = this.options.failEvery ?? 0;
     if (every <= 0) return null;
-    const hash = parseInt(fingerprint(`${this.id}:${request.notificationId}:${request.attempt}`), 16);
+    const hash = parseInt(
+      fingerprint(`${this.id}:${request.notificationId}:${request.attempt}`),
+      16,
+    );
     if (hash % every !== 0) return null;
     return fail(
       this.id,

@@ -61,7 +61,8 @@ export class DeduplicationEngine {
       id,
       userId,
       key,
-      notificationId: existing && existing.expiresAt > at ? existing.notificationId : notificationId,
+      notificationId:
+        existing && existing.expiresAt > at ? existing.notificationId : notificationId,
       firstSeenAt: existing && existing.expiresAt > at ? existing.firstSeenAt : at,
       expiresAt: at + this.windowMs,
       hits: existing && existing.expiresAt > at ? existing.hits + 1 : 1,

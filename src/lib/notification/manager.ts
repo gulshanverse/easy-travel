@@ -96,7 +96,8 @@ export class NotificationManager {
     }
     this.clock = options.now ?? (() => Date.now());
     this.telemetry = options.telemetry ?? noopNotificationTelemetry;
-    this.templates = options.templates ?? new TemplateRegistry(options.config.fallbackLocale, BUILT_IN_TEMPLATES);
+    this.templates =
+      options.templates ?? new TemplateRegistry(options.config.fallbackLocale, BUILT_IN_TEMPLATES);
     this.channels = options.channels ?? new ChannelRegistry();
     this.notifications = notificationStoreFor<Notification>(
       persistence,
@@ -112,20 +113,36 @@ export class NotificationManager {
       notificationStoreFor<InAppItem>(persistence, NOTIFICATION_COLLECTIONS.inApp, (i) => i.userId),
     );
     this.digests = new DigestEngine(
-      notificationStoreFor<DigestBucket>(persistence, NOTIFICATION_COLLECTIONS.digests, (d) => d.userId),
+      notificationStoreFor<DigestBucket>(
+        persistence,
+        NOTIFICATION_COLLECTIONS.digests,
+        (d) => d.userId,
+      ),
     );
     this.deadLetters = new DeadLetterQueue(
-      notificationStoreFor<DeadLetter>(persistence, NOTIFICATION_COLLECTIONS.deadLetters, (d) => d.userId),
+      notificationStoreFor<DeadLetter>(
+        persistence,
+        NOTIFICATION_COLLECTIONS.deadLetters,
+        (d) => d.userId,
+      ),
     );
     this.dedupe = new DeduplicationEngine(
-      notificationStoreFor<DedupeRecord>(persistence, NOTIFICATION_COLLECTIONS.dedupe, (d) => d.userId),
+      notificationStoreFor<DedupeRecord>(
+        persistence,
+        NOTIFICATION_COLLECTIONS.dedupe,
+        (d) => d.userId,
+      ),
       options.config.dedupeWindowMs,
     );
     this.idempotency = new IdempotencyEngine(
       notificationStoreFor<IdempotencyRecord>(persistence, NOTIFICATION_COLLECTIONS.idempotency),
     );
     this.limiter = new RateLimiter(
-      notificationStoreFor<RateWindowRecord>(persistence, NOTIFICATION_COLLECTIONS.rateWindows, (r) => r.userId),
+      notificationStoreFor<RateWindowRecord>(
+        persistence,
+        NOTIFICATION_COLLECTIONS.rateWindows,
+        (r) => r.userId,
+      ),
       options.config.rateLimit.windowMs,
       options.config.rateLimit.maxPerWindow,
       options.config.rateLimit.maxPerChannelPerWindow,
@@ -153,7 +170,11 @@ export class NotificationManager {
     this.events.emit({
       kind: "TemplateRegistered",
       at,
-      payload: { templateId: registered.id, locale: registered.locale, version: registered.version },
+      payload: {
+        templateId: registered.id,
+        locale: registered.locale,
+        version: registered.version,
+      },
     });
     return registered;
   }
@@ -257,7 +278,8 @@ export class NotificationManager {
       const marketingSuppressed =
         (await this.options.ports.identity?.marketingSuppressed?.(input.userId)) ?? false;
 
-      const dedupeKey = input.dedupeKey ?? dedupeKeyFor({ userId: input.userId, type: input.type, variables });
+      const dedupeKey =
+        input.dedupeKey ?? dedupeKeyFor({ userId: input.userId, type: input.type, variables });
       const duplicate = await this.dedupe.check(input.userId, dedupeKey, at);
 
       const decision = route({
@@ -380,7 +402,10 @@ export class NotificationManager {
     });
   }
 
-  private async enqueueDeliveries(notification: Notification, at: number): Promise<readonly Delivery[]> {
+  private async enqueueDeliveries(
+    notification: Notification,
+    at: number,
+  ): Promise<readonly Delivery[]> {
     const created: Delivery[] = [];
     for (const channel of notification.channels) {
       const delivery: Delivery = Object.freeze({
@@ -420,14 +445,18 @@ export class NotificationManager {
   /** Sends every delivery that is due. Safe to call repeatedly (idempotent). */
   async dispatchDue(now?: number): Promise<readonly Delivery[]> {
     const at = now ?? this.clock();
-    const due = (await this.deliveries.where(
-      (d) =>
-        (d.state === "pending" || d.state === "failed") &&
-        (d.nextAttemptAt === null || d.nextAttemptAt <= at),
-    )).slice(0, this.config.maxBatchSize);
+    const due = (
+      await this.deliveries.where(
+        (d) =>
+          (d.state === "pending" || d.state === "failed") &&
+          (d.nextAttemptAt === null || d.nextAttemptAt <= at),
+      )
+    ).slice(0, this.config.maxBatchSize);
 
     const results: Delivery[] = [];
-    for (const delivery of [...due].sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id))) {
+    for (const delivery of [...due].sort(
+      (a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id),
+    )) {
       results.push(await this.dispatchOne(delivery, at));
     }
     return Object.freeze(results);
@@ -445,7 +474,15 @@ export class NotificationManager {
     const attemptNumber = delivery.attempts.length + 1;
 
     if (!adapter) {
-      return this.handleFailure(notification, delivery, attemptNumber, "permanent", "no channel adapter", at, 0);
+      return this.handleFailure(
+        notification,
+        delivery,
+        attemptNumber,
+        "permanent",
+        "no channel adapter",
+        at,
+        0,
+      );
     }
 
     let message;
@@ -461,7 +498,13 @@ export class NotificationManager {
     } catch (error) {
       this.metrics.inc(NCP_METRIC.renderFailed);
       return this.handleFailure(
-        notification, delivery, attemptNumber, "render_error", String(error), at, 0,
+        notification,
+        delivery,
+        attemptNumber,
+        "render_error",
+        String(error),
+        at,
+        0,
       );
     }
 
@@ -533,7 +576,9 @@ export class NotificationManager {
     notification: Notification,
     delivery: Delivery,
     attemptNumber: number,
-    failureKind: DeliveryAttempt["failureKind"] extends null ? never : NonNullable<DeliveryAttempt["failureKind"]>,
+    failureKind: DeliveryAttempt["failureKind"] extends null
+      ? never
+      : NonNullable<DeliveryAttempt["failureKind"]>,
     detail: string,
     at: number,
     durationMs: number,
@@ -621,9 +666,15 @@ export class NotificationManager {
     return frozen;
   }
 
-  private async refreshNotificationState(notification: Notification, at: number): Promise<Notification> {
+  private async refreshNotificationState(
+    notification: Notification,
+    at: number,
+  ): Promise<Notification> {
     const deliveries = await this.deliveries.where((d) => d.notificationId === notification.id);
-    const state = aggregateState(notification.state, deliveries.map((d) => d.state));
+    const state = aggregateState(
+      notification.state,
+      deliveries.map((d) => d.state),
+    );
     if (state === notification.state) return notification;
     const next = Object.freeze({ ...notification, state, updatedAt: at });
     await this.notifications.put(next);
@@ -723,10 +774,17 @@ export class NotificationManager {
     await this.notifications.put(next);
     for (const delivery of await this.listDeliveries(notificationId)) {
       if (delivery.state === "pending" || delivery.state === "failed") {
-        await this.deliveries.put(Object.freeze({ ...delivery, state: "skipped" as const, updatedAt: at }));
+        await this.deliveries.put(
+          Object.freeze({ ...delivery, state: "skipped" as const, updatedAt: at }),
+        );
       }
     }
-    this.events.emit({ kind: "NotificationCancelled", at, userId: notification.recipient.userId, notificationId });
+    this.events.emit({
+      kind: "NotificationCancelled",
+      at,
+      userId: notification.recipient.userId,
+      notificationId,
+    });
     return next;
   }
 

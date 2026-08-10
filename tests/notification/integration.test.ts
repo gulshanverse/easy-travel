@@ -152,10 +152,17 @@ describe("ncp integration bridges", () => {
 
   it("translates identity settings into preference records", async () => {
     const prefs = preferencesFromIdentitySettings({
-      email: true, sms: false, push: true, inApp: true,
-      reminders: true, workflowAlerts: false, delayAlerts: true,
-      priceAlerts: false, weatherAlerts: false,
-      frequency: "instant", quietHours: null,
+      email: true,
+      sms: false,
+      push: true,
+      inApp: true,
+      reminders: true,
+      workflowAlerts: false,
+      delayAlerts: true,
+      priceAlerts: false,
+      weatherAlerts: false,
+      frequency: "instant",
+      quietHours: null,
     });
     expect(prefs.channels).toEqual(["in_app", "email", "push"]);
     expect(prefs.categories.workflow).toBe(false);
@@ -167,10 +174,17 @@ describe("ncp integration bridges", () => {
       },
       async settings() {
         return {
-          email: true, sms: true, push: false, inApp: true,
-          reminders: false, workflowAlerts: true, delayAlerts: true,
-          priceAlerts: true, weatherAlerts: true,
-          frequency: "daily", quietHours: { startHour: 22, endHour: 7 },
+          email: true,
+          sms: true,
+          push: false,
+          inApp: true,
+          reminders: false,
+          workflowAlerts: true,
+          delayAlerts: true,
+          priceAlerts: true,
+          weatherAlerts: true,
+          frequency: "daily",
+          quietHours: { startHour: 22, endHour: 7 },
         };
       },
     });

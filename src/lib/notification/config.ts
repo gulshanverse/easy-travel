@@ -72,7 +72,10 @@ export function createNotificationConfig(
     ...DEFAULT_NOTIFICATION_CONFIG,
     ...patch,
     retry: Object.freeze({ ...DEFAULT_NOTIFICATION_CONFIG.retry, ...(patch.retry ?? {}) }),
-    rateLimit: Object.freeze({ ...DEFAULT_NOTIFICATION_CONFIG.rateLimit, ...(patch.rateLimit ?? {}) }),
+    rateLimit: Object.freeze({
+      ...DEFAULT_NOTIFICATION_CONFIG.rateLimit,
+      ...(patch.rateLimit ?? {}),
+    }),
     channels: Object.freeze([...(patch.channels ?? DEFAULT_NOTIFICATION_CONFIG.channels)]),
     quietHoursBypass: Object.freeze([
       ...(patch.quietHoursBypass ?? DEFAULT_NOTIFICATION_CONFIG.quietHoursBypass),

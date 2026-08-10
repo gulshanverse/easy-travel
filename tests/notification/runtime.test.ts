@@ -40,7 +40,14 @@ function ports(overrides: Partial<NotificationPorts> = {}): NotificationPorts {
   };
 }
 
-function runtime(adapters = [new MockInAppAdapter(), new MockEmailAdapter(), new MockPushAdapter(), new MockSmsAdapter()]) {
+function runtime(
+  adapters = [
+    new MockInAppAdapter(),
+    new MockEmailAdapter(),
+    new MockPushAdapter(),
+    new MockSmsAdapter(),
+  ],
+) {
   return new NotificationRuntime({ ports: ports(), adapters });
 }
 
@@ -77,12 +84,18 @@ describe("notification runtime", () => {
   it("returns the same notification for a repeated idempotency key", async () => {
     const rt = runtime();
     const a = await rt.notify({
-      userId: "u1", type: "journey.reminder", category: "reminder",
-      variables: { title: "Pack", when: "tonight" }, idempotencyKey: "k1",
+      userId: "u1",
+      type: "journey.reminder",
+      category: "reminder",
+      variables: { title: "Pack", when: "tonight" },
+      idempotencyKey: "k1",
     });
     const b = await rt.notify({
-      userId: "u1", type: "journey.reminder", category: "reminder",
-      variables: { title: "Pack", when: "tonight" }, idempotencyKey: "k1",
+      userId: "u1",
+      type: "journey.reminder",
+      category: "reminder",
+      variables: { title: "Pack", when: "tonight" },
+      idempotencyKey: "k1",
     });
     expect(b.id).toBe(a.id);
   });
@@ -90,7 +103,9 @@ describe("notification runtime", () => {
   it("marks in-app items read", async () => {
     const rt = runtime();
     await rt.notify({
-      userId: "u1", type: "agent.suggestion", category: "agent",
+      userId: "u1",
+      type: "agent.suggestion",
+      category: "agent",
       variables: { headline: "Try the night train" },
     });
     await rt.dispatchDue();
@@ -102,12 +117,17 @@ describe("notification runtime", () => {
   it("retries transient failures then dead-letters", async () => {
     const rt = new NotificationRuntime({
       ports: ports(),
-      config: { retry: { maxAttempts: 2, baseDelayMs: 0, maxDelayMs: 0, factor: 1, jitterRatio: 0 } },
+      config: {
+        retry: { maxAttempts: 2, baseDelayMs: 0, maxDelayMs: 0, factor: 1, jitterRatio: 0 },
+      },
       adapters: [new MockInAppAdapter({ failEvery: 1, failureKind: "transient" })],
     });
     const n = await rt.notify({
-      userId: "u1", type: "workflow.status", category: "workflow",
-      channels: ["in_app"], variables: { workflow: "Rebooking", status: "running" },
+      userId: "u1",
+      type: "workflow.status",
+      category: "workflow",
+      channels: ["in_app"],
+      variables: { workflow: "Rebooking", status: "running" },
     });
     await rt.dispatchDue();
     await rt.dispatchDue();
@@ -119,15 +139,25 @@ describe("notification runtime", () => {
   it("honours quiet hours except for critical priority", async () => {
     const quiet = { ...DEFAULT_PREFERENCES, quietHours: { startHour: 22, endHour: 7 } };
     const normal = route({
-      preferences: quiet, category: "price", priority: "normal",
-      requestedChannels: ["push"], enabledChannels: ["in_app", "push"],
-      availableChannels: ["in_app", "push"], quietHoursBypass: ["critical"], hour: 23,
+      preferences: quiet,
+      category: "price",
+      priority: "normal",
+      requestedChannels: ["push"],
+      enabledChannels: ["in_app", "push"],
+      availableChannels: ["in_app", "push"],
+      quietHoursBypass: ["critical"],
+      hour: 23,
     });
     expect(normal.suppression).toBe("quiet_hours");
     const critical = route({
-      preferences: quiet, category: "security", priority: "critical",
-      requestedChannels: ["push"], enabledChannels: ["in_app", "push"],
-      availableChannels: ["in_app", "push"], quietHoursBypass: ["critical"], hour: 23,
+      preferences: quiet,
+      category: "security",
+      priority: "critical",
+      requestedChannels: ["push"],
+      enabledChannels: ["in_app", "push"],
+      availableChannels: ["in_app", "push"],
+      quietHoursBypass: ["critical"],
+      hour: 23,
     });
     expect(critical.allowed).toBe(true);
   });
@@ -135,9 +165,14 @@ describe("notification runtime", () => {
   it("never suppresses mandatory security categories", () => {
     const off = { ...DEFAULT_PREFERENCES, categories: { security: false } };
     const decision = route({
-      preferences: off, category: "security", priority: "critical",
-      requestedChannels: [], enabledChannels: ["in_app", "email"],
-      availableChannels: ["in_app", "email"], quietHoursBypass: ["critical"], hour: 10,
+      preferences: off,
+      category: "security",
+      priority: "critical",
+      requestedChannels: [],
+      enabledChannels: ["in_app", "email"],
+      availableChannels: ["in_app", "email"],
+      quietHoursBypass: ["critical"],
+      hour: 10,
     });
     expect(decision.allowed).toBe(true);
   });
@@ -145,11 +180,20 @@ describe("notification runtime", () => {
   it("renders deterministically and enforces required variables", () => {
     const registry = new TemplateRegistry("en", BUILT_IN_TEMPLATES);
     const template = registry.resolve("security.login_alert", "en");
-    const a = renderTemplate({ template, channel: "email", variables: { device: "iPhone", city: "Oslo" } });
-    const b = renderTemplate({ template, channel: "email", variables: { device: "iPhone", city: "Oslo" } });
+    const a = renderTemplate({
+      template,
+      channel: "email",
+      variables: { device: "iPhone", city: "Oslo" },
+    });
+    const b = renderTemplate({
+      template,
+      channel: "email",
+      variables: { device: "iPhone", city: "Oslo" },
+    });
     expect(a.fingerprint).toBe(b.fingerprint);
-    expect(() => renderTemplate({ template, channel: "email", variables: { device: "iPhone" } }))
-      .toThrow(MissingVariableError);
+    expect(() =>
+      renderTemplate({ template, channel: "email", variables: { device: "iPhone" } }),
+    ).toThrow(MissingVariableError);
   });
 
   it("falls back to the default locale when a translation is missing", () => {
@@ -174,8 +218,11 @@ describe("notification runtime", () => {
     for (let i = 0; i < 4; i++) {
       results.push(
         await rt.notify({
-          userId: "u1", type: "journey.price_drop", category: "price",
-          channels: ["in_app"], variables: { route: `R${i}`, price: `$${i}` },
+          userId: "u1",
+          type: "journey.price_drop",
+          category: "price",
+          channels: ["in_app"],
+          variables: { route: `R${i}`, price: `$${i}` },
         }),
       );
     }
@@ -191,7 +238,10 @@ describe("notification runtime", () => {
   it("cancels a queued notification", async () => {
     const rt = runtime();
     const n = await rt.notify({
-      userId: "u1", type: "system.digest", category: "system", variables: { count: 3 },
+      userId: "u1",
+      type: "system.digest",
+      category: "system",
+      variables: { count: 3 },
     });
     const cancelled = await rt.cancel(n.id);
     expect(cancelled?.state).toBe("cancelled");
