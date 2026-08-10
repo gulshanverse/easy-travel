@@ -19,8 +19,12 @@ export function escapeHtml(value: string): string {
 
 /** Strips control characters and collapses whitespace runs. */
 export function sanitizeText(value: string): string {
-  // eslint-disable-next-line no-control-regex
-  return value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").replace(/[ \t]+/g, " ");
+  return (
+    value
+      // eslint-disable-next-line no-control-regex -- stripping control chars is the point
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
+      .replace(/[ \t]+/g, " ")
+  );
 }
 
 export function truncate(value: string, max: number): string {

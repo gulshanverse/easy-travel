@@ -115,8 +115,10 @@ function orderChannels(
     [...new Set(channels)].sort((a, b) => {
       const ai = order.indexOf(a);
       const bi = order.indexOf(b);
-      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) ||
-        NOTIFICATION_CHANNELS.indexOf(a) - NOTIFICATION_CHANNELS.indexOf(b);
+      return (
+        (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) ||
+        NOTIFICATION_CHANNELS.indexOf(a) - NOTIFICATION_CHANNELS.indexOf(b)
+      );
     }),
   );
 }

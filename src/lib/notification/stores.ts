@@ -4,11 +4,7 @@
  * All notification state lives in the Persistence Platform. Nothing here
  * keeps authoritative in-memory state.
  */
-import type {
-  NotificationDoc,
-  NotificationPersistencePort,
-  NotificationRepository,
-} from "./ports";
+import type { NotificationDoc, NotificationPersistencePort, NotificationRepository } from "./ports";
 
 export class NotificationStore<T extends { id: string }> {
   constructor(

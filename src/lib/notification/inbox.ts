@@ -41,11 +41,16 @@ export class InAppInbox {
     return this.store.put(item);
   }
 
-  async list(userId: string, options: { includeArchived?: boolean } = {}): Promise<readonly InAppItem[]> {
+  async list(
+    userId: string,
+    options: { includeArchived?: boolean } = {},
+  ): Promise<readonly InAppItem[]> {
     const items = await this.store.where(
       (i) => i.userId === userId && (options.includeArchived === true || i.archivedAt === null),
     );
-    return Object.freeze([...items].sort((a, b) => b.createdAt - a.createdAt || a.id.localeCompare(b.id)));
+    return Object.freeze(
+      [...items].sort((a, b) => b.createdAt - a.createdAt || a.id.localeCompare(b.id)),
+    );
   }
 
   async unreadCount(userId: string): Promise<number> {
@@ -114,7 +119,9 @@ export class DigestEngine {
 
   async due(at: number): Promise<readonly DigestBucket[]> {
     const buckets = await this.store.where((b) => b.flushedAt === null && b.flushAt <= at);
-    return Object.freeze([...buckets].sort((a, b) => a.flushAt - b.flushAt || a.id.localeCompare(b.id)));
+    return Object.freeze(
+      [...buckets].sort((a, b) => a.flushAt - b.flushAt || a.id.localeCompare(b.id)),
+    );
   }
 
   async flush(bucket: DigestBucket, at: number): Promise<DigestBucket> {

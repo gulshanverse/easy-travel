@@ -4,20 +4,21 @@
 import { InvalidLifecycleTransitionError } from "./errors";
 import type { DeliveryState, NotificationLifecycleState } from "./types";
 
-const TRANSITIONS: Readonly<Record<NotificationLifecycleState, readonly NotificationLifecycleState[]>> =
-  Object.freeze({
-    created: Object.freeze(["scheduled", "queued", "suppressed", "cancelled"]),
-    suppressed: Object.freeze([]),
-    scheduled: Object.freeze(["queued", "cancelled", "suppressed"]),
-    queued: Object.freeze(["sending", "cancelled", "failed"]),
-    sending: Object.freeze(["sent", "failed", "queued"]),
-    sent: Object.freeze(["delivered", "read", "failed"]),
-    delivered: Object.freeze(["read"]),
-    read: Object.freeze([]),
-    failed: Object.freeze(["queued", "dead_lettered", "cancelled"]),
-    dead_lettered: Object.freeze(["queued"]),
-    cancelled: Object.freeze([]),
-  } as Record<NotificationLifecycleState, readonly NotificationLifecycleState[]>);
+const TRANSITIONS: Readonly<
+  Record<NotificationLifecycleState, readonly NotificationLifecycleState[]>
+> = Object.freeze({
+  created: Object.freeze(["scheduled", "queued", "suppressed", "cancelled"]),
+  suppressed: Object.freeze([]),
+  scheduled: Object.freeze(["queued", "cancelled", "suppressed"]),
+  queued: Object.freeze(["sending", "cancelled", "failed"]),
+  sending: Object.freeze(["sent", "failed", "queued"]),
+  sent: Object.freeze(["delivered", "read", "failed"]),
+  delivered: Object.freeze(["read"]),
+  read: Object.freeze([]),
+  failed: Object.freeze(["queued", "dead_lettered", "cancelled"]),
+  dead_lettered: Object.freeze(["queued"]),
+  cancelled: Object.freeze([]),
+} as Record<NotificationLifecycleState, readonly NotificationLifecycleState[]>);
 
 export const TERMINAL_STATES: readonly NotificationLifecycleState[] = Object.freeze([
   "suppressed",
@@ -43,15 +44,16 @@ export function isTerminal(state: NotificationLifecycleState): boolean {
   return TERMINAL_STATES.includes(state);
 }
 
-const DELIVERY_TRANSITIONS: Readonly<Record<DeliveryState, readonly DeliveryState[]>> = Object.freeze({
-  pending: Object.freeze(["sending", "skipped", "failed"]),
-  sending: Object.freeze(["sent", "failed"]),
-  sent: Object.freeze(["delivered", "failed"]),
-  delivered: Object.freeze([]),
-  failed: Object.freeze(["pending", "dead_lettered"]),
-  skipped: Object.freeze([]),
-  dead_lettered: Object.freeze(["pending"]),
-} as Record<DeliveryState, readonly DeliveryState[]>);
+const DELIVERY_TRANSITIONS: Readonly<Record<DeliveryState, readonly DeliveryState[]>> =
+  Object.freeze({
+    pending: Object.freeze(["sending", "skipped", "failed"]),
+    sending: Object.freeze(["sent", "failed"]),
+    sent: Object.freeze(["delivered", "failed"]),
+    delivered: Object.freeze([]),
+    failed: Object.freeze(["pending", "dead_lettered"]),
+    skipped: Object.freeze([]),
+    dead_lettered: Object.freeze(["pending"]),
+  } as Record<DeliveryState, readonly DeliveryState[]>);
 
 export function canDeliveryTransition(from: DeliveryState, to: DeliveryState): boolean {
   return DELIVERY_TRANSITIONS[from].includes(to);

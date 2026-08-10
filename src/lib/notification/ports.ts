@@ -5,11 +5,7 @@
  * Workflow, Agent and Studio — and only through the structural shapes below.
  * No provider SDK, transport or vendor type may appear here.
  */
-import type {
-  NotificationCategory,
-  NotificationChannel,
-  NotificationPriority,
-} from "./types";
+import type { NotificationCategory, NotificationChannel, NotificationPriority } from "./types";
 
 export type NotificationDoc = Record<string, unknown>;
 
