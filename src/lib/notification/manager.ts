@@ -130,6 +130,79 @@ export class NotificationManager {
       options.config.rateLimit.maxPerWindow,
       options.config.rateLimit.maxPerChannelPerWindow,
     );
+    this.subscriptions = new SubscriptionRegistry(
+      notificationStoreFor<SubscriptionRecord>(
+        persistence,
+        NOTIFICATION_COLLECTIONS.subscriptions,
+        (s) => s.userId,
+      ),
+    );
+    this.templateVersions = new TemplateVersionStore(
+      notificationStoreFor<TemplateVersionRecord>(
+        persistence,
+        NOTIFICATION_COLLECTIONS.templateVersions,
+      ),
+    );
+  }
+
+  /** Registers a template and records an immutable version row. */
+  async registerTemplate(template: NotificationTemplate): Promise<NotificationTemplate> {
+    const registered = this.templates.register(template);
+    const at = this.clock();
+    await this.templateVersions.publish(registered, at);
+    this.events.emit({
+      kind: "TemplateRegistered",
+      at,
+      payload: { templateId: registered.id, locale: registered.locale, version: registered.version },
+    });
+    return registered;
+  }
+
+  /** Persists every currently registered template as a version row. */
+  async publishTemplateVersions(): Promise<number> {
+    const at = this.clock();
+    for (const template of this.templates.list()) {
+      await this.templateVersions.publish(template, at);
+    }
+    return this.templates.list().length;
+  }
+
+  async setSubscription(
+    userId: string,
+    topic: NotificationCategory | string,
+    subscribed: boolean,
+    now?: number,
+  ): Promise<SubscriptionRecord> {
+    const at = now ?? this.clock();
+    const record = subscribed
+      ? await this.subscriptions.subscribe(userId, topic, at)
+      : await this.subscriptions.unsubscribe(userId, topic, at);
+    this.events.emit({
+      kind: "SubscriptionChanged",
+      at,
+      userId,
+      payload: { topic, subscribed },
+    });
+    return record;
+  }
+
+  async unsubscribeByToken(
+    userId: string,
+    topic: NotificationCategory | string,
+    token: string,
+    now?: number,
+  ): Promise<SubscriptionRecord | undefined> {
+    const at = now ?? this.clock();
+    const record = await this.subscriptions.unsubscribeByToken(userId, topic, token, at);
+    if (record) {
+      this.events.emit({
+        kind: "SubscriptionChanged",
+        at,
+        userId,
+        payload: { topic, subscribed: false, viaToken: true },
+      });
+    }
+    return record;
   }
 
   private get config(): NotificationConfig {
