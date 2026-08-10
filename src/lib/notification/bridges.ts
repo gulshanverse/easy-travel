@@ -229,7 +229,11 @@ export function bridgeIamSecurityEvents(
 export function workflowSignalBridge(
   workflow: NotificationWorkflowPort,
   events: { on(listener: (event: { kind: string; userId: string | null; notificationId: string | null }) => void): () => void },
-  kinds: readonly string[] = ["NotificationDelivered", "NotificationDeadLettered"],
+  kinds: readonly string[] = [
+    "NotificationSent",
+    "NotificationDelivered",
+    "NotificationDeadLettered",
+  ],
 ): () => void {
   const wanted = new Set(kinds);
   return events.on((event) => {
