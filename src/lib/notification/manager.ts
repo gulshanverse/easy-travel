@@ -80,6 +80,8 @@ export class NotificationManager {
   readonly digests: DigestEngine;
   readonly deadLetters: DeadLetterQueue;
   private readonly notifications: NotificationStore<Notification>;
+  readonly subscriptions: SubscriptionRegistry;
+  readonly templateVersions: TemplateVersionStore;
   private readonly deliveries: NotificationStore<Delivery>;
   private readonly dedupe: DeduplicationEngine;
   private readonly idempotency: IdempotencyEngine;
