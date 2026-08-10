@@ -20,6 +20,7 @@ export function escapeHtml(value: string): string {
 /** Strips control characters and collapses whitespace runs. */
 export function sanitizeText(value: string): string {
   return value
+    // eslint-disable-next-line no-control-regex -- stripping control chars is the point
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
     .replace(/[ \t]+/g, " ");
 }
