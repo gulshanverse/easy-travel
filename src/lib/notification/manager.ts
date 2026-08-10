@@ -21,7 +21,7 @@ import type { NotificationPorts, NotificationPreferenceRecord } from "./ports";
 import { DEFAULT_PREFERENCES, digestWindowMs, localHour, route } from "./routing";
 import { redact } from "./security";
 import { notificationStoreFor, type NotificationStore } from "./stores";
-import { renderTemplate, TemplateRegistry } from "./templates";
+import { renderTemplate, TemplateRegistry, type NotificationTemplate } from "./templates";
 import { BUILT_IN_TEMPLATES } from "./catalog";
 import { decideRetry } from "./retry";
 import { noopNotificationTelemetry, type NotificationTelemetrySink } from "./telemetry";
