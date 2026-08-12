@@ -144,7 +144,7 @@ export class CircuitBreaker {
   private state: CircuitState = "closed";
   private failures = 0;
   private successes = 0;
-  private openedAt?: number;
+  private openedAt: number | undefined;
 
   constructor(private readonly policy: ProviderCircuitPolicy) {}
 
@@ -199,7 +199,7 @@ export class CircuitBreaker {
     this.state = "closed";
     this.failures = 0;
     this.successes = 0;
-    delete (this as { openedAt?: number }).openedAt;
+    this.openedAt = undefined;
   }
 
   reset(): void {
