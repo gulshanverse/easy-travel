@@ -1,7 +1,11 @@
 /** Provider Gateway (P-1.4) — capability registry and negotiation.
  *  Nothing is implicit: a provider must explicitly declare every capability.
  */
-import { ProviderInvalidRequestError, ProviderUnsupportedCapabilityError } from "./errors";
+import {
+  ProviderInvalidRequestError,
+  ProviderSchemaMismatchError,
+  ProviderUnsupportedCapabilityError,
+} from "./errors";
 import type {
   Provider,
   ProviderCapability,
@@ -21,19 +25,11 @@ export class ProviderCapabilityRegistry {
 
   register(providerId: ProviderId, capability: ProviderCapability, now = Date.now()): void {
     validateCapability(capability);
-    const list = this.byCapability.get(capability.id) ?? [];
-    if (list.some((r) => r.providerId === providerId)) {
-      this.byCapability.set(
-        capability.id,
-        list.filter((r) => r.providerId !== providerId),
-      );
-    }
-    (this.byCapability.get(capability.id) ?? list).length; // no-op keeps list ref honest
-    const nextList = (this.byCapability.get(capability.id) ?? list).filter(
+    const list = (this.byCapability.get(capability.id) ?? []).filter(
       (r) => r.providerId !== providerId,
     );
-    nextList.push(Object.freeze({ capability, providerId, registeredAt: now }));
-    this.byCapability.set(capability.id, nextList);
+    list.push(Object.freeze({ capability, providerId, registeredAt: now }));
+    this.byCapability.set(capability.id, list);
   }
 
   unregisterProvider(providerId: ProviderId): void {
@@ -148,14 +144,14 @@ export function validateInput(
 export function validateOutput(cap: ProviderCapability, data: unknown): void {
   if (cap.outputFields.length === 0) return;
   if (data === null || typeof data !== "object")
-    throw new ProviderInvalidRequestError(`capability ${cap.id} returned a non-object response`, {
+    throw new ProviderSchemaMismatchError(`capability ${cap.id} returned a non-object response`, {
       capability: cap.id,
     });
   const obj = data as Record<string, unknown>;
   for (const field of cap.outputFields) {
     if (field.endsWith("?")) continue;
     if (!(field in obj))
-      throw new ProviderInvalidRequestError(
+      throw new ProviderSchemaMismatchError(
         `provider response missing output '${field}' for capability ${cap.id}`,
         { capability: cap.id },
       );
