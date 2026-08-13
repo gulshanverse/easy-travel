@@ -10,11 +10,11 @@ import { loadGatewayConfiguration, type GatewayConfiguration } from "./policies"
 import { ProviderGatewayManager, type GatewayInvocationResult } from "./manager";
 import { ProviderFactory, ProviderHealthManager, ProviderRegistry, ProviderResolver } from "./registry";
 import { BudgetController, ConcurrencyLimiter, RateLimiter, InMemoryRateCounter } from "./resilience";
-import { GatewayEventBus, ProviderMetrics } from "./observability";
+import { createGatewayEvent, GatewayEventBus, ProviderMetrics } from "./observability";
 import { NormalizationRegistry } from "./normalization";
 import type { GatewayPorts } from "./ports";
 import type { ProviderAdapter } from "./adapter";
-import type { ProviderRequest, ProviderResponse } from "./types";
+import type { ProviderContract, ProviderRequest, ProviderResponse } from "./types";
 
 export interface ProviderGatewayRuntimeOptions {
   readonly configuration?: Partial<GatewayConfiguration>;
@@ -32,6 +32,7 @@ export class ProviderGatewayRuntime {
   readonly healthManager: ProviderHealthManager;
   readonly manager: ProviderGatewayManager;
   readonly metrics: ProviderMetrics;
+  readonly events: GatewayEventBus;
 
   constructor(options: ProviderGatewayRuntimeOptions = {}) {
     this.configuration = loadGatewayConfiguration(options.configuration);
@@ -39,6 +40,32 @@ export class ProviderGatewayRuntime {
     this.resolver = new ProviderResolver(this.registry);
     this.healthManager = new ProviderHealthManager(this.registry);
     this.metrics = new ProviderMetrics();
+    this.events = new GatewayEventBus();
+
+    // Audit is an outward side effect of gateway events; failures are isolated
+    // so audit outages never become a provider transport bypass or crash loop.
+    this.events.subscribe((event) => {
+      const audit = options.ports?.audit;
+      if (!audit) return;
+      const action = event.name === "ProviderRegistered" ? "create" :
+        event.name === "ProviderHealthChanged" || event.name === "ProviderCredentialRotated" ? "update" :
+        "read";
+      void audit.record({
+        actorId: null,
+        ownerId: null,
+        action,
+        collection: "provider-gateway",
+        recordId: event.eventId,
+        before: null,
+        after: {
+          event: event.name,
+          providerId: event.providerId ?? null,
+          capabilityId: event.capabilityId ?? null,
+          correlationId: event.correlationId,
+          metadata: event.metadata,
+        },
+      }).catch(() => undefined);
+    });
 
     const cache = options.cache ?? new GatewayCache(new InMemoryGatewayCache());
     const idempotency = options.idempotency ?? new IdempotencyManager(new InMemoryIdempotencyStore());
@@ -52,7 +79,7 @@ export class ProviderGatewayRuntime {
       concurrency: new ConcurrencyLimiter(),
       budget: new BudgetController(),
       metrics: this.metrics,
-      events: new GatewayEventBus(),
+      events: this.events,
       normalization: new NormalizationRegistry(),
       ports: options.ports,
     });
@@ -65,6 +92,12 @@ export class ProviderGatewayRuntime {
 
   async register(adapter: ProviderAdapter): Promise<void> {
     await this.registry.register(adapter);
+    this.events.publish(createGatewayEvent({
+      name: "ProviderRegistered",
+      correlationId: `provider:${adapter.provider.id}`,
+      providerId: adapter.provider.id,
+      metadata: { status: adapter.provider.status, category: adapter.provider.category },
+    }));
   }
 
   async unregister(providerId: string): Promise<boolean> {
@@ -76,11 +109,37 @@ export class ProviderGatewayRuntime {
   }
 
   async probe(providerId: string) {
-    return this.healthManager.probe(providerId);
+    const health = await this.healthManager.probe(providerId);
+    this.events.publish(createGatewayEvent({
+      name: "ProviderHealthChanged",
+      correlationId: `health:${providerId}`,
+      providerId,
+      metadata: {
+        status: health.status,
+        availability: health.availability,
+        circuit: health.circuit,
+        failureStreak: health.failureStreak,
+        successStreak: health.successStreak,
+      },
+    }));
+    return health;
   }
 
   provider(providerId: string) {
     return this.registry.require(providerId);
+  }
+
+  providerContract(providerId: string): ProviderContract {
+    const provider = this.registry.require(providerId).provider;
+    return Object.freeze({
+      providerId: provider.id,
+      capabilities: provider.capabilities,
+      version: provider.version,
+    });
+  }
+
+  discoverCapabilities() {
+    return this.registry.capabilities.discover();
   }
 
   providers() {
