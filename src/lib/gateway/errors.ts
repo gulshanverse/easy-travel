@@ -1,28 +1,12 @@
-/** Provider Gateway (P-1.4) — normalized error hierarchy.
- *  Provider-specific failures are mapped here; secrets and raw provider
- *  payloads never enter an error message.
- */
 import { redact } from "./security";
 
 export type GatewayErrorCode =
-  | "provider_unavailable"
-  | "provider_timeout"
-  | "provider_rate_limited"
-  | "provider_unauthorized"
-  | "provider_forbidden"
-  | "provider_invalid_request"
-  | "provider_not_found"
-  | "provider_conflict"
-  | "provider_capacity_exceeded"
-  | "provider_temporary_failure"
-  | "provider_permanent_failure"
-  | "provider_schema_mismatch"
-  | "provider_unsupported_capability"
-  | "provider_credential_failure"
-  | "provider_budget_exceeded"
-  | "provider_circuit_open"
-  | "provider_security_violation"
-  | "provider_concurrency_exceeded"
+  | "provider_unavailable" | "provider_timeout" | "provider_rate_limited"
+  | "provider_unauthorized" | "provider_forbidden" | "provider_invalid_request"
+  | "provider_not_found" | "provider_conflict" | "provider_capacity_exceeded"
+  | "provider_temporary_failure" | "provider_permanent_failure" | "provider_schema_mismatch"
+  | "provider_unsupported_capability" | "provider_credential_failure" | "provider_budget_exceeded"
+  | "provider_circuit_open" | "provider_security_violation" | "provider_concurrency_exceeded"
   | "provider_error";
 
 export class ProviderGatewayError extends Error {
@@ -30,12 +14,7 @@ export class ProviderGatewayError extends Error {
   readonly retryable: boolean;
   readonly providerId?: string;
   readonly capability?: string;
-  constructor(
-    message: string,
-    code: GatewayErrorCode = "provider_error",
-    retryable = false,
-    ctx: { providerId?: string; capability?: string } = {},
-  ) {
+  constructor(message: string, code: GatewayErrorCode = "provider_error", retryable = false, ctx: { providerId?: string; capability?: string } = {}) {
     super(redact(message));
     this.name = new.target.name;
     this.code = code;
@@ -45,13 +24,11 @@ export class ProviderGatewayError extends Error {
   }
 }
 
-const mk =
-  (code: GatewayErrorCode, retryable: boolean) =>
-  class extends ProviderGatewayError {
-    constructor(message: string, ctx: { providerId?: string; capability?: string } = {}) {
-      super(message, code, retryable, ctx);
-    }
-  };
+const mk = (code: GatewayErrorCode, retryable: boolean) => class extends ProviderGatewayError {
+  constructor(message: string, ctx: { providerId?: string; capability?: string } = {}) {
+    super(message, code, retryable, ctx);
+  }
+};
 
 export const ProviderUnavailableError = mk("provider_unavailable", true);
 export const ProviderTimeoutError = mk("provider_timeout", true);
@@ -72,11 +49,7 @@ export const ProviderCircuitOpenError = mk("provider_circuit_open", true);
 export const ProviderSecurityViolationError = mk("provider_security_violation", false);
 export const ProviderConcurrencyExceededError = mk("provider_concurrency_exceeded", true);
 
-/** Provider-specific status/code → normalized gateway error. */
-export function normalizeProviderError(
-  input: { status?: number; code?: string; message?: string },
-  ctx: { providerId?: string; capability?: string } = {},
-): ProviderGatewayError {
+export function normalizeProviderError(input: { status?: number; code?: string; message?: string }, ctx: { providerId?: string; capability?: string } = {}): ProviderGatewayError {
   const msg = redact(input.message ?? input.code ?? "provider failure");
   const status = input.status ?? 0;
   if (status === 400) return new ProviderInvalidRequestError(msg, ctx);
@@ -91,19 +64,15 @@ export function normalizeProviderError(
   if (status === 507) return new ProviderCapacityExceededError(msg, ctx);
   if (status >= 500) return new ProviderTemporaryFailureError(msg, ctx);
   switch (input.code) {
-    case "timeout":
-      return new ProviderTimeoutError(msg, ctx);
-    case "unavailable":
-      return new ProviderUnavailableError(msg, ctx);
-    case "rate_limited":
-      return new ProviderRateLimitedError(msg, ctx);
-    case "credential":
-      return new ProviderCredentialFailureError(msg, ctx);
-    default:
-      return new ProviderPermanentFailureError(msg, ctx);
+    case "timeout": return new ProviderTimeoutError(msg, ctx);
+    case "unavailable": return new ProviderUnavailableError(msg, ctx);
+    case "rate_limited": return new ProviderRateLimitedError(msg, ctx);
+    case "credential": return new ProviderCredentialFailureError(msg, ctx);
+    default: return new ProviderPermanentFailureError(msg, ctx);
   }
 }
 
+export const normalizeProviderFailure = normalizeProviderError;
 export function isRetryable(err: unknown): boolean {
   return err instanceof ProviderGatewayError && err.retryable;
 }
