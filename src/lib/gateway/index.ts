@@ -15,3 +15,4 @@ export * from "./observability";
 export * from "./ports";
 export * from "./adapter";
 export * from "./registry";
+export * from "./pipeline";
