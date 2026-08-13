@@ -86,7 +86,6 @@ export function secretMetadata(
 }
 
 export class CredentialResolver {
-  private cache = new Map<string, ResolvedCredential>();
   private hooks: CredentialRotationHook[] = [];
   private failures = 0;
 
@@ -100,9 +99,14 @@ export class CredentialResolver {
     return this.failures;
   }
 
+  /**
+   * Resolve directly from the injected backend for each execution.
+   *
+   * Deliberately no in-process credential cache exists here: resolved secret
+   * material must remain execution-scoped. Rotation/revocation therefore
+   * takes effect on the next resolution without requiring cache invalidation.
+   */
   async resolve(ref: ProviderCredentialReference, now = Date.now()): Promise<ResolvedCredential> {
-    const cached = this.cache.get(ref.ref);
-    if (cached && credentialStatus(cached, now) === "active") return cached;
     const fresh = await this.backend.resolve(ref);
     const status = credentialStatus(fresh, now);
     if (!fresh || status === "expired" || status === "missing") {
@@ -113,21 +117,20 @@ export class CredentialResolver {
       this.failures++;
       throw new ProviderCredentialFailureError(`credential invalid for ref '${ref.ref}'`);
     }
-    this.cache.set(ref.ref, fresh);
     return fresh;
   }
 
-  /** Invalidate cached material and notify rotation listeners with metadata only. */
+  /** Resolve current metadata and notify rotation listeners without exposing material. */
   async rotate(ref: ProviderCredentialReference): Promise<SecretMetadata> {
-    this.cache.delete(ref.ref);
     const fresh = await this.backend.resolve(ref);
     const meta = secretMetadata(ref, fresh);
     for (const h of this.hooks) await h.onRotate(ref.ref, meta);
     return meta;
   }
 
+  /** No-op retained for backwards-compatible lifecycle management. */
   clear(): void {
-    this.cache.clear();
+    // Credentials are never cached by the resolver.
   }
 }
 
