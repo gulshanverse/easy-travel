@@ -6,6 +6,7 @@ import {
   ProviderRegistry,
   ProviderResolver,
   MockProviderAdapter,
+  ProviderGatewayRuntime,
   mockCapability,
   normalizeProviderError,
   ProviderCredentialFailureError,
@@ -70,6 +71,59 @@ describe("Provider Gateway routing", () => {
     });
     expect(route.primary).toBe("mock-b");
     expect(route.fallbacks).toEqual(["mock-a"]);
+  });
+});
+
+describe("Provider Gateway runtime", () => {
+  it("publishes registration and health events to the injected audit port", async () => {
+    const audit: Array<Record<string, unknown>> = [];
+    const capability = mockCapability("travel.search", "RAILWAY");
+    const provider = ProviderFactory.create({
+      id: "mock-audit",
+      name: "mock-audit",
+      type: "mock",
+      category: "RAILWAY",
+      environment: "test",
+      capabilities: [capability],
+    });
+    const runtime = new ProviderGatewayRuntime({
+      ports: {
+        audit: {
+          async record(entry) {
+            audit.push(entry as unknown as Record<string, unknown>);
+          },
+        },
+      },
+    });
+
+    await runtime.register(new MockProviderAdapter(provider));
+    await runtime.probe(provider.id);
+
+    expect(audit.map((entry) => entry.action)).toEqual(["create", "update"]);
+    expect(runtime.events.byName("ProviderRegistered")).toHaveLength(1);
+    expect(runtime.events.byName("ProviderHealthChanged")).toHaveLength(1);
+  });
+
+  it("exposes immutable provider contracts and capability discovery", async () => {
+    const capability = mockCapability("travel.search", "RAILWAY");
+    const provider = ProviderFactory.create({
+      id: "mock-contract",
+      name: "mock-contract",
+      type: "mock",
+      category: "RAILWAY",
+      environment: "test",
+      capabilities: [capability],
+    });
+    const runtime = new ProviderGatewayRuntime();
+    await runtime.register(new MockProviderAdapter(provider));
+
+    const contract = runtime.providerContract(provider.id);
+    expect(contract.providerId).toBe(provider.id);
+    expect(contract.capabilities[0]?.id).toBe(capability.id);
+    expect(runtime.discoverCapabilities()).toEqual([
+      { id: capability.id, version: capability.version, providers: [provider.id] },
+    ]);
+    expect(Object.isFrozen(contract)).toBe(true);
   });
 });
 
