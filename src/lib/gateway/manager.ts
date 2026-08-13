@@ -35,9 +35,11 @@ export class ProviderGatewayManager {
       const providerId = candidates[index]!;
       const entry = this.deps.registry.require(providerId);
       const fallback = index > 0;
+      const capability = entry.provider.capabilities.find((cap) => cap.id === request.capability);
+      const idempotent = capability?.idempotent ?? false;
 
       if (fallback && !entry.provider.policy.failoverAllowed) continue;
-      if (fallback && request.operation !== "search" && !entry.provider.policy.allowNonIdempotentFailover) continue;
+      if (fallback && !idempotent && !entry.provider.policy.allowNonIdempotentFailover) continue;
 
       try {
         const outcome = await this.deps.pipeline.run(entry, request, { fallbackUsed: fallback });
