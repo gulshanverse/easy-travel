@@ -8,7 +8,7 @@ import { CredentialResolver, InMemorySecretBackend, type SecretBackend } from ".
 import { GatewayPipeline } from "./pipeline";
 import { loadGatewayConfiguration, type GatewayConfiguration } from "./policies";
 import { ProviderGatewayManager, type GatewayInvocationResult } from "./manager";
-import { ProviderFactory, ProviderRegistry, ProviderResolver } from "./registry";
+import { ProviderFactory, ProviderHealthManager, ProviderRegistry, ProviderResolver } from "./registry";
 import { BudgetController, ConcurrencyLimiter, RateLimiter, InMemoryRateCounter } from "./resilience";
 import { GatewayEventBus, ProviderMetrics } from "./observability";
 import { NormalizationRegistry } from "./normalization";
@@ -25,11 +25,11 @@ export interface ProviderGatewayRuntimeOptions {
   readonly rateLimiter?: RateLimiter;
 }
 
-/** Production facade. External state and transports are injected through ports. */
 export class ProviderGatewayRuntime {
   readonly configuration: GatewayConfiguration;
   readonly registry: ProviderRegistry;
   readonly resolver: ProviderResolver;
+  readonly healthManager: ProviderHealthManager;
   readonly manager: ProviderGatewayManager;
   readonly metrics: ProviderMetrics;
 
@@ -37,6 +37,7 @@ export class ProviderGatewayRuntime {
     this.configuration = loadGatewayConfiguration(options.configuration);
     this.registry = new ProviderRegistry();
     this.resolver = new ProviderResolver(this.registry);
+    this.healthManager = new ProviderHealthManager(this.registry);
     this.metrics = new ProviderMetrics();
 
     const cache = options.cache ?? new GatewayCache(new InMemoryGatewayCache());
@@ -72,6 +73,10 @@ export class ProviderGatewayRuntime {
 
   async invoke(request: ProviderRequest): Promise<GatewayInvocationResult> {
     return this.manager.invoke(request);
+  }
+
+  async probe(providerId: string) {
+    return this.healthManager.probe(providerId);
   }
 
   provider(providerId: string) {
