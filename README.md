@@ -736,15 +736,15 @@ Create a `.env.local` file in the project root.
 ```env
 # AI Provider Keys (Future Integration)
 
-OPENAI_API_KEY=
+OPENAI_API_KEY="open API key"
 
-GOOGLE_API_KEY=
+GOOGLE_API_KEY="Googlle API Key"
 
-ANTHROPIC_API_KEY=
+ANTHROPIC_API_KEY="Claude Key"
 
 GROQ_API_KEY=
 
-OPENROUTER_API_KEY=
+OPENROUTER_API_KEY="Open Router Key"
 
 # Database (Future)
 
